@@ -2,10 +2,19 @@
 
 import { Bell, Search, User, ChevronDown, Settings, LogOut, HelpCircle } from 'lucide-react';
 import { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useRouter } from 'next/navigation';
 import LocalSelector from './LocalSelector';
 
 export default function Header() {
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const { user, logout } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    logout();
+    router.push('/login');
+  };
 
   return (
     <header className="bg-white border-b border-slate-200 h-16 shadow-sm">
@@ -60,8 +69,8 @@ export default function Header() {
                 <User size={18} className="text-white" />
               </div>
               <div className="text-left hidden sm:block">
-                <p className="text-sm font-semibold text-slate-900">Admin User</p>
-                <p className="text-xs text-slate-500">Administrador</p>
+                <p className="text-sm font-semibold text-slate-900">{user?.nombre}</p>
+                <p className="text-xs text-slate-500">{user?.rol}</p>
               </div>
               <ChevronDown size={16} className={`text-slate-400 transition-transform duration-200 ${showUserMenu ? 'rotate-180' : ''}`} />
             </button>
@@ -70,8 +79,8 @@ export default function Header() {
             {showUserMenu && (
               <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-slate-200 py-2 z-50 fade-in">
                 <div className="px-4 py-3 border-b border-slate-100">
-                  <p className="text-sm font-semibold text-slate-900">Admin User</p>
-                  <p className="text-xs text-slate-500">admin@erpsystem.com</p>
+                  <p className="text-sm font-semibold text-slate-900">{user?.nombre}</p>
+                  <p className="text-xs text-slate-500">{user?.email}</p>
                 </div>
                 <button className="w-full px-4 py-2.5 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-3 transition-colors">
                   <User size={16} />
@@ -82,7 +91,10 @@ export default function Header() {
                   Configuración
                 </button>
                 <div className="border-t border-slate-100 my-2" />
-                <button className="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors">
+                <button 
+                  onClick={handleLogout}
+                  className="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors"
+                >
                   <LogOut size={16} />
                   Cerrar Sesión
                 </button>

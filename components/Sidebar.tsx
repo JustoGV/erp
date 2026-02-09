@@ -13,32 +13,182 @@ import {
   Settings,
   Menu,
   X,
-  ChevronRight,
-  Building2
+  ChevronDown,
+  Building2,
+  Factory,
+  FileText,
+  UserCircle,
+  Receipt,
+  TrendingUp,
+  ClipboardList,
+  Boxes,
+  Scale,
+  BookOpen,
+  CreditCard
 } from 'lucide-react';
 import { useState } from 'react';
+import { usePermissions } from '@/hooks/usePermissions';
 
-const menuItems = [
-  { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', color: 'text-blue-500' },
-  { href: '/ventas', icon: ShoppingCart, label: 'Ventas', color: 'text-emerald-500' },
-  { href: '/compras', icon: ShoppingBag, label: 'Compras', color: 'text-purple-500' },
-  { href: '/inventario', icon: Package, label: 'Inventario', color: 'text-orange-500' },
-  { href: '/finanzas', icon: DollarSign, label: 'Finanzas', color: 'text-cyan-500' },
-  { href: '/rrhh', icon: Users, label: 'RRHH', color: 'text-pink-500' },
-  { href: '/reportes', icon: BarChart3, label: 'Reportes', color: 'text-indigo-500' },
-  { href: '/configuracion', icon: Settings, label: 'Configuración', color: 'text-slate-500' },
+interface SubMenuItem {
+  href: string;
+  label: string;
+}
+
+interface MenuItem {
+  href?: string;
+  icon: any;
+  label: string;
+  color: string;
+  module: string;
+  subItems?: SubMenuItem[];
+}
+
+const allMenuItems: MenuItem[] = [
+  { 
+    href: '/dashboard', 
+    icon: LayoutDashboard, 
+    label: 'Dashboard', 
+    color: 'text-blue-500', 
+    module: 'dashboard' 
+  },
+  { 
+    icon: ShoppingCart, 
+    label: 'Ventas', 
+    color: 'text-emerald-500', 
+    module: 'ventas',
+    subItems: [
+      { href: '/ventas', label: 'Resumen' },
+      { href: '/ventas/clientes', label: 'Clientes' },
+      { href: '/ventas/presupuestos', label: 'Presupuestos' },
+      { href: '/ventas/pedidos', label: 'Pedidos' },
+      { href: '/ventas/facturas', label: 'Facturas' },
+      { href: '/ventas/cobranzas', label: 'Cobranzas' },
+    ]
+  },
+  { 
+    icon: ShoppingBag, 
+    label: 'Compras', 
+    color: 'text-purple-500', 
+    module: 'compras',
+    subItems: [
+      { href: '/compras', label: 'Resumen' },
+      { href: '/compras/proveedores', label: 'Proveedores' },
+      { href: '/compras/ordenes', label: 'Órdenes de Compra' },
+      { href: '/compras/recepciones', label: 'Recepciones' },
+      { href: '/compras/pagos', label: 'Pagos' },
+    ]
+  },
+  { 
+    icon: Package, 
+    label: 'Inventario', 
+    color: 'text-orange-500', 
+    module: 'inventario',
+    subItems: [
+      { href: '/inventario', label: 'Resumen' },
+      { href: '/inventario/productos', label: 'Productos' },
+      { href: '/inventario/depositos', label: 'Depósitos' },
+      { href: '/inventario/stock', label: 'Control de Stock' },
+      { href: '/inventario/ajustes', label: 'Ajustes' },
+    ]
+  },
+  { 
+    icon: Factory, 
+    label: 'Producción', 
+    color: 'text-yellow-500', 
+    module: 'produccion',
+    subItems: [
+      { href: '/produccion', label: 'Resumen' },
+      { href: '/produccion/ordenes', label: 'Órdenes de Producción' },
+      { href: '/produccion/bom', label: 'Lista de Materiales (BOM)' },
+      { href: '/produccion/materiales', label: 'Materiales e Insumos' },
+    ]
+  },
+  { 
+    icon: DollarSign, 
+    label: 'Finanzas', 
+    color: 'text-cyan-500', 
+    module: 'finanzas',
+    subItems: [
+      { href: '/finanzas', label: 'Resumen' },
+      { href: '/finanzas/plan-cuentas', label: 'Plan de Cuentas' },
+      { href: '/finanzas/asientos', label: 'Asientos Contables' },
+      { href: '/finanzas/cuentas-cobrar', label: 'Cuentas por Cobrar' },
+      { href: '/finanzas/cuentas-pagar', label: 'Cuentas por Pagar' },
+      { href: '/finanzas/balance', label: 'Balance General' },
+      { href: '/finanzas/resultados', label: 'Estado de Resultados' },
+      { href: '/finanzas/bancos', label: 'Bancos' },
+      { href: '/finanzas/caja', label: 'Caja' },
+    ]
+  },
+  { 
+    icon: Users, 
+    label: 'RRHH', 
+    color: 'text-pink-500', 
+    module: 'rrhh',
+    subItems: [
+      { href: '/rrhh', label: 'Resumen' },
+      { href: '/rrhh/empleados', label: 'Empleados' },
+      { href: '/rrhh/liquidaciones', label: 'Liquidaciones' },
+      { href: '/rrhh/asistencias', label: 'Asistencias' },
+      { href: '/rrhh/horas', label: 'Registro de Horas' },
+      { href: '/rrhh/vacaciones', label: 'Vacaciones' },
+    ]
+  },
+  { 
+    href: '/reportes', 
+    icon: BarChart3, 
+    label: 'Reportes', 
+    color: 'text-indigo-500', 
+    module: 'reportes' 
+  },
+  { 
+    icon: Settings, 
+    label: 'Configuración', 
+    color: 'text-slate-500', 
+    module: 'configuracion',
+    subItems: [
+      { href: '/configuracion', label: 'General' },
+      { href: '/configuracion/usuarios', label: 'Usuarios' },
+      { href: '/configuracion/empresa', label: 'Empresa' },
+    ]
+  },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set());
+  const { hasAccess } = usePermissions();
+
+  // Filtrar menú según permisos del usuario
+  const menuItems = allMenuItems.filter(item => hasAccess(item.module));
+
+  const toggleMenu = (label: string) => {
+    const newExpanded = new Set(expandedMenus);
+    if (newExpanded.has(label)) {
+      newExpanded.delete(label);
+    } else {
+      newExpanded.add(label);
+    }
+    setExpandedMenus(newExpanded);
+  };
+
+  const isMenuActive = (item: MenuItem) => {
+    if (item.href) {
+      return pathname === item.href;
+    }
+    if (item.subItems) {
+      return item.subItems.some(sub => pathname?.startsWith(sub.href));
+    }
+    return false;
+  };
 
   return (
     <>
       {/* Mobile menu button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-primary-600 text-white"
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-blue-600 text-white shadow-lg"
       >
         {isOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
@@ -79,33 +229,89 @@ export default function Sidebar() {
             <div className="space-y-1">
               {menuItems.map((item) => {
                 const Icon = item.icon;
-                const isActive = pathname?.startsWith(item.href);
+                const isActive = isMenuActive(item);
+                const isExpanded = expandedMenus.has(item.label);
+                const hasSubItems = item.subItems && item.subItems.length > 0;
                 
                 return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setIsOpen(false)}
-                    className={`
-                      group flex items-center gap-3 px-4 py-3 rounded-xl
-                      transition-all duration-200 relative overflow-hidden
-                      ${isActive
-                        ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/20'
-                        : 'text-slate-300 hover:bg-slate-800/50 hover:text-white'
-                      }
-                    `}
-                  >
-                    {isActive && (
-                      <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-cyan-400/20 animate-pulse" />
+                  <div key={item.label}>
+                    {/* Menú principal */}
+                    {hasSubItems ? (
+                      <button
+                        onClick={() => toggleMenu(item.label)}
+                        className={`
+                          group flex items-center gap-3 px-4 py-3 rounded-xl w-full
+                          transition-all duration-200 relative overflow-hidden
+                          ${isActive
+                            ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/20'
+                            : 'text-slate-300 hover:bg-slate-800/50 hover:text-white'
+                          }
+                        `}
+                      >
+                        {isActive && (
+                          <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-cyan-400/20 animate-pulse" />
+                        )}
+                        <div className={`relative z-10 ${isActive ? 'text-white' : item.color}`}>
+                          <Icon size={20} />
+                        </div>
+                        <span className="relative z-10 font-medium flex-1 text-left">{item.label}</span>
+                        <ChevronDown 
+                          size={16} 
+                          className={`relative z-10 transition-transform duration-200 ${
+                            isExpanded ? 'rotate-180' : ''
+                          } ${isActive ? 'text-white/70' : 'text-slate-400'}`} 
+                        />
+                      </button>
+                    ) : (
+                      <Link
+                        href={item.href!}
+                        onClick={() => setIsOpen(false)}
+                        className={`
+                          group flex items-center gap-3 px-4 py-3 rounded-xl
+                          transition-all duration-200 relative overflow-hidden
+                          ${isActive
+                            ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/20'
+                            : 'text-slate-300 hover:bg-slate-800/50 hover:text-white'
+                          }
+                        `}
+                      >
+                        {isActive && (
+                          <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-cyan-400/20 animate-pulse" />
+                        )}
+                        <div className={`relative z-10 ${isActive ? 'text-white' : item.color}`}>
+                          <Icon size={20} />
+                        </div>
+                        <span className="relative z-10 font-medium flex-1">{item.label}</span>
+                      </Link>
                     )}
-                    <div className={`relative z-10 ${isActive ? 'text-white' : item.color}`}>
-                      <Icon size={20} />
-                    </div>
-                    <span className="relative z-10 font-medium flex-1">{item.label}</span>
-                    {isActive && (
-                      <ChevronRight size={16} className="relative z-10 text-white/70" />
+
+                    {/* Submenús */}
+                    {hasSubItems && isExpanded && (
+                      <div className="mt-1 ml-4 space-y-1">
+                        {item.subItems!.map((subItem) => {
+                          const isSubActive = pathname === subItem.href;
+                          return (
+                            <Link
+                              key={subItem.href}
+                              href={subItem.href}
+                              onClick={() => setIsOpen(false)}
+                              className={`
+                                flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm
+                                transition-all duration-200
+                                ${isSubActive
+                                  ? 'bg-blue-600/20 text-blue-300 font-medium border-l-2 border-blue-400'
+                                  : 'text-slate-400 hover:bg-slate-800/30 hover:text-slate-200 border-l-2 border-slate-700'
+                                }
+                              `}
+                            >
+                              <div className="w-1.5 h-1.5 rounded-full bg-current" />
+                              <span>{subItem.label}</span>
+                            </Link>
+                          );
+                        })}
+                      </div>
                     )}
-                  </Link>
+                  </div>
                 );
               })}
             </div>

@@ -1,8 +1,117 @@
 // Mock data para el ERP (sin base de datos)
 
+// ==================== EMPRESAS ====================
+export interface Empresa {
+  id: string;
+  code: string;
+  name: string;
+  taxId: string;
+  address: string;
+  city: string;
+  state: string;
+  phone: string;
+  email: string;
+  logo?: string;
+  active: boolean;
+}
+
+export const mockEmpresas: Empresa[] = [
+  {
+    id: '1',
+    code: 'EMP-001',
+    name: 'Empresa Principal S.A.',
+    taxId: '30-12345678-9',
+    address: 'Av. Libertador 1500',
+    city: 'Buenos Aires',
+    state: 'CABA',
+    phone: '011-4444-0000',
+    email: 'info@empresaprincipal.com',
+    active: true,
+  },
+  {
+    id: '2',
+    code: 'EMP-002',
+    name: 'Empresa Secundaria S.R.L.',
+    taxId: '30-98765432-1',
+    address: 'San Martín 850',
+    city: 'Rosario',
+    state: 'Santa Fe',
+    phone: '0341-4555-0000',
+    email: 'info@empresasecundaria.com',
+    active: true,
+  },
+];
+
+// ==================== AUDITORÍA ====================
+export type TipoAuditoria = 'CREATE' | 'UPDATE' | 'DELETE' | 'LOGIN' | 'LOGOUT' | 'EXPORT' | 'PRINT';
+
+export interface AuditoriaLog {
+  id: string;
+  empresaId: string;
+  userId: string;
+  userName: string;
+  userRole: string;
+  tipo: TipoAuditoria;
+  modulo: string;
+  accion: string;
+  tabla?: string;
+  registroId?: string;
+  detalles?: string;
+  ipAddress: string;
+  timestamp: Date;
+}
+
+export const mockAuditoriaLogs: AuditoriaLog[] = [
+  {
+    id: '1',
+    empresaId: '1',
+    userId: '1',
+    userName: 'Admin Principal',
+    userRole: 'Administrador',
+    tipo: 'CREATE',
+    modulo: 'Ventas',
+    accion: 'Creación de presupuesto',
+    tabla: 'presupuestos',
+    registroId: 'PRES-001',
+    detalles: 'Presupuesto creado para cliente Empresa ABC S.A.',
+    ipAddress: '192.168.1.100',
+    timestamp: new Date('2024-01-15T10:30:00'),
+  },
+  {
+    id: '2',
+    empresaId: '1',
+    userId: '2',
+    userName: 'Vendedor López',
+    userRole: 'Vendedor',
+    tipo: 'UPDATE',
+    modulo: 'Ventas',
+    accion: 'Actualización de cliente',
+    tabla: 'clientes',
+    registroId: 'CLI-002',
+    detalles: 'Modificación de límite de crédito',
+    ipAddress: '192.168.1.105',
+    timestamp: new Date('2024-01-16T14:20:00'),
+  },
+  {
+    id: '3',
+    empresaId: '1',
+    userId: '3',
+    userName: 'Contador García',
+    userRole: 'Contable',
+    tipo: 'EXPORT',
+    modulo: 'Finanzas',
+    accion: 'Exportación a Excel',
+    tabla: 'balance_general',
+    detalles: 'Exportación de Balance General a Excel',
+    ipAddress: '192.168.1.110',
+    timestamp: new Date('2024-01-17T09:15:00'),
+  },
+];
+
 // ==================== LOCALES / SUCURSALES ====================
 export interface Local {
   id: string;
+  empresaId: string; // Relación con empresa
   code: string;
   name: string;
   address: string;
@@ -17,6 +126,7 @@ export interface Local {
 export const mockLocales: Local[] = [
   {
     id: '1',
+    empresaId: '1',
     code: 'LOC-SF',
     name: 'Local Santa Fe',
     address: 'San Martín 2450',
@@ -29,6 +139,7 @@ export const mockLocales: Local[] = [
   },
   {
     id: '2',
+    empresaId: '1',
     code: 'LOC-PR',
     name: 'Local Paraná',
     address: 'San Juan 1234',
@@ -41,6 +152,7 @@ export const mockLocales: Local[] = [
   },
   {
     id: '3',
+    empresaId: '1',
     code: 'LOC-ROS',
     name: 'Local Rosario',
     address: 'Pellegrini 890',
@@ -49,6 +161,19 @@ export const mockLocales: Local[] = [
     phone: '0341-4445566',
     email: 'rosario@empresa.com',
     manager: 'Carlos Martínez',
+    active: true,
+  },
+  {
+    id: '4',
+    empresaId: '2',
+    code: 'LOC-CORD',
+    name: 'Local Córdoba',
+    address: 'Av. Colón 500',
+    city: 'Córdoba',
+    state: 'Córdoba',
+    phone: '0351-4220000',
+    email: 'cordoba@empresa2.com',
+    manager: 'Roberto Díaz',
     active: true,
   },
 ];
@@ -219,6 +344,654 @@ export const mockProductos = [
   },
 ];
 
+// ==================== REQUERIMIENTOS DE COMPRA ====================
+export type EstadoRequerimiento = 'PENDIENTE' | 'AUTORIZADO' | 'RECHAZADO' | 'COMPLETADO' | 'CANCELADO';
+
+export interface RequerimientoCompra {
+  id: string;
+  numero: string;
+  solicitante: string;
+  departamento: string;
+  fecha: string;
+  fechaNecesidad: string;
+  items: ItemRequerimiento[];
+  justificacion: string;
+  estado: EstadoRequerimiento;
+  autorizadoPor?: string;
+  fechaAutorizacion?: string;
+  proveedorSugerido?: string;
+  ordenCompraId?: string;
+  localId: string;
+  empresaId: string;
+}
+
+export interface ItemRequerimiento {
+  id: string;
+  productoId?: string;
+  descripcion: string;
+  cantidad: number;
+  unidad: string;
+  precioEstimado?: number;
+  observaciones?: string;
+}
+
+export const mockRequerimientosCompra: RequerimientoCompra[] = [
+  {
+    id: '1',
+    numero: 'REQ-001',
+    solicitante: 'Juan Pérez',
+    departamento: 'Producción',
+    fecha: '2026-02-05',
+    fechaNecesidad: '2026-02-15',
+    items: [
+      {
+        id: '1',
+        productoId: '1',
+        descripcion: 'Materia Prima A - 25kg',
+        cantidad: 100,
+        unidad: 'KG',
+        precioEstimado: 150,
+        observaciones: 'Calidad premium requerida'
+      },
+      {
+        id: '2',
+        descripcion: 'Insumo de embalaje especial',
+        cantidad: 500,
+        unidad: 'UNI',
+        precioEstimado: 25
+      }
+    ],
+    justificacion: 'Stock bajo para producción del mes',
+    estado: 'AUTORIZADO',
+    autorizadoPor: 'Admin Principal',
+    fechaAutorizacion: '2026-02-06',
+    proveedorSugerido: '1',
+    ordenCompraId: '1',
+    localId: '1',
+    empresaId: '1'
+  },
+  {
+    id: '2',
+    numero: 'REQ-002',
+    solicitante: 'María González',
+    departamento: 'Mantenimiento',
+    fecha: '2026-02-08',
+    fechaNecesidad: '2026-02-20',
+    items: [
+      {
+        id: '3',
+        descripcion: 'Herramientas de precisión',
+        cantidad: 5,
+        unidad: 'KIT',
+        precioEstimado: 3500
+      }
+    ],
+    justificacion: 'Renovación de herramientas obsoletas',
+    estado: 'PENDIENTE',
+    localId: '1',
+    empresaId: '1'
+  }
+];
+
+// ==================== ÓRDENES DE COMPRA ====================
+export type EstadoOrdenCompra = 'BORRADOR' | 'ENVIADA' | 'CONFIRMADA' | 'RECIBIDA_PARCIAL' | 'RECIBIDA_COMPLETA' | 'CANCELADA';
+
+export interface OrdenCompra {
+  id: string;
+  numero: string;
+  proveedorId: string;
+  proveedorNombre: string;
+  requerimientoId?: string;
+  fecha: string;
+  fechaEntregaEstimada: string;
+  items: ItemOrdenCompra[];
+  subtotal: number;
+  impuestos: number;
+  total: number;
+  estado: EstadoOrdenCompra;
+  condicionesPago: string;
+  observaciones?: string;
+  responsable: string;
+  localId: string;
+  empresaId: string;
+}
+
+export interface ItemOrdenCompra {
+  id: string;
+  productoId?: string;
+  descripcion: string;
+  cantidad: number;
+  cantidadRecibida: number;
+  unidad: string;
+  precioUnitario: number;
+  descuento: number;
+  subtotal: number;
+}
+
+export const mockOrdenesCompra: OrdenCompra[] = [
+  {
+    id: '1',
+    numero: 'OC-001',
+    proveedorId: '1',
+    proveedorNombre: 'Proveedor Industrial S.A.',
+    requerimientoId: '1',
+    fecha: '2026-02-06',
+    fechaEntregaEstimada: '2026-02-14',
+    items: [
+      {
+        id: '1',
+        productoId: '1',
+        descripcion: 'Materia Prima A - 25kg',
+        cantidad: 100,
+        cantidadRecibida: 60,
+        unidad: 'KG',
+        precioUnitario: 145,
+        descuento: 0,
+        subtotal: 14500
+      },
+      {
+        id: '2',
+        descripcion: 'Insumo de embalaje especial',
+        cantidad: 500,
+        cantidadRecibida: 0,
+        unidad: 'UNI',
+        precioUnitario: 23,
+        descuento: 0,
+        subtotal: 11500
+      }
+    ],
+    subtotal: 26000,
+    impuestos: 5460,
+    total: 31460,
+    estado: 'RECIBIDA_PARCIAL',
+    condicionesPago: '30 días fecha de factura',
+    observaciones: 'Primera entrega parcial recibida',
+    responsable: 'Admin Principal',
+    localId: '1',
+    empresaId: '1'
+  },
+  {
+    id: '2',
+    numero: 'OC-002',
+    proveedorId: '2',
+    proveedorNombre: 'Distribuidora Nacional',
+    fecha: '2026-02-09',
+    fechaEntregaEstimada: '2026-02-25',
+    items: [
+      {
+        id: '3',
+        productoId: '2',
+        descripcion: 'Producto B - Standard',
+        cantidad: 200,
+        cantidadRecibida: 0,
+        unidad: 'UNI',
+        precioUnitario: 295,
+        descuento: 5,
+        subtotal: 56050
+      }
+    ],
+    subtotal: 59000,
+    impuestos: 12390,
+    total: 71390,
+    estado: 'ENVIADA',
+    condicionesPago: '45 días fecha de factura',
+    responsable: 'Admin Principal',
+    localId: '1',
+    empresaId: '1'
+  }
+];
+
+// ==================== AVISOS DE RECEPCIÓN ====================
+export interface AvisoRecepcion {
+  id: string;
+  numero: string;
+  ordenCompraId: string;
+  ordenCompraNumero: string;
+  proveedorNombre: string;
+  fechaRecepcion: string;
+  items: ItemRecepcion[];
+  observaciones?: string;
+  recibidoPor: string;
+  conformidad: boolean;
+  localId: string;
+  empresaId: string;
+}
+
+export interface ItemRecepcion {
+  id: string;
+  itemOrdenCompraId: string;
+  descripcion: string;
+  cantidadOrdenada: number;
+  cantidadRecibida: number;
+  cantidadAceptada: number;
+  cantidadRechazada: number;
+  motivoRechazo?: string;
+  observaciones?: string;
+}
+
+export const mockAvisosRecepcion: AvisoRecepcion[] = [
+  {
+    id: '1',
+    numero: 'REC-001',
+    ordenCompraId: '1',
+    ordenCompraNumero: 'OC-001',
+    proveedorNombre: 'Proveedor Industrial S.A.',
+    fechaRecepcion: '2026-02-12',
+    items: [
+      {
+        id: '1',
+        itemOrdenCompraId: '1',
+        descripcion: 'Materia Prima A - 25kg',
+        cantidadOrdenada: 100,
+        cantidadRecibida: 60,
+        cantidadAceptada: 60,
+        cantidadRechazada: 0,
+        observaciones: 'Primera entrega parcial conforme'
+      }
+    ],
+    observaciones: 'Entrega parcial según acuerdo con proveedor',
+    recibidoPor: 'Juan Pérez',
+    conformidad: true,
+    localId: '1',
+    empresaId: '1'
+  }
+];
+
+// ==================== PRESUPUESTOS / COTIZACIONES ====================
+export type EstadoPresupuesto = 'BORRADOR' | 'ENVIADO' | 'APROBADO' | 'RECHAZADO' | 'VENCIDO';
+
+export interface Presupuesto {
+  id: string;
+  numero: string;
+  clienteId: string;
+  clienteNombre: string;
+  fecha: string;
+  fechaVencimiento: string;
+  items: ItemPresupuesto[];
+  subtotal: number;
+  descuento: number;
+  impuestos: number;
+  total: number;
+  estado: EstadoPresupuesto;
+  notas?: string;
+  vendedor: string;
+  localId: string;
+  pedidoGenerado?: string; // ID del pedido si fue aprobado
+}
+
+export interface ItemPresupuesto {
+  id: string;
+  productoId: string;
+  productoNombre: string;
+  cantidad: number;
+  precioUnitario: number;
+  descuento: number;
+  subtotal: number;
+}
+
+export const mockPresupuestos: Presupuesto[] = [
+  {
+    id: '1',
+    numero: 'PRES-SF-001',
+    clienteId: '1',
+    clienteNombre: 'Empresa ABC S.A.',
+    fecha: '2026-02-01',
+    fechaVencimiento: '2026-02-15',
+    items: [
+      {
+        id: '1',
+        productoId: '1',
+        productoNombre: 'Producto A - Premium',
+        cantidad: 10,
+        precioUnitario: 1250,
+        descuento: 0,
+        subtotal: 12500
+      },
+      {
+        id: '2',
+        productoId: '2',
+        productoNombre: 'Producto B - Standard',
+        cantidad: 5,
+        precioUnitario: 850,
+        descuento: 5,
+        subtotal: 4037.5
+      }
+    ],
+    subtotal: 16537.5,
+    descuento: 212.5,
+    impuestos: 3468.38,
+    total: 19793.38,
+    estado: 'APROBADO',
+    notas: 'Cliente solicitó entrega urgente',
+    vendedor: 'María González',
+    localId: '1',
+    pedidoGenerado: '1'
+  },
+  {
+    id: '2',
+    numero: 'PRES-SF-002',
+    clienteId: '4',
+    clienteNombre: 'Mayorista del Sur',
+    fecha: '2026-02-05',
+    fechaVencimiento: '2026-02-20',
+    items: [
+      {
+        id: '3',
+        productoId: '3',
+        productoNombre: 'Producto C - Economy',
+        cantidad: 50,
+        precioUnitario: 520,
+        descuento: 10,
+        subtotal: 23400
+      }
+    ],
+    subtotal: 26000,
+    descuento: 2600,
+    impuestos: 4914,
+    total: 28314,
+    estado: 'ENVIADO',
+    notas: 'Esperando confirmación del cliente',
+    vendedor: 'María González',
+    localId: '1'
+  },
+  {
+    id: '3',
+    numero: 'PRES-PR-001',
+    clienteId: '3',
+    clienteNombre: 'Distribuidora 123',
+    fecha: '2026-02-03',
+    fechaVencimiento: '2026-02-10',
+    items: [
+      {
+        id: '4',
+        productoId: '1',
+        productoNombre: 'Producto A - Premium',
+        cantidad: 20,
+        precioUnitario: 1250,
+        descuento: 0,
+        subtotal: 25000
+      }
+    ],
+    subtotal: 25000,
+    descuento: 0,
+    impuestos: 5250,
+    total: 30250,
+    estado: 'RECHAZADO',
+    notas: 'Cliente rechazó por precio alto',
+    vendedor: 'Juan Pérez',
+    localId: '2'
+  },
+  {
+    id: '4',
+    numero: 'PRES-RS-001',
+    clienteId: '2',
+    clienteNombre: 'Comercial XYZ',
+    fecha: '2026-02-08',
+    fechaVencimiento: '2026-02-22',
+    items: [
+      {
+        id: '5',
+        productoId: '2',
+        productoNombre: 'Producto B - Standard',
+        cantidad: 30,
+        precioUnitario: 850,
+        descuento: 0,
+        subtotal: 25500
+      },
+      {
+        id: '6',
+        productoId: '4',
+        productoNombre: 'Producto D - Especial',
+        cantidad: 15,
+        precioUnitario: 1100,
+        descuento: 0,
+        subtotal: 16500
+      }
+    ],
+    subtotal: 42000,
+    descuento: 0,
+    impuestos: 8820,
+    total: 50820,
+    estado: 'BORRADOR',
+    notas: 'Pendiente de revisión',
+    vendedor: 'Carlos Rodríguez',
+    localId: '3'
+  }
+];
+
+// ==================== PEDIDOS DE VENTA ====================
+export type EstadoPedido = 'PENDIENTE' | 'CONFIRMADO' | 'EN_PREPARACION' | 'LISTO' | 'ENVIADO' | 'ENTREGADO' | 'CANCELADO';
+
+export interface PedidoVenta {
+  id: string;
+  numero: string;
+  presupuestoId?: string;
+  presupuestoNumero?: string;
+  clienteId: string;
+  clienteNombre: string;
+  fecha: string;
+  fechaEntregaEstimada: string;
+  fechaEntregaReal?: string;
+  items: ItemPedido[];
+  subtotal: number;
+  descuento: number;
+  impuestos: number;
+  total: number;
+  estado: EstadoPedido;
+  notas?: string;
+  vendedor: string;
+  localId: string;
+  facturaGenerada?: string; // ID de la factura
+}
+
+export interface ItemPedido {
+  id: string;
+  productoId: string;
+  productoNombre: string;
+  cantidad: number;
+  cantidadEntregada: number;
+  precioUnitario: number;
+  descuento: number;
+  subtotal: number;
+}
+
+export const mockPedidosVenta: PedidoVenta[] = [
+  {
+    id: '1',
+    numero: 'PED-SF-001',
+    presupuestoId: '1',
+    presupuestoNumero: 'PRES-SF-001',
+    clienteId: '1',
+    clienteNombre: 'Empresa ABC S.A.',
+    fecha: '2026-02-02',
+    fechaEntregaEstimada: '2026-02-10',
+    items: [
+      {
+        id: '1',
+        productoId: '1',
+        productoNombre: 'Producto A - Premium',
+        cantidad: 10,
+        cantidadEntregada: 10,
+        precioUnitario: 1250,
+        descuento: 0,
+        subtotal: 12500
+      },
+      {
+        id: '2',
+        productoId: '2',
+        productoNombre: 'Producto B - Standard',
+        cantidad: 5,
+        cantidadEntregada: 5,
+        precioUnitario: 850,
+        descuento: 5,
+        subtotal: 4037.5
+      }
+    ],
+    subtotal: 16537.5,
+    descuento: 212.5,
+    impuestos: 3468.38,
+    total: 19793.38,
+    estado: 'ENTREGADO',
+    notas: 'Entregado sin novedades',
+    vendedor: 'María González',
+    localId: '1',
+    facturaGenerada: '1',
+    fechaEntregaReal: '2026-02-09'
+  },
+  {
+    id: '2',
+    numero: 'PED-SF-002',
+    clienteId: '4',
+    clienteNombre: 'Mayorista del Sur',
+    fecha: '2026-02-06',
+    fechaEntregaEstimada: '2026-02-13',
+    items: [
+      {
+        id: '3',
+        productoId: '3',
+        productoNombre: 'Producto C - Economy',
+        cantidad: 30,
+        cantidadEntregada: 20,
+        precioUnitario: 520,
+        descuento: 0,
+        subtotal: 15600
+      }
+    ],
+    subtotal: 15600,
+    descuento: 0,
+    impuestos: 3276,
+    total: 18876,
+    estado: 'EN_PREPARACION',
+    notas: 'Preparando 20 unidades, faltan 10',
+    vendedor: 'María González',
+    localId: '1'
+  },
+  {
+    id: '3',
+    numero: 'PED-RS-001',
+    clienteId: '2',
+    clienteNombre: 'Comercial XYZ',
+    fecha: '2026-02-07',
+    fechaEntregaEstimada: '2026-02-14',
+    items: [
+      {
+        id: '4',
+        productoId: '2',
+        productoNombre: 'Producto B - Standard',
+        cantidad: 25,
+        cantidadEntregada: 0,
+        precioUnitario: 850,
+        descuento: 0,
+        subtotal: 21250
+      }
+    ],
+    subtotal: 21250,
+    descuento: 0,
+    impuestos: 4462.5,
+    total: 25712.5,
+    estado: 'CONFIRMADO',
+    notas: 'Confirmado, pendiente de preparación',
+    vendedor: 'Carlos Rodríguez',
+    localId: '3'
+  }
+];
+
+// ==================== SEGUIMIENTO DE CLIENTES ====================
+export type TipoInteraccion = 'LLAMADA' | 'EMAIL' | 'REUNION' | 'VISITA' | 'COTIZACION' | 'VENTA' | 'RECLAMO' | 'NOTA';
+
+export interface SeguimientoCliente {
+  id: string;
+  clienteId: string;
+  clienteNombre: string;
+  tipo: TipoInteraccion;
+  fecha: string;
+  asunto: string;
+  descripcion: string;
+  vendedor: string;
+  proximoSeguimiento?: string;
+  completado: boolean;
+  localId: string;
+}
+
+export const mockSeguimientoClientes: SeguimientoCliente[] = [
+  {
+    id: '1',
+    clienteId: '1',
+    clienteNombre: 'Empresa ABC S.A.',
+    tipo: 'REUNION',
+    fecha: '2026-01-28',
+    asunto: 'Reunión presentación productos nuevos',
+    descripcion: 'Se presentaron los nuevos productos Premium. Cliente mostró interés en línea completa.',
+    vendedor: 'María González',
+    proximoSeguimiento: '2026-02-15',
+    completado: true,
+    localId: '1'
+  },
+  {
+    id: '2',
+    clienteId: '1',
+    clienteNombre: 'Empresa ABC S.A.',
+    tipo: 'COTIZACION',
+    fecha: '2026-02-01',
+    asunto: 'Envío cotización PRES-SF-001',
+    descripcion: 'Enviada cotización por productos solicitados. Cliente solicitó entrega urgente.',
+    vendedor: 'María González',
+    completado: true,
+    localId: '1'
+  },
+  {
+    id: '3',
+    clienteId: '4',
+    clienteNombre: 'Mayorista del Sur',
+    tipo: 'LLAMADA',
+    fecha: '2026-02-05',
+    asunto: 'Seguimiento cotización PRES-SF-002',
+    descripcion: 'Cliente consultó por posibilidad de mayor descuento. Se acordó revisar con gerencia.',
+    vendedor: 'María González',
+    proximoSeguimiento: '2026-02-12',
+    completado: false,
+    localId: '1'
+  },
+  {
+    id: '4',
+    clienteId: '2',
+    clienteNombre: 'Comercial XYZ',
+    tipo: 'EMAIL',
+    fecha: '2026-02-06',
+    asunto: 'Envío catálogo actualizado',
+    descripcion: 'Enviado catálogo de productos con precios actualizados a febrero 2026.',
+    vendedor: 'Carlos Rodríguez',
+    completado: true,
+    localId: '3'
+  },
+  {
+    id: '5',
+    clienteId: '3',
+    clienteNombre: 'Distribuidora 123',
+    tipo: 'RECLAMO',
+    fecha: '2026-02-04',
+    asunto: 'Reclamo por precio alto',
+    descripcion: 'Cliente manifestó disconformidad con precios. Se ofreció descuento del 15% pero rechazó.',
+    vendedor: 'Juan Pérez',
+    proximoSeguimiento: '2026-03-01',
+    completado: true,
+    localId: '2'
+  },
+  {
+    id: '6',
+    clienteId: '2',
+    clienteNombre: 'Comercial XYZ',
+    tipo: 'VISITA',
+    fecha: '2026-02-09',
+    asunto: 'Visita programada instalaciones',
+    descripcion: 'Cliente solicitó visitar planta de producción antes de confirmar pedido grande.',
+    vendedor: 'Carlos Rodríguez',
+    proximoSeguimiento: '2026-02-11',
+    completado: false,
+    localId: '3'
+  }
+];
+
 // ==================== FACTURAS ====================
 export const mockFacturas = [
   {
@@ -320,32 +1093,6 @@ export const mockEmpleados = [
     hireDate: '2022-02-01',
     active: true,
     localId: '1', // Santa Fe
-  },
-];
-
-// ==================== ÓRDENES DE COMPRA ====================
-export const mockOrdenesCompra = [
-  {
-    id: '1',
-    orderNumber: 'OC-SF-00001',
-    supplierId: '1',
-    supplierName: 'Proveedor Industrial S.A.',
-    date: '2025-11-20',
-    expectedDate: '2025-12-05',
-    total: 50000,
-    status: 'Pending' as const,
-    localId: '1', // Santa Fe
-  },
-  {
-    id: '2',
-    orderNumber: 'OC-PR-00001',
-    supplierId: '2',
-    supplierName: 'Distribuidora Nacional',
-    date: '2025-11-22',
-    expectedDate: '2025-12-07',
-    total: 35000,
-    status: 'Received' as const,
-    localId: '2', // Paraná
   },
 ];
 
@@ -1091,4 +1838,366 @@ export const mockEstadoResultados: EstadoResultados = {
   utilidadOperativa: 355000,
   utilidadNeta: 355000
 };
+
+// ==================== TARJETAS DE CRÉDITO/DÉBITO ====================
+export type TipoTarjeta = 'CREDITO' | 'DEBITO';
+
+export interface Tarjeta {
+  id: string;
+  nombre: string;
+  tipo: TipoTarjeta;
+  comision: number; // Porcentaje
+  plazoAcreditacion: number; // Días
+  cuotasDisponibles: number[];
+  active: boolean;
+}
+
+export const mockTarjetas: Tarjeta[] = [
+  {
+    id: '1',
+    nombre: 'Visa Crédito',
+    tipo: 'CREDITO',
+    comision: 3.5,
+    plazoAcreditacion: 15,
+    cuotasDisponibles: [1, 3, 6, 12, 18],
+    active: true
+  },
+  {
+    id: '2',
+    nombre: 'Mastercard Crédito',
+    tipo: 'CREDITO',
+    comision: 3.8,
+    plazoAcreditacion: 18,
+    cuotasDisponibles: [1, 3, 6, 12],
+    active: true
+  },
+  {
+    id: '3',
+    nombre: 'Visa Débito',
+    tipo: 'DEBITO',
+    comision: 2.5,
+    plazoAcreditacion: 2,
+    cuotasDisponibles: [1],
+    active: true
+  },
+  {
+    id: '4',
+    nombre: 'Cabal',
+    tipo: 'CREDITO',
+    comision: 3.0,
+    plazoAcreditacion: 10,
+    cuotasDisponibles: [1, 3, 6],
+    active: true
+  }
+];
+
+// ==================== CHEQUES ====================
+export type EstadoCheque = 'EN_CARTERA' | 'DEPOSITADO' | 'RECHAZADO' | 'ENTREGADO';
+export type TipoCheque = 'PROPIO' | 'TERCERO';
+
+export interface Cheque {
+  id: string;
+  numero: string;
+  banco: string;
+  tipo: TipoCheque;
+  emisor?: string; // Para cheques de terceros
+  importe: number;
+  fechaEmision: string;
+  fechaPago: string;
+  estado: EstadoCheque;
+  cuitEmitente?: string;
+  localId: string;
+  empresaId: string;
+}
+
+export const mockCheques: Cheque[] = [
+  {
+    id: '1',
+    numero: '45678901',
+    banco: 'Banco Nación',
+    tipo: 'TERCERO',
+    emisor: 'Empresa ABC S.A.',
+    cuitEmitente: '20-12345678-9',
+    importe: 15000,
+    fechaEmision: '2026-02-01',
+    fechaPago: '2026-03-01',
+    estado: 'EN_CARTERA',
+    localId: '1',
+    empresaId: '1'
+  },
+  {
+    id: '2',
+    numero: '78945612',
+    banco: 'Banco Galicia',
+    tipo: 'TERCERO',
+    emisor: 'Comercial XYZ',
+    cuitEmitente: '20-98765432-1',
+    importe: 25000,
+    fechaEmision: '2026-02-05',
+    fechaPago: '2026-03-15',
+    estado: 'DEPOSITADO',
+    localId: '1',
+    empresaId: '1'
+  },
+  {
+    id: '3',
+    numero: '12365478',
+    banco: 'Banco Santander',
+    tipo: 'PROPIO',
+    importe: 18000,
+    fechaEmision: '2026-02-08',
+    fechaPago: '2026-03-08',
+    estado: 'ENTREGADO',
+    localId: '1',
+    empresaId: '1'
+  }
+];
+
+// ==================== RETENCIONES ====================
+export type TipoRetencion = 'IVA' | 'GANANCIAS' | 'INGRESOS_BRUTOS' | 'OTRAS';
+
+export interface Retencion {
+  id: string;
+  tipo: TipoRetencion;
+  numero: string;
+  fecha: string;
+  proveedor?: string;
+  cliente?: string;
+  importe: number;
+  alicuota: number;
+  baseImponible: number;
+  descripcion: string;
+  localId: string;
+  empresaId: string;
+}
+
+export const mockRetenciones: Retencion[] = [
+  {
+    id: '1',
+    tipo: 'IVA',
+    numero: 'RET-IVA-001',
+    fecha: '2026-02-10',
+    proveedor: 'Proveedor Industrial S.A.',
+    importe: 2100,
+    alicuota: 21,
+    baseImponible: 10000,
+    descripcion: 'Retención IVA sobre factura FC-001',
+    localId: '1',
+    empresaId: '1'
+  },
+  {
+    id: '2',
+    tipo: 'GANANCIAS',
+    numero: 'RET-GAN-001',
+    fecha: '2026-02-11',
+    proveedor: 'Distribuidora Nacional',
+    importe: 350,
+    alicuota: 3.5,
+    baseImponible: 10000,
+    descripcion: 'Retención Ganancias sobre servicios',
+    localId: '1',
+    empresaId: '1'
+  },
+  {
+    id: '3',
+    tipo: 'INGRESOS_BRUTOS',
+    numero: 'RET-IIBB-001',
+    fecha: '2026-02-12',
+    cliente: 'Empresa ABC S.A.',
+    importe: 150,
+    alicuota: 1.5,
+    baseImponible: 10000,
+    descripcion: 'Percepción IIBB sobre venta',
+    localId: '1',
+    empresaId: '1'
+  }
+];
+
+// ==================== FORMATOS DE EXPORTACIÓN ====================
+export type FormatoExportacion = 'PDF' | 'EXCEL' | 'CSV' | 'TXT' | 'XML' | 'JSON';
+
+export interface ConfiguracionExportacion {
+  formato: FormatoExportacion;
+  incluirEncabezado: boolean;
+  incluirTotales: boolean;
+  orientacion?: 'portrait' | 'landscape';
+  tamanioPagina?: 'A4' | 'Letter' | 'Legal';
+}
+
+// ==================== RANKING Y ESTADÍSTICAS ====================
+export interface RankingCliente {
+  clienteId: string;
+  clienteNombre: string;
+  totalCompras: number;
+  cantidadFacturas: number;
+  promedioCompra: number;
+  ultimaCompra: string;
+}
+
+export const mockRankingClientes: RankingCliente[] = [
+  {
+    clienteId: '1',
+    clienteNombre: 'Empresa ABC S.A.',
+    totalCompras: 450000,
+    cantidadFacturas: 25,
+    promedioCompra: 18000,
+    ultimaCompra: '2026-02-09'
+  },
+  {
+    clienteId: '4',
+    clienteNombre: 'Mayorista del Sur',
+    totalCompras: 380000,
+    cantidadFacturas: 18,
+    promedioCompra: 21111,
+    ultimaCompra: '2026-02-08'
+  },
+  {
+    clienteId: '2',
+    clienteNombre: 'Comercial XYZ',
+    totalCompras: 275000,
+    cantidadFacturas: 15,
+    promedioCompra: 18333,
+    ultimaCompra: '2026-02-05'
+  }
+];
+
+export interface RankingProducto {
+  productoId: string;
+  productoNombre: string;
+  cantidadVendida: number;
+  totalVentas: number;
+  margenPromedio: number;
+}
+
+export const mockRankingProductos: RankingProducto[] = [
+  {
+    productoId: '1',
+    productoNombre: 'Producto A - Premium',
+    cantidadVendida: 450,
+    totalVentas: 450000,
+    margenPromedio: 40
+  },
+  {
+    productoId: '2',
+    productoNombre: 'Producto B - Standard',
+    cantidadVendida: 680,
+    totalVentas: 340000,
+    margenPromedio: 40
+  },
+  {
+    productoId: '3',
+    productoNombre: 'Producto C - Economy',
+    cantidadVendida: 1200,
+    totalVentas: 624000,
+    margenPromedio: 43.3
+  }
+];
+
+export interface ProyeccionCobro {
+  fecha: string;
+  clienteId: string;
+  clienteNombre: string;
+  comprobanteNumero: string;
+  importe: number;
+  diasVencimiento: number;
+}
+
+export const mockProyeccionesCobros: ProyeccionCobro[] = [
+  {
+    fecha: '2026-02-15',
+    clienteId: '1',
+    clienteNombre: 'Empresa ABC S.A.',
+    comprobanteNumero: 'FC-001',
+    importe: 25000,
+    diasVencimiento: 5
+  },
+  {
+    fecha: '2026-02-20',
+    clienteId: '4',
+    clienteNombre: 'Mayorista del Sur',
+    comprobanteNumero: 'FC-003',
+    importe: 45000,
+    diasVencimiento: 10
+  },
+  {
+    fecha: '2026-02-28',
+    clienteId: '2',
+    clienteNombre: 'Comercial XYZ',
+    comprobanteNumero: 'FC-002',
+    importe: 18000,
+    diasVencimiento: 18
+  }
+];
+
+export interface ProyeccionPago {
+  fecha: string;
+  proveedorId: string;
+  proveedorNombre: string;
+  comprobanteNumero: string;
+  importe: number;
+  diasVencimiento: number;
+}
+
+export const mockProyeccionesPagos: ProyeccionPago[] = [
+  {
+    fecha: '2026-03-08',
+    proveedorId: '1',
+    proveedorNombre: 'Proveedor Industrial S.A.',
+    comprobanteNumero: 'OC-001',
+    importe: 31460,
+    diasVencimiento: 26
+  },
+  {
+    fecha: '2026-03-25',
+    proveedorId: '2',
+    proveedorNombre: 'Distribuidora Nacional',
+    comprobanteNumero: 'OC-002',
+    importe: 71390,
+    diasVencimiento: 43
+  }
+];
+
+// ==================== CONVENIO MULTILATERAL ====================
+export interface ConvenioMultilateral {
+  periodo: string;
+  ingresosTotales: number;
+  distribucionPorProvincia: {
+    provincia: string;
+    coeficiente: number;
+    baseImponible: number;
+    alicuota: number;
+    impuesto: number;
+  }[];
+  totalImpuesto: number;
+}
+
+export const mockConvenioMultilateral: ConvenioMultilateral = {
+  periodo: 'Febrero 2026',
+  ingresosTotales: 1250000,
+  distribucionPorProvincia: [
+    {
+      provincia: 'Santa Fe',
+      coeficiente: 0.45,
+      baseImponible: 562500,
+      alicuota: 3.5,
+      impuesto: 19687.5
+    },
+    {
+      provincia: 'Buenos Aires',
+      coeficiente: 0.35,
+      baseImponible: 437500,
+      alicuota: 4.0,
+      impuesto: 17500
+    },
+    {
+      provincia: 'Córdoba',
+      coeficiente: 0.20,
+      baseImponible: 250000,
+      alicuota: 3.0,
+      impuesto: 7500
+    }
+  ],
+  totalImpuesto: 44687.5
+};
+
 

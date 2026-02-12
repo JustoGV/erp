@@ -59,6 +59,7 @@ const allMenuItems: MenuItem[] = [
     subItems: [
       { href: '/ventas', label: 'Resumen' },
       { href: '/ventas/clientes', label: 'Clientes' },
+      { href: '/ventas/seguimiento', label: 'Seguimiento' },
       { href: '/ventas/presupuestos', label: 'Presupuestos' },
       { href: '/ventas/pedidos', label: 'Pedidos' },
       { href: '/ventas/facturas', label: 'Facturas' },
@@ -73,6 +74,7 @@ const allMenuItems: MenuItem[] = [
     subItems: [
       { href: '/compras', label: 'Resumen' },
       { href: '/compras/proveedores', label: 'Proveedores' },
+      { href: '/compras/requerimientos', label: 'Requerimientos' },
       { href: '/compras/ordenes', label: 'Órdenes de Compra' },
       { href: '/compras/recepciones', label: 'Recepciones' },
       { href: '/compras/pagos', label: 'Pagos' },

@@ -46,7 +46,7 @@ export default function InventarioResumenPage() {
       stats: '12 alertas activas'
     },
     {
-      href: '/inventario/valorización',
+      href: '/inventario/valorizacion',
       icon: BarChart3,
       title: 'Valorización',
       description: 'Valorización de existencias',

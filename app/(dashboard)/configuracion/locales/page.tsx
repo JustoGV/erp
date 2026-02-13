@@ -1,144 +1,243 @@
 'use client';
 
-import { mockLocales } from '@/lib/mock-data';
-import { Building2, MapPin, Phone, Mail, User, Plus, Edit, Power, CheckCircle } from 'lucide-react';
-import Link from 'next/link';
+import { useEffect, useMemo, useState } from 'react';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Local, mockLocales } from '@/lib/mock-data';
+import Modal from '@/components/Modal';
+import Pagination from '@/components/Pagination';
 
 export default function LocalesPage() {
+  const [locales, setLocales] = useState<Local[]>(mockLocales);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editing, setEditing] = useState<Local | null>(null);
+  const [page, setPage] = useState(1);
+  const pageSize = 6;
+  const [formState, setFormState] = useState({
+    code: '',
+    name: '',
+    address: '',
+    city: '',
+    state: '',
+    phone: '',
+    email: '',
+    manager: '',
+    active: true
+  });
+  const totalPages = useMemo(
+    () => Math.max(1, Math.ceil(locales.length / pageSize)),
+    [locales.length]
+  );
+  const pagedLocales = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return locales.slice(start, start + pageSize);
+  }, [locales, page]);
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
+
+  const openCreate = () => {
+    setEditing(null);
+    setFormState({ code: '', name: '', address: '', city: '', state: '', phone: '', email: '', manager: '', active: true });
+    setFormOpen(true);
+  };
+
+  const openEdit = (local: Local) => {
+    setEditing(local);
+    setFormState({
+      code: local.code,
+      name: local.name,
+      address: local.address,
+      city: local.city,
+      state: local.state,
+      phone: local.phone,
+      email: local.email,
+      manager: local.manager,
+      active: local.active
+    });
+    setFormOpen(true);
+  };
+
+  const handleDelete = (id: string) => {
+    if (!confirm('¿Eliminar local?')) return;
+    setLocales(prev => prev.filter(item => item.id !== id));
+  };
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (editing) {
+      setLocales(prev => prev.map(item => (item.id === editing.id ? { ...item, ...formState } : item)));
+    } else {
+      setLocales(prev => [
+        {
+          id: Date.now().toString(),
+          empresaId: '1',
+          ...formState
+        },
+        ...prev
+      ]);
+      setPage(1);
+    }
+    setFormOpen(false);
+  };
+
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Gestión de Locales</h1>
-          <p className="text-slate-600 mt-1 flex items-center gap-2">
-            <Building2 size={16} />
-            {mockLocales.length} locales configurados
-          </p>
+          <h1 className="text-3xl font-bold text-slate-900">Locales</h1>
+          <p className="text-slate-600 mt-1">Gestión de sucursales</p>
         </div>
-        <button className="btn btn-primary">
-          <Plus size={18} />
-          Nuevo Local
+        <button onClick={openCreate} className="btn btn-primary">
+          <Plus className="h-4 w-4" />
+          Nuevo local
         </button>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="card">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-emerald-100 text-emerald-600 rounded-xl">
-              <CheckCircle size={24} />
-            </div>
-            <div>
-              <p className="text-sm text-slate-600 font-medium">Locales Activos</p>
-              <p className="text-2xl font-bold text-slate-900">{mockLocales.filter(l => l.active).length}</p>
-            </div>
-          </div>
-        </div>
-        <div className="card">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-blue-100 text-blue-600 rounded-xl">
-              <MapPin size={24} />
-            </div>
-            <div>
-              <p className="text-sm text-slate-600 font-medium">Provincias</p>
-              <p className="text-2xl font-bold text-slate-900">{new Set(mockLocales.map(l => l.state)).size}</p>
-            </div>
-          </div>
-        </div>
-        <div className="card">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-purple-100 text-purple-600 rounded-xl">
-              <User size={24} />
-            </div>
-            <div>
-              <p className="text-sm text-slate-600 font-medium">Gerentes Asignados</p>
-              <p className="text-2xl font-bold text-slate-900">{mockLocales.length}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Locales Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {mockLocales.map((local) => (
-          <div key={local.id} className="card hover:shadow-lg transition-all duration-200">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-start gap-4">
-                <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl text-white shadow-lg">
-                  <Building2 size={24} />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-lg font-bold text-slate-900">{local.name}</h3>
-                    <span className="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-1 rounded">
-                      {local.code}
-                    </span>
+      <div className="table-container">
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Nombre</th>
+              <th>Ciudad</th>
+              <th>Responsable</th>
+              <th>Estado</th>
+              <th className="text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {pagedLocales.map(local => (
+              <tr key={local.id} className="table-row-hover">
+                <td className="font-medium">{local.code}</td>
+                <td>{local.name}</td>
+                <td>{local.city}</td>
+                <td>{local.manager}</td>
+                <td>{local.active ? 'Activo' : 'Inactivo'}</td>
+                <td className="text-right">
+                  <div className="inline-flex items-center gap-2">
+                    <button
+                      onClick={() => openEdit(local)}
+                      className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                      title="Editar"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(local.id)}
+                      className="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                      title="Eliminar"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-slate-600">
-                    <MapPin size={14} />
-                    <span>{local.city}, {local.state}</span>
-                  </div>
-                </div>
-              </div>
-              <span className={`badge ${local.active ? 'badge-success' : 'badge-neutral'}`}>
-                {local.active ? 'Activo' : 'Inactivo'}
-              </span>
-            </div>
-
-            <div className="space-y-3 mb-4">
-              <div className="flex items-start gap-3 text-sm">
-                <MapPin size={16} className="text-slate-400 mt-0.5" />
-                <span className="text-slate-700">{local.address}</span>
-              </div>
-              <div className="flex items-center gap-3 text-sm">
-                <Phone size={16} className="text-slate-400" />
-                <span className="text-slate-700">{local.phone}</span>
-              </div>
-              <div className="flex items-center gap-3 text-sm">
-                <Mail size={16} className="text-slate-400" />
-                <span className="text-slate-700">{local.email}</span>
-              </div>
-              <div className="flex items-center gap-3 text-sm">
-                <User size={16} className="text-slate-400" />
-                <div>
-                  <span className="text-slate-500">Gerente: </span>
-                  <span className="text-slate-700 font-medium">{local.manager}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 pt-4 border-t border-slate-200">
-              <button className="btn btn-secondary flex-1">
-                <Edit size={16} />
-                Editar
-              </button>
-              <button className="btn btn-ghost">
-                <Power size={16} />
-                {local.active ? 'Desactivar' : 'Activar'}
-              </button>
-            </div>
-          </div>
-        ))}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
-      {/* Info */}
-      <div className="card bg-blue-50 border-blue-200">
-        <div className="flex items-start gap-4">
-          <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
-            <Building2 size={20} />
+      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+
+      <Modal
+        open={formOpen}
+        title={editing ? 'Editar local' : 'Crear local'}
+        onClose={() => setFormOpen(false)}
+      >
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="label">Código</label>
+            <input
+              value={formState.code}
+              onChange={(event) => setFormState(prev => ({ ...prev, code: event.target.value }))}
+              className="input"
+              required
+            />
           </div>
-          <div className="flex-1">
-            <h3 className="font-semibold text-blue-900 mb-2">¿Cómo funciona el sistema multi-local?</h3>
-            <ul className="text-sm text-blue-800 space-y-1">
-              <li>• Cada cliente, producto, factura y empleado está asignado a un local específico</li>
-              <li>• Puedes ver datos consolidados de todos los locales o filtrar por local individual</li>
-              <li>• Las transferencias de stock entre locales se registran automáticamente</li>
-              <li>• Los reportes pueden generarse por local o consolidados</li>
-            </ul>
+          <div>
+            <label className="label">Nombre</label>
+            <input
+              value={formState.name}
+              onChange={(event) => setFormState(prev => ({ ...prev, name: event.target.value }))}
+              className="input"
+              required
+            />
           </div>
-        </div>
-      </div>
+          <div>
+            <label className="label">Dirección</label>
+            <input
+              value={formState.address}
+              onChange={(event) => setFormState(prev => ({ ...prev, address: event.target.value }))}
+              className="input"
+              required
+            />
+          </div>
+          <div>
+            <label className="label">Ciudad</label>
+            <input
+              value={formState.city}
+              onChange={(event) => setFormState(prev => ({ ...prev, city: event.target.value }))}
+              className="input"
+              required
+            />
+          </div>
+          <div>
+            <label className="label">Provincia</label>
+            <input
+              value={formState.state}
+              onChange={(event) => setFormState(prev => ({ ...prev, state: event.target.value }))}
+              className="input"
+              required
+            />
+          </div>
+          <div>
+            <label className="label">Teléfono</label>
+            <input
+              value={formState.phone}
+              onChange={(event) => setFormState(prev => ({ ...prev, phone: event.target.value }))}
+              className="input"
+            />
+          </div>
+          <div>
+            <label className="label">Email</label>
+            <input
+              type="email"
+              value={formState.email}
+              onChange={(event) => setFormState(prev => ({ ...prev, email: event.target.value }))}
+              className="input"
+            />
+          </div>
+          <div>
+            <label className="label">Responsable</label>
+            <input
+              value={formState.manager}
+              onChange={(event) => setFormState(prev => ({ ...prev, manager: event.target.value }))}
+              className="input"
+              required
+            />
+          </div>
+          <div className="flex items-center gap-2 mt-6">
+            <input
+              type="checkbox"
+              checked={formState.active}
+              onChange={(event) => setFormState(prev => ({ ...prev, active: event.target.checked }))}
+              className="h-4 w-4 rounded border-gray-300"
+            />
+            <span className="text-sm text-gray-700">Activo</span>
+          </div>
+          <div className="md:col-span-2 flex justify-end gap-2">
+            <button type="button" onClick={() => setFormOpen(false)} className="btn btn-secondary">
+              Cancelar
+            </button>
+            <button type="submit" className="btn btn-primary">
+              {editing ? 'Guardar cambios' : 'Crear local'}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

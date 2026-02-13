@@ -70,6 +70,16 @@ export default function PagosPage() {
     setPagos(prev => prev.filter(item => item.id !== id));
   };
 
+  const handleStatusChange = (id: string, estado: PagoProveedor['estado']) => {
+    setPagos(prev => prev.map(item => (
+      item.id === id ? { ...item, estado } : item
+    )));
+  };
+
+  const formatCurrency = (value: number) => (
+    value.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  );
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -115,9 +125,18 @@ export default function PagosPage() {
                 <td>{pago.fecha}</td>
                 <td>{pago.metodo}</td>
                 <td>{pago.estado}</td>
-                <td className="text-right font-semibold">${pago.monto.toLocaleString()}</td>
+                <td className="text-right font-semibold">${formatCurrency(pago.monto)}</td>
                 <td className="text-right">
                   <div className="inline-flex items-center gap-2">
+                    <select
+                      value={pago.estado}
+                      onChange={(event) => handleStatusChange(pago.id, event.target.value as PagoProveedor['estado'])}
+                      className="input w-32 py-1.5 px-2 text-xs"
+                      aria-label="Cambiar estado"
+                    >
+                      <option value="PENDIENTE">PENDIENTE</option>
+                      <option value="PAGADO">PAGADO</option>
+                    </select>
                     <button
                       onClick={() => openEdit(pago)}
                       className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"

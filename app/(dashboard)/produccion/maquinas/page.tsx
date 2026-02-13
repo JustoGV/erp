@@ -50,6 +50,12 @@ export default function MaquinasPage() {
     setMaquinas(prev => prev.filter(maquina => maquina.id !== id));
   };
 
+  const handleStatusChange = (id: string, estado: Maquina['estado']) => {
+    setMaquinas(prev => prev.map(maquina => (
+      maquina.id === id ? { ...maquina, estado } : maquina
+    )));
+  };
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -114,6 +120,16 @@ export default function MaquinasPage() {
                 <td>{maquina.ultimoMantenimiento}</td>
                 <td className="text-right">
                   <div className="inline-flex items-center gap-2">
+                    <select
+                      value={maquina.estado}
+                      onChange={(event) => handleStatusChange(maquina.id, event.target.value as Maquina['estado'])}
+                      className="input w-36 py-1.5 px-2 text-xs"
+                      aria-label="Cambiar estado"
+                    >
+                      <option value="OPERATIVA">OPERATIVA</option>
+                      <option value="MANTENIMIENTO">MANTENIMIENTO</option>
+                      <option value="DETENIDA">DETENIDA</option>
+                    </select>
                     <button onClick={() => openEdit(maquina)} className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="Editar">
                       <Pencil className="h-4 w-4" />
                     </button>

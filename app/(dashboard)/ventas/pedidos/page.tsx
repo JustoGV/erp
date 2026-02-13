@@ -28,6 +28,7 @@ export default function PedidosPage() {
   const [editing, setEditing] = useState<PedidoVenta | null>(null);
   const [page, setPage] = useState(1);
   const pageSize = 5;
+  const [pendingEstados, setPendingEstados] = useState<Record<string, EstadoPedido>>({});
   const [formState, setFormState] = useState({
     numero: '',
     clienteNombre: '',
@@ -86,6 +87,31 @@ export default function PedidosPage() {
     if (!confirm('¿Eliminar el pedido seleccionado?')) return;
     setPedidos(prev => prev.filter(pedido => pedido.id !== pedidoId));
   };
+
+  const handleStatusChange = (pedidoId: string, estado: EstadoPedido) => {
+    setPendingEstados(prev => ({
+      ...prev,
+      [pedidoId]: estado
+    }));
+  };
+
+  const confirmStatusChange = (pedidoId: string) => {
+    const nextEstado = pendingEstados[pedidoId];
+    if (!nextEstado) return;
+
+    setPedidos(prev => prev.map(pedido => (
+      pedido.id === pedidoId ? { ...pedido, estado: nextEstado } : pedido
+    )));
+    setPendingEstados(prev => {
+      const updated = { ...prev };
+      delete updated[pedidoId];
+      return updated;
+    });
+  };
+
+  const formatCurrency = (value: number) => (
+    value.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  );
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -168,9 +194,33 @@ export default function PedidosPage() {
                 <td>{pedido.fecha}</td>
                 <td>{pedido.fechaEntregaEstimada}</td>
                 <td>{pedido.estado.replace(/_/g, ' ')}</td>
-                <td className="text-right font-semibold">${pedido.total.toLocaleString()}</td>
+                <td className="text-right font-semibold">${formatCurrency(pedido.total)}</td>
                 <td className="text-right">
                   <div className="inline-flex items-center gap-2">
+                    {canEdit && (
+                      <select
+                        value={pendingEstados[pedido.id] ?? pedido.estado}
+                        onChange={(event) => handleStatusChange(pedido.id, event.target.value as EstadoPedido)}
+                        className="input w-40 py-1.5 px-2 text-xs"
+                        aria-label="Cambiar estado"
+                      >
+                        {estadosPedido.map(estado => (
+                          <option key={estado} value={estado}>
+                            {estado.replace(/_/g, ' ')}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                    {canEdit && (
+                      <button
+                        type="button"
+                        onClick={() => confirmStatusChange(pedido.id)}
+                        disabled={!pendingEstados[pedido.id] || pendingEstados[pedido.id] === pedido.estado}
+                        className="btn btn-secondary px-3 py-1.5 text-xs"
+                      >
+                        Confirmar
+                      </button>
+                    )}
                     {canEdit && (
                       <button
                         onClick={() => openEdit(pedido)}

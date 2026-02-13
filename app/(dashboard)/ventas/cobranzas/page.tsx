@@ -71,6 +71,16 @@ export default function CobranzasPage() {
     setCobranzas(prev => prev.filter(item => item.id !== id));
   };
 
+  const handleStatusChange = (id: string, estado: Cobranza['estado']) => {
+    setCobranzas(prev => prev.map(item => (
+      item.id === id ? { ...item, estado } : item
+    )));
+  };
+
+  const formatCurrency = (value: number) => (
+    value.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  );
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -118,9 +128,18 @@ export default function CobranzasPage() {
                 <td className="px-6 py-4 text-sm text-gray-500">{cobranza.fecha}</td>
                 <td className="px-6 py-4 text-sm text-gray-500">{cobranza.metodo}</td>
                 <td className="px-6 py-4 text-sm text-gray-500">{cobranza.estado}</td>
-                <td className="px-6 py-4 text-sm text-gray-900 text-right">${cobranza.monto.toLocaleString()}</td>
+                <td className="px-6 py-4 text-sm text-gray-900 text-right">${formatCurrency(cobranza.monto)}</td>
                 <td className="px-6 py-4 text-right text-sm">
                   <div className="inline-flex items-center gap-2">
+                    <select
+                      value={cobranza.estado}
+                      onChange={(event) => handleStatusChange(cobranza.id, event.target.value as Cobranza['estado'])}
+                      className="input w-32 py-1.5 px-2 text-xs"
+                      aria-label="Cambiar estado"
+                    >
+                      <option value="PENDIENTE">PENDIENTE</option>
+                      <option value="COBRADO">COBRADO</option>
+                    </select>
                     <button
                       onClick={() => openEdit(cobranza)}
                       className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"

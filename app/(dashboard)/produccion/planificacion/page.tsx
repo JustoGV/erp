@@ -53,6 +53,12 @@ export default function PlanificacionPage() {
     setPlanes(prev => prev.filter(plan => plan.id !== id));
   };
 
+  const handleStatusChange = (id: string, estado: PlanProduccion['estado']) => {
+    setPlanes(prev => prev.map(plan => (
+      plan.id === id ? { ...plan, estado } : plan
+    )));
+  };
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -119,6 +125,16 @@ export default function PlanificacionPage() {
                 </td>
                 <td className="text-right">
                   <div className="inline-flex items-center gap-2">
+                    <select
+                      value={plan.estado}
+                      onChange={(event) => handleStatusChange(plan.id, event.target.value as PlanProduccion['estado'])}
+                      className="input w-40 py-1.5 px-2 text-xs"
+                      aria-label="Cambiar estado"
+                    >
+                      <option value="PLANIFICADO">PLANIFICADO</option>
+                      <option value="EN_PROCESO">EN PROCESO</option>
+                      <option value="FINALIZADO">FINALIZADO</option>
+                    </select>
                     <button onClick={() => openEdit(plan)} className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="Editar">
                       <Pencil className="h-4 w-4" />
                     </button>

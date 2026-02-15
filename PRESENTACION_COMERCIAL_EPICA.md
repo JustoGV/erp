@@ -1,4 +1,5 @@
 # 🚀 Sistema ERP para épica_agencia
+
 ## Impulsa tu Agencia de Comunicación Estratégica
 
 **Demo en vivo:** [https://erp-pi-five.vercel.app](https://erp-pi-five.vercel.app)
@@ -8,6 +9,7 @@
 ## 💼 ¿Por qué épica necesita un ERP?
 
 Una agencia de comunicación estratégica como épica maneja **múltiples frentes simultáneamente**:
+
 - Decenas de clientes con proyectos activos
 - Facturación por servicios recurrentes y proyectos puntuales
 - Equipos creativos, productores, community managers
@@ -25,6 +27,7 @@ Una agencia de comunicación estratégica como épica maneja **múltiples frente
 ## 🎯 Beneficios Concretos para épica
 
 ### 📈 **1. Facturá Más, Cobrá Mejor**
+
 - **Control de cuentas por cobrar:** Nunca más pierdas track de quién te debe
 - **Alertas de vencimiento:** El sistema te avisa 5 días antes del vencimiento
 - **Historial completo:** Cuánto facturaste a cada cliente en el último año
@@ -37,6 +40,7 @@ Una agencia de comunicación estratégica como épica maneja **múltiples frente
 ### 💰 **2. Control Financiero Total**
 
 **Módulo de Contabilidad:**
+
 - Plan de cuentas adaptado a agencias
 - Asientos automáticos (facturaste → el sistema registra)
 - Balance general en tiempo real
@@ -44,6 +48,7 @@ Una agencia de comunicación estratégica como épica maneja **múltiples frente
 - Cuentas por pagar a proveedores
 
 **Módulo de Caja y Bancos:**
+
 - Registro de todos los movimientos
 - Conciliación bancaria
 - Control de cheques de terceros
@@ -58,6 +63,7 @@ Una agencia de comunicación estratégica como épica maneja **múltiples frente
 ### 👥 **3. Gestión de Clientes Profesional (CRM)**
 
 **Para cada cliente guardás:**
+
 - Datos de contacto completos
 - Historial de presupuestos enviados
 - Proyectos activos y finalizados
@@ -65,6 +71,7 @@ Una agencia de comunicación estratégica como épica maneja **múltiples frente
 - Seguimiento de interacciones
 
 **Seguimiento comercial:**
+
 - Registro de llamadas, reuniones, emails
 - Próximos seguimientos programados
 - Estado de cada propuesta
@@ -78,6 +85,7 @@ Una agencia de comunicación estratégica como épica maneja **múltiples frente
 ### 📊 **4. Presupuestos y Facturación Ágil**
 
 **Workflow completo:**
+
 1. **Presupuesto** → Cliente solicita servicio de Branding
 2. **Cliente aprueba** → Convertís a Pedido con 1 click
 3. **Entregás el trabajo** → Generás Factura automáticamente
@@ -94,12 +102,14 @@ Todo queda vinculado, podés rastrear desde la cotización inicial hasta el pago
 ### 🏢 **5. Control de Proveedores y Gastos**
 
 **Gestión de proveedores:**
+
 - Base de datos de fotógrafos, diseñadores freelance, imprentas
 - Órdenes de compra a proveedores
 - Registro de pagos realizados
 - Cuentas por pagar
 
 **Control de gastos:**
+
 - Cuánto le pagaste a cada proveedor este mes
 - Proveedores que te deben factura
 - Proveedores a los que les debés plata
@@ -113,6 +123,7 @@ Todo queda vinculado, podés rastrear desde la cotización inicial hasta el pago
 ### 📦 **6. Inventario (Para FePi y Materiales)**
 
 Si tenés inventario físico (equipos, materiales, merchandising):
+
 - Stock de cada producto
 - Alertas de stock bajo
 - Movimientos de entrada/salida
@@ -125,6 +136,7 @@ Si tenés inventario físico (equipos, materiales, merchandising):
 ### 👨‍💼 **7. Gestión de Equipo (RRHH)**
 
 **Módulo de Recursos Humanos:**
+
 - Datos completos de cada empleado/colaborador
 - Liquidación de sueldos mensual
 - Control de asistencias
@@ -140,6 +152,7 @@ Si tenés inventario físico (equipos, materiales, merchandising):
 ### 📊 **8. Dashboard con KPIs en Tiempo Real**
 
 **Visualización instantánea:**
+
 - Ventas del mes vs mes anterior
 - Compras y gastos
 - Clientes activos
@@ -160,6 +173,7 @@ Si tenés inventario físico (equipos, materiales, merchandising):
 **Para gestionar cada servicio como un proyecto:**
 
 **Branding:**
+
 - Proyecto: "Manual de marca Cafetería Gálvez"
 - Etapas: Briefing → Propuesta → Ajustes → Entrega
 - Asignación de responsables
@@ -168,6 +182,7 @@ Si tenés inventario físico (equipos, materiales, merchandising):
 - Estado del proyecto
 
 **Redes Sociales:**
+
 - Proyecto: "Gestión RRSS Farmacia Benazzola - Enero 2026"
 - Planning mensual
 - Estado de posteos (Pendiente/En revisión/Aprobado/Publicado)
@@ -175,6 +190,7 @@ Si tenés inventario físico (equipos, materiales, merchandising):
 - Métricas del mes
 
 **Comunicación Masiva:**
+
 - Proyecto: "Campaña email Elecciones 2026"
 - Base de datos de contactos
 - Segmentación
@@ -182,12 +198,14 @@ Si tenés inventario físico (equipos, materiales, merchandising):
 - Métricas de apertura/clicks
 
 **Investigación:**
+
 - Proyecto: "Focus Group Municipalidad SF"
 - Encuestas realizadas
 - Resultados
 - Informes generados
 
 **Beneficios:**
+
 - Sabés qué está haciendo cada persona del equipo
 - Controlás los tiempos de entrega
 - Medís rentabilidad por proyecto (cuánto cobraste vs cuántas horas invertiste)
@@ -198,11 +216,13 @@ Si tenés inventario físico (equipos, materiales, merchandising):
 ### 2. **Time Tracking (Control de Horas)**
 
 **Cada empleado registra su tiempo:**
+
 - Juan trabajó 3.5 horas en diseño de logo para Cliente X
 - María dedicó 2 horas a redacción de posts para Cliente Y
 - Pedro hizo 1 hora de reunión con Cliente Z
 
 **Reportes automáticos:**
+
 - Cuántas horas se invirtieron en cada proyecto
 - Rentabilidad por hora (cobraste $100k, invertiste 40 horas = $2.5k/hora)
 - Qué empleados tienen más carga de trabajo
@@ -235,6 +255,7 @@ Si tenés inventario físico (equipos, materiales, merchandising):
 ### 5. **Portal del Cliente**
 
 Cada cliente tiene un acceso donde puede:
+
 - Ver el estado de sus proyectos
 - Aprobar diseños
 - Descargar facturas
@@ -247,6 +268,7 @@ Cada cliente tiene un acceso donde puede:
 ### 6. **Reportes Personalizados para Clientes**
 
 Generás PDFs automáticos con:
+
 - Métricas del mes (para clientes de RRSS)
 - Resultados de investigaciones
 - Resumen de acciones realizadas
@@ -256,6 +278,7 @@ Generás PDFs automáticos con:
 ### 7. **Integraciones Externas**
 
 **Conectar con herramientas que ya usás:**
+
 - **Meta Business Suite** → Importar métricas de Instagram/Facebook
 - **Google Analytics** → Reportes automáticos web
 - **Mailchimp/SendGrid** → Métricas de emails masivos
@@ -267,6 +290,7 @@ Generás PDFs automáticos con:
 ### 8. **Facturación Electrónica AFIP**
 
 Integración directa con AFIP:
+
 - Generás facturas A, B, C automáticamente
 - Se envía electrónicamente
 - Registro automático en contabilidad
@@ -278,6 +302,7 @@ Integración directa con AFIP:
 ## 🎯 ¿Cómo te Cambia el Día a Día?
 
 ### **ANTES (Sin ERP):**
+
 ❌ Excel con clientes desactualizado  
 ❌ WhatsApp para coordinar todo  
 ❌ No sabés cuánto vas a cobrar el mes que viene  
@@ -285,9 +310,10 @@ Integración directa con AFIP:
 ❌ No sabés si un proyecto fue rentable  
 ❌ Facturas en papel difíciles de encontrar  
 ❌ No sabés cuántas horas trabajó cada empleado  
-❌ Pérdida de tiempo buscando archivos  
+❌ Pérdida de tiempo buscando archivos
 
 ### **DESPUÉS (Con ERP):**
+
 ✅ Base de datos centralizada y actualizada  
 ✅ Comunicación interna por sistema  
 ✅ Dashboard con proyección de ingresos  
@@ -295,7 +321,7 @@ Integración directa con AFIP:
 ✅ Reportes de rentabilidad por proyecto  
 ✅ Todas las facturas digitalizadas y buscables  
 ✅ Control de horas automático  
-✅ Archivos organizados por cliente/proyecto  
+✅ Archivos organizados por cliente/proyecto
 
 ---
 
@@ -304,6 +330,7 @@ Integración directa con AFIP:
 ### **Ejemplo Real:**
 
 **Situación actual:**
+
 - Tenés 20 clientes activos
 - Facturás $500k/mes en promedio
 - El 15% de tus facturas se cobran tarde porque te olvidás de hacer seguimiento
@@ -311,6 +338,7 @@ Integración directa con AFIP:
 - Algunos proyectos te dan pérdida pero no lo sabés
 
 **Con el ERP:**
+
 - **Cobrás más rápido:** Alertas automáticas = mejorás el cobro 10% → +$50k/mes
 - **Convertís más ventas:** CRM + seguimiento = cerrás 1 proyecto más al mes → +$80k/mes
 - **Eliminás proyectos no rentables:** Time tracking te muestra cuáles → +$30k/mes de margen
@@ -323,36 +351,42 @@ Integración directa con AFIP:
 ## 📅 Plan de Implementación
 
 ### **Fase 1: Setup Inicial (2-3 semanas)**
+
 ✅ Configuración del sistema  
 ✅ Carga de datos iniciales (clientes, proveedores, servicios)  
 ✅ Personalización de módulos  
-✅ Capacitación del equipo (2 sesiones)  
+✅ Capacitación del equipo (2 sesiones)
 
 ### **Fase 2: Módulos Base en Producción (1 mes)**
+
 ✅ Clientes y CRM  
 ✅ Presupuestos y Facturación  
 ✅ Finanzas y Contabilidad  
-✅ Proveedores  
+✅ Proveedores
 
 ### **Fase 3: Módulos Avanzados (2-3 meses)**
+
 ✅ Proyectos/Campañas customizados  
 ✅ Time Tracking  
 ✅ Portal del cliente  
-✅ Integraciones (AFIP, Meta, etc.)  
+✅ Integraciones (AFIP, Meta, etc.)
 
 ### **Fase 4: Optimización Continua**
+
 ✅ Reportes personalizados  
 ✅ Automatizaciones  
-✅ Mejoras según feedback del equipo  
+✅ Mejoras según feedback del equipo
 
 ---
 
 ## 🖥️ Tour Guiado del Sistema (Demo en Vivo)
 
 ### **Acceso a la Demo:**
+
 **URL:** [https://erp-pi-five.vercel.app](https://erp-pi-five.vercel.app)
 
 **Usuarios de prueba:**
+
 - **Administrador:** `admin@empresa.com` / `admin123` (acceso total)
 - **Vendedor:** `vendedor@empresa.com` / `vendedor123` (ventas y clientes)
 - **Contable:** `contable@empresa.com` / `contable123` (finanzas)
@@ -360,9 +394,11 @@ Integración directa con AFIP:
 ---
 
 ### **📊 1. Dashboard Principal**
+
 [https://erp-pi-five.vercel.app/dashboard](https://erp-pi-five.vercel.app/dashboard)
 
 **Qué ves:**
+
 - KPIs del mes (ventas, compras, stock, clientes activos)
 - Gráfico de ventas últimos 6 meses
 - Top 5 servicios más vendidos
@@ -370,6 +406,7 @@ Integración directa con AFIP:
 - Alertas importantes
 
 **Para épica sería:**
+
 - Ingresos del mes
 - Proyectos activos
 - Horas facturables vs no facturables
@@ -379,15 +416,18 @@ Integración directa con AFIP:
 ---
 
 ### **👥 2. Gestión de Clientes**
+
 [https://erp-pi-five.vercel.app/ventas/clientes](https://erp-pi-five.vercel.app/ventas/clientes)
 
 **Qué hace:**
+
 - Lista completa de clientes con filtros
 - Información de contacto
 - Estado (activo/inactivo)
 - Link directo a crear nuevo cliente
 
 **Funcionalidad adicional para épica:**
+
 - Tipo de cliente (Político/Empresa/Particular)
 - Servicios contratados
 - Persona de contacto principal
@@ -396,30 +436,36 @@ Integración directa con AFIP:
 ---
 
 ### **📋 3. Seguimiento Comercial (CRM)**
+
 [https://erp-pi-five.vercel.app/ventas/seguimiento](https://erp-pi-five.vercel.app/ventas/seguimiento)
 
 **Qué hace:**
+
 - Registro de todas las interacciones con clientes
 - Tipos: Llamada, Email, Reunión, Cotización, Visita
 - Próximos seguimientos programados
 - Historial completo por cliente
 
 **Ejemplo para épica:**
+
 - "01/02/2026 - Reunión con Cafetería Gálvez - Presentamos propuesta de Branding"
 - "Próximo seguimiento: 08/02/2026 - Llamar para confirmar presupuesto"
 
 ---
 
 ### **💵 4. Presupuestos**
+
 [https://erp-pi-five.vercel.app/ventas/presupuestos](https://erp-pi-five.vercel.app/ventas/presupuestos)
 
 **Qué hace:**
+
 - Crear presupuestos detallados
 - Estados: Borrador/Enviado/Aprobado/Rechazado/Vencido
 - Conversión automática a pedido cuando se aprueba
 - Histórico de presupuestos por cliente
 
 **Para épica:**
+
 - Presupuesto de Branding con items (logo, manual, aplicaciones)
 - Presupuesto gestión RRSS mensual
 - Presupuesto investigación con focus group
@@ -427,15 +473,18 @@ Integración directa con AFIP:
 ---
 
 ### **🧾 5. Facturación**
+
 [https://erp-pi-five.vercel.app/ventas/facturas](https://erp-pi-five.vercel.app/ventas/facturas)
 
 **Qué hace:**
+
 - Generar facturas desde pedidos
 - Estados: Pagada/Pendiente/Vencida
 - Vinculación con presupuesto original
 - Control de cobros
 
 **Con integración AFIP (a desarrollar):**
+
 - Factura A/B/C electrónica
 - Envío automático al cliente
 - Registro en libro IVA
@@ -443,9 +492,11 @@ Integración directa con AFIP:
 ---
 
 ### **💰 6. Finanzas - Cuentas por Cobrar**
+
 [https://erp-pi-five.vercel.app/finanzas/cuentas-cobrar](https://erp-pi-five.vercel.app/finanzas/cuentas-cobrar)
 
 **Qué hace:**
+
 - Listado de todas las facturas pendientes de cobro
 - Días de vencimiento
 - Montos parciales y totales
@@ -456,30 +507,36 @@ Integración directa con AFIP:
 ---
 
 ### **📒 7. Contabilidad - Asientos**
+
 [https://erp-pi-five.vercel.app/finanzas/asientos](https://erp-pi-five.vercel.app/finanzas/asientos)
 
 **Qué hace:**
+
 - Registro contable automático de operaciones
 - Asientos manuales para ajustes
 - Plan de cuentas adaptable
 - Balance en tiempo real
 
 **Ejemplo:**
+
 - Facturaste $50k → Asiento automático (Debe: Deudores / Haber: Ventas)
 - Pagaste alquiler → Asiento (Debe: Alquileres / Haber: Banco)
 
 ---
 
 ### **🏢 8. Proveedores y Compras**
+
 [https://erp-pi-five.vercel.app/compras/proveedores](https://erp-pi-five.vercel.app/compras/proveedores)
 
 **Qué hace:**
+
 - Base de datos de proveedores
 - Órdenes de compra
 - Control de pagos
 - Cuentas por pagar
 
 **Para épica:**
+
 - Fotógrafos freelance
 - Diseñadores externos
 - Imprenta
@@ -489,15 +546,18 @@ Integración directa con AFIP:
 ---
 
 ### **👨‍💼 9. Recursos Humanos**
+
 [https://erp-pi-five.vercel.app/rrhh/empleados](https://erp-pi-five.vercel.app/rrhh/empleados)
 
 **Qué hace:**
+
 - Datos completos de cada empleado
 - Liquidaciones mensuales
 - Control de asistencias
 - Vacaciones
 
 **Para épica:**
+
 - Equipo creativo
 - Community managers
 - Productores
@@ -506,9 +566,11 @@ Integración directa con AFIP:
 ---
 
 ### **📦 10. Inventario (Opcional)**
+
 [https://erp-pi-five.vercel.app/inventario/productos](https://erp-pi-five.vercel.app/inventario/productos)
 
 **Para épica:**
+
 - Equipos (cámaras, luces para FePi)
 - Materiales de merchandising
 - Stock de impresiones
@@ -518,9 +580,11 @@ Integración directa con AFIP:
 ## 🎁 Módulos Adicionales ya Disponibles
 
 ### **Producción**
+
 [https://erp-pi-five.vercel.app/produccion](https://erp-pi-five.vercel.app/produccion)
 
 **Adaptable para:**
+
 - Órdenes de producción de contenido
 - BOM (Bill of Materials) = Piezas que componen una campaña
 - Control de materiales necesarios para cada proyecto
@@ -528,9 +592,11 @@ Integración directa con AFIP:
 ---
 
 ### **Reportes**
+
 [https://erp-pi-five.vercel.app/reportes](https://erp-pi-five.vercel.app/reportes)
 
 **Qué genera:**
+
 - Reportes de ventas por período
 - Ranking de clientes
 - Análisis de rentabilidad
@@ -539,9 +605,11 @@ Integración directa con AFIP:
 ---
 
 ### **Configuración**
+
 [https://erp-pi-five.vercel.app/configuracion](https://erp-pi-five.vercel.app/configuracion)
 
 **Qué configuras:**
+
 - Usuarios y permisos
 - Datos de épica (CUIT, dirección, etc.)
 - Parámetros del sistema
@@ -552,24 +620,31 @@ Integración directa con AFIP:
 ## 💪 Ventajas Competitivas
 
 ### **1. Sistema 100% Personalizado**
+
 No es un software genérico. Se adapta específicamente a cómo trabaja épica.
 
 ### **2. Datos en la Nube, Acceso desde Cualquier Lado**
+
 Trabajás desde la oficina, tu casa o reunión con cliente. Solo necesitás internet.
 
 ### **3. Multi-Usuario con Permisos**
+
 Cada empleado ve solo lo que necesita:
+
 - Community manager: acceso a proyectos de RRSS
 - Administrativo: acceso a facturación y finanzas
 - Director: acceso total
 
 ### **4. Escalable**
+
 Hoy tenés 20 clientes, mañana 100. El sistema crece con épica.
 
 ### **5. Todo Integrado**
+
 No más copiar datos de un Excel a otro, o de Google Sheets a Word.
 
 ### **6. Reportes en 1 Click**
+
 Lo que hoy te lleva 2 horas en Excel, lo tenés en 30 segundos.
 
 ---
@@ -577,24 +652,31 @@ Lo que hoy te lleva 2 horas en Excel, lo tenés en 30 segundos.
 ## ❓ Preguntas Frecuentes
 
 ### **¿Necesito instalar algo en mi computadora?**
+
 No. Es 100% web. Entrás desde cualquier navegador (Chrome, Firefox, Safari).
 
 ### **¿Los datos están seguros?**
+
 Sí. Alojado en servidores profesionales con backup automático diario.
 
 ### **¿Puedo acceder desde el celular?**
+
 Sí. Es responsive, se adapta a celular y tablet.
 
 ### **¿Cuánto tarda la implementación?**
+
 Entre 1 y 3 meses dependiendo de qué módulos quieras activar.
 
 ### **¿Necesito capacitación?**
+
 Incluye 2 sesiones de capacitación para el equipo. Además, el sistema es intuitivo.
 
 ### **¿Qué pasa si épica crece y necesita más funcionalidades?**
+
 Se agregan. El sistema es 100% adaptable.
 
 ### **¿Puedo migrar datos de mi Excel actual?**
+
 Sí. Importamos clientes, proveedores, facturas desde Excel/CSV.
 
 ---
@@ -602,23 +684,29 @@ Sí. Importamos clientes, proveedores, facturas desde Excel/CSV.
 ## 🚀 Próximos Pasos
 
 ### **1. Reunión de Descubrimiento (1 hora)**
+
 Charlamos sobre:
+
 - Cómo trabajás hoy
 - Qué procesos querés mejorar
 - Qué reportes necesitás
 - Qué integraciones te servirían
 
 ### **2. Demo Personalizada (30 min)**
+
 Te mostramos el sistema funcionando con datos de ejemplo de épica.
 
 ### **3. Propuesta a Medida**
+
 Te armamos cotización con:
+
 - Módulos incluidos
 - Funcionalidades custom
 - Tiempos de implementación
 - Inversión
 
 ### **4. Implementación**
+
 Arrancamos a construir TU sistema.
 
 ---
@@ -659,12 +747,12 @@ El ERP no es solo un software. Es una **herramienta de crecimiento** para épica
 ✅ **Cobrá más rápido** → Control de vencimientos  
 ✅ **Gastá menos tiempo en admin** → Automatización  
 ✅ **Tomá mejores decisiones** → Datos en tiempo real  
-✅ **Escalá tu negocio** → Sistema profesional que crece con vos  
+✅ **Escalá tu negocio** → Sistema profesional que crece con vos
 
 **La pregunta no es si necesitás un ERP.**  
 **La pregunta es: ¿cuánto estás perdiendo por NO tenerlo?**
 
 ---
 
-*Documento preparado para **épica - Agencia de Comunicación Estratégica***  
-*Febrero 2026*
+\*Documento preparado para **épica - Agencia de Comunicación Estratégica\***  
+_Febrero 2026_

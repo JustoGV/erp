@@ -1,64 +1,95 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { Package, Box, ArrowRightLeft, BarChart3, AlertTriangle, Boxes } from 'lucide-react';
+import Link from "next/link";
+import {
+  Package,
+  Box,
+  ArrowRightLeft,
+  BarChart3,
+  AlertTriangle,
+  Boxes,
+} from "lucide-react";
+import {
+  useProductos,
+  useAlertasStock,
+  useDepositos,
+  useMovimientosStock,
+} from "@/hooks/useInventario";
+import { useLocal } from "@/contexts/LocalContext";
 
 export default function InventarioResumenPage() {
+  const { selectedLocal } = useLocal();
+  const localId = selectedLocal?.id;
+
+  const { data: productosData } = useProductos({ limit: 1 });
+  const { data: alertas } = useAlertasStock(localId);
+  const { data: depositosData } = useDepositos(
+    localId ? { localId } : undefined,
+  );
+  const { data: movimientosData } = useMovimientosStock({ limit: 1 });
+
+  const totalProductos = productosData?.meta.total ?? "...";
+  const totalAlertas = alertas?.length ?? "...";
+  const totalDepositos = depositosData?.meta.total ?? "...";
+  const totalMovimientos = movimientosData?.meta.total ?? "...";
+
   const menuItems = [
     {
-      href: '/inventario/productos',
+      href: "/inventario/productos",
       icon: Package,
-      title: 'Productos',
-      description: 'Catálogo de productos y artículos',
-      color: 'bg-orange-500',
-      stats: '521 productos'
+      title: "Productos",
+      description: "Catálogo de productos y artículos",
+      color: "bg-orange-500",
+      stats: `${totalProductos} productos`,
     },
     {
-      href: '/inventario/depositos',
+      href: "/inventario/depositos",
       icon: Box,
-      title: 'Depósitos',
-      description: 'Gestión de depósitos y ubicaciones',
-      color: 'bg-amber-500',
-      stats: '3 depósitos'
+      title: "Depósitos",
+      description: "Gestión de depósitos y ubicaciones",
+      color: "bg-amber-500",
+      stats: `${totalDepositos} depósitos`,
     },
     {
-      href: '/inventario/movimientos',
+      href: "/inventario/movimientos",
       icon: ArrowRightLeft,
-      title: 'Movimientos',
-      description: 'Ingresos, egresos y transferencias',
-      color: 'bg-blue-500',
-      stats: '245 movimientos'
+      title: "Movimientos",
+      description: "Ingresos, egresos y transferencias",
+      color: "bg-blue-500",
+      stats: `${totalMovimientos} movimientos`,
     },
     {
-      href: '/inventario/stock',
+      href: "/inventario/stock",
       icon: Boxes,
-      title: 'Stock',
-      description: 'Consulta de existencias por depósito',
-      color: 'bg-green-500',
-      stats: 'Ver stock actual'
+      title: "Stock",
+      description: "Consulta de existencias por depósito",
+      color: "bg-green-500",
+      stats: "Ver stock actual",
     },
     {
-      href: '/inventario/alertas',
+      href: "/inventario/alertas",
       icon: AlertTriangle,
-      title: 'Alertas',
-      description: 'Stock bajo y punto de pedido',
-      color: 'bg-red-500',
-      stats: '12 alertas activas'
+      title: "Alertas",
+      description: "Stock bajo y punto de pedido",
+      color: typeof totalAlertas === "number" && totalAlertas > 0 ? "bg-red-500" : "bg-gray-400",
+      stats: `${totalAlertas} alertas activas`,
     },
     {
-      href: '/inventario/valorizacion',
+      href: "/inventario/valorizacion",
       icon: BarChart3,
-      title: 'Valorización',
-      description: 'Valorización de existencias',
-      color: 'bg-purple-500',
-      stats: 'Costo y precio'
-    }
+      title: "Valorización",
+      description: "Valorización de existencias",
+      color: "bg-purple-500",
+      stats: "Costo y precio",
+    },
   ];
 
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Módulo de Inventario</h1>
+        <h1 className="text-2xl font-bold text-gray-900">
+          Módulo de Inventario
+        </h1>
         <p className="text-gray-600 mt-1">Control y gestión de stock</p>
       </div>
 
@@ -76,9 +107,15 @@ export default function InventarioResumenPage() {
                   <Icon className="h-6 w-6" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-1">{item.title}</h3>
-                  <p className="text-sm text-gray-600 mb-2">{item.description}</p>
-                  <p className="text-xs text-gray-500 font-medium">{item.stats}</p>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                    {item.title}
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-2">
+                    {item.description}
+                  </p>
+                  <p className="text-xs text-gray-500 font-medium">
+                    {item.stats}
+                  </p>
                 </div>
               </div>
             </Link>
@@ -90,10 +127,13 @@ export default function InventarioResumenPage() {
         <div className="flex items-start gap-3">
           <Package className="h-6 w-6 text-orange-600 mt-1" />
           <div>
-            <h3 className="text-lg font-semibold text-orange-900 mb-2">Control de Stock</h3>
+            <h3 className="text-lg font-semibold text-orange-900 mb-2">
+              Control de Stock
+            </h3>
             <p className="text-sm text-orange-700">
-              El módulo de inventario permite control total del stock con ubicaciones físicas,
-              movimientos automáticos desde ventas y compras, y alertas de stock mínimo.
+              El módulo de inventario permite control total del stock con
+              ubicaciones físicas, movimientos automáticos desde ventas y
+              compras, y alertas de stock mínimo.
             </p>
           </div>
         </div>

@@ -15,103 +15,103 @@ Agregar al final de `lib/api-types.ts`:
 ```typescript
 // ── Empresa ──────────────────────────────────────────────────
 export interface Empresa {
-  id: string
-  code: string
-  name: string
-  taxId: string
-  address?: string | null
-  city?: string | null
-  state?: string | null
-  phone?: string | null
-  email?: string | null
-  active: boolean
-  createdAt: string
-  updatedAt: string
+  id: string;
+  code: string;
+  name: string;
+  taxId: string;
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface CreateEmpresaDto {
-  code: string
-  name: string
-  taxId: string
-  address?: string
-  city?: string
-  state?: string
-  phone?: string
-  email?: string
+  code: string;
+  name: string;
+  taxId: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  phone?: string;
+  email?: string;
 }
 
 export interface UpdateEmpresaDto extends Partial<CreateEmpresaDto> {
-  active?: boolean
+  active?: boolean;
 }
 
 // ── Local ─────────────────────────────────────────────────────
 export interface Local {
-  id: string
-  code: string
-  name: string
-  address?: string | null
-  city?: string | null
-  state?: string | null
-  phone?: string | null
-  email?: string | null
-  manager?: string | null
-  active: boolean
-  empresaId: string
-  createdAt: string
-  updatedAt: string
+  id: string;
+  code: string;
+  name: string;
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  manager?: string | null;
+  active: boolean;
+  empresaId: string;
+  createdAt: string;
+  updatedAt: string;
   _count?: {
-    usuarios: number
-    clientes: number
-  }
+    usuarios: number;
+    clientes: number;
+  };
 }
 
 export interface CreateLocalDto {
-  code: string
-  name: string
-  address?: string
-  city?: string
-  state?: string
-  phone?: string
-  email?: string
-  manager?: string
+  code: string;
+  name: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  phone?: string;
+  email?: string;
+  manager?: string;
 }
 
 export interface UpdateLocalDto extends Partial<CreateLocalDto> {
-  active?: boolean
+  active?: boolean;
 }
 
 // ── Usuario ───────────────────────────────────────────────────
 export interface Usuario {
-  id: string
-  nombre: string
-  email: string
-  rol: UserRole
-  active: boolean
-  empresaId: string
-  localId: string | null
-  createdAt: string
-  updatedAt: string
+  id: string;
+  nombre: string;
+  email: string;
+  rol: UserRole;
+  active: boolean;
+  empresaId: string;
+  localId: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface CreateUsuarioDto {
-  nombre: string
-  email: string
-  password: string
-  rol: UserRole
-  localId?: string
+  nombre: string;
+  email: string;
+  password: string;
+  rol: UserRole;
+  localId?: string;
 }
 
 export interface UpdateUsuarioDto {
-  nombre?: string
-  email?: string
-  rol?: UserRole
-  localId?: string
-  active?: boolean
+  nombre?: string;
+  email?: string;
+  rol?: UserRole;
+  localId?: string;
+  active?: boolean;
 }
 
 export interface ChangePasswordDto {
-  currentPassword: string
-  newPassword: string
+  currentPassword: string;
+  newPassword: string;
 }
 ```
 
@@ -122,7 +122,7 @@ export interface ChangePasswordDto {
 Crear `lib/services/config.service.ts`:
 
 ```typescript
-import { apiClient } from '@/lib/api-client'
+import { apiClient } from "@/lib/api-client";
 import type {
   ApiResponse,
   PaginatedResponse,
@@ -136,15 +136,13 @@ import type {
   CreateUsuarioDto,
   UpdateUsuarioDto,
   ChangePasswordDto,
-} from '@/lib/api-types'
+} from "@/lib/api-types";
 
 // ── Empresas ─────────────────────────────────────────────────
 
 export const empresasService = {
   getAll: () =>
-    apiClient
-      .get<ApiResponse<Empresa[]>>('/empresas')
-      .then((r) => r.data.data),
+    apiClient.get<ApiResponse<Empresa[]>>("/empresas").then((r) => r.data.data),
 
   getOne: (id: string) =>
     apiClient
@@ -153,21 +151,21 @@ export const empresasService = {
 
   create: (dto: CreateEmpresaDto) =>
     apiClient
-      .post<ApiResponse<Empresa>>('/empresas', dto)
+      .post<ApiResponse<Empresa>>("/empresas", dto)
       .then((r) => r.data.data),
 
   update: (id: string, dto: UpdateEmpresaDto) =>
     apiClient
       .patch<ApiResponse<Empresa>>(`/empresas/${id}`, dto)
       .then((r) => r.data.data),
-}
+};
 
 // ── Locales ───────────────────────────────────────────────────
 
 export const localesService = {
   getAll: (params?: { page?: number; limit?: number; search?: string }) =>
     apiClient
-      .get<PaginatedResponse<Local>>('/locales', { params })
+      .get<PaginatedResponse<Local>>("/locales", { params })
       .then((r) => r.data),
 
   getOne: (id: string) =>
@@ -177,21 +175,21 @@ export const localesService = {
 
   create: (dto: CreateLocalDto) =>
     apiClient
-      .post<ApiResponse<Local>>('/locales', dto)
+      .post<ApiResponse<Local>>("/locales", dto)
       .then((r) => r.data.data),
 
   update: (id: string, dto: UpdateLocalDto) =>
     apiClient
       .patch<ApiResponse<Local>>(`/locales/${id}`, dto)
       .then((r) => r.data.data),
-}
+};
 
 // ── Usuarios ──────────────────────────────────────────────────
 
 export const usuariosService = {
   getAll: (params?: { page?: number; limit?: number; search?: string }) =>
     apiClient
-      .get<PaginatedResponse<Usuario>>('/usuarios', { params })
+      .get<PaginatedResponse<Usuario>>("/usuarios", { params })
       .then((r) => r.data),
 
   getOne: (id: string) =>
@@ -201,7 +199,7 @@ export const usuariosService = {
 
   create: (dto: CreateUsuarioDto) =>
     apiClient
-      .post<ApiResponse<Usuario>>('/usuarios', dto)
+      .post<ApiResponse<Usuario>>("/usuarios", dto)
       .then((r) => r.data.data),
 
   update: (id: string, dto: UpdateUsuarioDto) =>
@@ -213,7 +211,7 @@ export const usuariosService = {
     apiClient
       .patch<ApiResponse<{ message: string }>>(`/usuarios/${id}/password`, dto)
       .then((r) => r.data.data),
-}
+};
 ```
 
 ---
@@ -223,17 +221,21 @@ export const usuariosService = {
 Crear `hooks/useLocales.ts`:
 
 ```typescript
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { localesService } from '@/lib/services/config.service'
-import type { CreateLocalDto, UpdateLocalDto } from '@/lib/api-types'
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { localesService } from "@/lib/services/config.service";
+import type { CreateLocalDto, UpdateLocalDto } from "@/lib/api-types";
 
-export const LOCALES_KEY = ['locales'] as const
+export const LOCALES_KEY = ["locales"] as const;
 
-export function useLocales(params?: { page?: number; limit?: number; search?: string }) {
+export function useLocales(params?: {
+  page?: number;
+  limit?: number;
+  search?: string;
+}) {
   return useQuery({
     queryKey: [...LOCALES_KEY, params],
     queryFn: () => localesService.getAll(params),
-  })
+  });
 }
 
 export function useLocal(id: string) {
@@ -241,41 +243,49 @@ export function useLocal(id: string) {
     queryKey: [...LOCALES_KEY, id],
     queryFn: () => localesService.getOne(id),
     enabled: !!id,
-  })
+  });
 }
 
 export function useCreateLocal() {
-  const qc = useQueryClient()
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: (dto: CreateLocalDto) => localesService.create(dto),
     onSuccess: () => qc.invalidateQueries({ queryKey: LOCALES_KEY }),
-  })
+  });
 }
 
 export function useUpdateLocal() {
-  const qc = useQueryClient()
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, dto }: { id: string; dto: UpdateLocalDto }) =>
       localesService.update(id, dto),
     onSuccess: () => qc.invalidateQueries({ queryKey: LOCALES_KEY }),
-  })
+  });
 }
 ```
 
 Crear `hooks/useUsuarios.ts`:
 
 ```typescript
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { usuariosService } from '@/lib/services/config.service'
-import type { CreateUsuarioDto, UpdateUsuarioDto, ChangePasswordDto } from '@/lib/api-types'
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { usuariosService } from "@/lib/services/config.service";
+import type {
+  CreateUsuarioDto,
+  UpdateUsuarioDto,
+  ChangePasswordDto,
+} from "@/lib/api-types";
 
-export const USUARIOS_KEY = ['usuarios'] as const
+export const USUARIOS_KEY = ["usuarios"] as const;
 
-export function useUsuarios(params?: { page?: number; limit?: number; search?: string }) {
+export function useUsuarios(params?: {
+  page?: number;
+  limit?: number;
+  search?: string;
+}) {
   return useQuery({
     queryKey: [...USUARIOS_KEY, params],
     queryFn: () => usuariosService.getAll(params),
-  })
+  });
 }
 
 export function useUsuario(id: string) {
@@ -283,48 +293,48 @@ export function useUsuario(id: string) {
     queryKey: [...USUARIOS_KEY, id],
     queryFn: () => usuariosService.getOne(id),
     enabled: !!id,
-  })
+  });
 }
 
 export function useCreateUsuario() {
-  const qc = useQueryClient()
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: (dto: CreateUsuarioDto) => usuariosService.create(dto),
     onSuccess: () => qc.invalidateQueries({ queryKey: USUARIOS_KEY }),
-  })
+  });
 }
 
 export function useUpdateUsuario() {
-  const qc = useQueryClient()
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, dto }: { id: string; dto: UpdateUsuarioDto }) =>
       usuariosService.update(id, dto),
     onSuccess: () => qc.invalidateQueries({ queryKey: USUARIOS_KEY }),
-  })
+  });
 }
 
 export function useChangePassword() {
   return useMutation({
     mutationFn: ({ id, dto }: { id: string; dto: ChangePasswordDto }) =>
       usuariosService.changePassword(id, dto),
-  })
+  });
 }
 ```
 
 Crear `hooks/useEmpresas.ts`:
 
 ```typescript
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { empresasService } from '@/lib/services/config.service'
-import type { CreateEmpresaDto, UpdateEmpresaDto } from '@/lib/api-types'
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { empresasService } from "@/lib/services/config.service";
+import type { CreateEmpresaDto, UpdateEmpresaDto } from "@/lib/api-types";
 
-export const EMPRESAS_KEY = ['empresas'] as const
+export const EMPRESAS_KEY = ["empresas"] as const;
 
 export function useEmpresas() {
   return useQuery({
     queryKey: EMPRESAS_KEY,
     queryFn: () => empresasService.getAll(),
-  })
+  });
 }
 
 export function useEmpresa(id: string) {
@@ -332,24 +342,24 @@ export function useEmpresa(id: string) {
     queryKey: [...EMPRESAS_KEY, id],
     queryFn: () => empresasService.getOne(id),
     enabled: !!id,
-  })
+  });
 }
 
 export function useCreateEmpresa() {
-  const qc = useQueryClient()
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: (dto: CreateEmpresaDto) => empresasService.create(dto),
     onSuccess: () => qc.invalidateQueries({ queryKey: EMPRESAS_KEY }),
-  })
+  });
 }
 
 export function useUpdateEmpresa() {
-  const qc = useQueryClient()
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, dto }: { id: string; dto: UpdateEmpresaDto }) =>
       empresasService.update(id, dto),
     onSuccess: () => qc.invalidateQueries({ queryKey: EMPRESAS_KEY }),
-  })
+  });
 }
 ```
 
@@ -431,11 +441,12 @@ export function useLocal() {
 
 > **Importante:** El tipo `Local` ahora viene de `lib/api-types.ts` y ya no de `lib/mock-data.ts`.
 > Cualquier componente que antes importara `type Local` desde `mock-data` debe actualizar el import:
+>
 > ```typescript
 > // Antes:
-> import { type Local } from '@/lib/mock-data'
+> import { type Local } from "@/lib/mock-data";
 > // Después:
-> import type { Local } from '@/lib/api-types'
+> import type { Local } from "@/lib/api-types";
 > ```
 
 ---
@@ -463,19 +474,34 @@ ya exporta `UserRole` con los valores correctos (Fase 01). Actualizar la lógica
 en `hooks/usePermissions.ts` para los nuevos roles:
 
 ```typescript
-import { useAuth } from '@/contexts/AuthContext'
-import type { UserRole } from '@/lib/api-types'
+import { useAuth } from "@/contexts/AuthContext";
+import type { UserRole } from "@/lib/api-types";
 
 export interface Permission {
-  canView: boolean
-  canCreate: boolean
-  canEdit: boolean
-  canDelete: boolean
+  canView: boolean;
+  canCreate: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
 }
 
-const FULL: Permission = { canView: true, canCreate: true, canEdit: true, canDelete: true }
-const READ: Permission = { canView: true, canCreate: false, canEdit: false, canDelete: false }
-const NONE: Permission = { canView: false, canCreate: false, canEdit: false, canDelete: false }
+const FULL: Permission = {
+  canView: true,
+  canCreate: true,
+  canEdit: true,
+  canDelete: true,
+};
+const READ: Permission = {
+  canView: true,
+  canCreate: false,
+  canEdit: false,
+  canDelete: false,
+};
+const NONE: Permission = {
+  canView: false,
+  canCreate: false,
+  canEdit: false,
+  canDelete: false,
+};
 
 const ROLE_PERMISSIONS: Record<UserRole, Record<string, Permission>> = {
   Administrador: { default: FULL },
@@ -520,24 +546,24 @@ const ROLE_PERMISSIONS: Record<UserRole, Record<string, Permission>> = {
   Viewer: {
     default: READ,
   },
-}
+};
 
 export function usePermissions() {
-  const { user } = useAuth()
+  const { user } = useAuth();
 
   const getModulePermissions = (module: string): Permission => {
-    if (!user) return NONE
+    if (!user) return NONE;
 
-    const roleMap = ROLE_PERMISSIONS[user.rol]
-    if (!roleMap) return NONE
+    const roleMap = ROLE_PERMISSIONS[user.rol];
+    if (!roleMap) return NONE;
 
     // Administrador tiene acceso total a todo
-    if (user.rol === 'Administrador') return FULL
+    if (user.rol === "Administrador") return FULL;
 
-    return roleMap[module] ?? roleMap['default'] ?? NONE
-  }
+    return roleMap[module] ?? roleMap["default"] ?? NONE;
+  };
 
-  return { getModulePermissions }
+  return { getModulePermissions };
 }
 ```
 
@@ -557,16 +583,16 @@ Por ahora **no borrar** `mock-data.ts` hasta que todas las páginas estén migra
 
 ## Resumen de archivos creados/modificados
 
-| Archivo | Acción |
-|---|---|
-| `lib/api-types.ts` | **Modificar** — agregar tipos Empresa, Local, Usuario y sus DTOs |
-| `lib/services/config.service.ts` | **Crear** — servicios API para empresas, locales y usuarios |
-| `hooks/useLocales.ts` | **Crear** — hooks React Query para locales |
-| `hooks/useUsuarios.ts` | **Crear** — hooks React Query para usuarios |
-| `hooks/useEmpresas.ts` | **Crear** — hooks React Query para empresas |
-| `contexts/LocalContext.tsx` | **Reemplazar** — usa API real en vez de mock-data |
-| `hooks/usePermissions.ts` | **Reemplazar** — roles actualizados según el backend |
-| `app/(dashboard)/layout.tsx` | **Modificar** — agregar LocalProvider |
+| Archivo                          | Acción                                                           |
+| -------------------------------- | ---------------------------------------------------------------- |
+| `lib/api-types.ts`               | **Modificar** — agregar tipos Empresa, Local, Usuario y sus DTOs |
+| `lib/services/config.service.ts` | **Crear** — servicios API para empresas, locales y usuarios      |
+| `hooks/useLocales.ts`            | **Crear** — hooks React Query para locales                       |
+| `hooks/useUsuarios.ts`           | **Crear** — hooks React Query para usuarios                      |
+| `hooks/useEmpresas.ts`           | **Crear** — hooks React Query para empresas                      |
+| `contexts/LocalContext.tsx`      | **Reemplazar** — usa API real en vez de mock-data                |
+| `hooks/usePermissions.ts`        | **Reemplazar** — roles actualizados según el backend             |
+| `app/(dashboard)/layout.tsx`     | **Modificar** — agregar LocalProvider                            |
 
 ---
 

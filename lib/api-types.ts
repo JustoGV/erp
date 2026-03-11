@@ -827,3 +827,254 @@ export interface CreatePagoProveedorDto {
   referencia?: string;
   notas?: string;
 }
+
+// ── Finanzas ───────────────────────────────────────────────────
+
+export type TipoCuenta =
+  | "ACTIVO"
+  | "PASIVO"
+  | "PATRIMONIO"
+  | "INGRESO"
+  | "EGRESO";
+export type NaturalezaCuenta = "DEUDORA" | "ACREEDORA";
+export type EstadoAsiento = "BORRADOR" | "CONFIRMADO" | "ANULADO";
+export type TipoRetencion = "IVA" | "GANANCIAS" | "INGRESOS_BRUTOS" | "OTRAS";
+export type EstadoCuentaCobrar =
+  | "PENDIENTE"
+  | "PARCIAL"
+  | "COBRADA"
+  | "VENCIDA"
+  | "INCOBRABLE";
+export type EstadoCuentaPagar = "PENDIENTE" | "PARCIAL" | "PAGADA" | "VENCIDA";
+
+// ---------- Plan de Cuentas ----------
+
+export interface CuentaContable {
+  id: string;
+  empresaId: string;
+  code: string;
+  nombre: string;
+  tipo: TipoCuenta;
+  naturaleza: NaturalezaCuenta;
+  nivel: number;
+  cuentaPadreId?: string;
+  imputable: boolean;
+  createdAt: string;
+  parent?: { code: string; nombre: string };
+  children?: CuentaContable[];
+  _count?: { detallesAsiento: number };
+}
+
+export interface CreateCuentaDto {
+  code: string;
+  nombre: string;
+  tipo: TipoCuenta;
+  naturaleza: NaturalezaCuenta;
+  nivel?: number;
+  cuentaPadreId?: string;
+  imputable?: boolean;
+}
+
+export interface MayorContable {
+  cuenta: { code: string; nombre: string; naturaleza: NaturalezaCuenta };
+  movimientos: Array<{
+    id: string;
+    debe: number;
+    haber: number;
+    saldoAcumulado: number;
+    descripcion?: string;
+    asiento: { id: string; numero: number; fecha: string; descripcion: string };
+  }>;
+  totales: { debe: number; haber: number; saldoFinal: number };
+}
+
+// ---------- Asientos Contables ----------
+
+export interface DetalleAsiento {
+  id: string;
+  asientoId: string;
+  cuentaId: string;
+  debe: number;
+  haber: number;
+  descripcion?: string;
+  cuenta?: { code: string; nombre: string; naturaleza: NaturalezaCuenta };
+}
+
+export interface AsientoContable {
+  id: string;
+  empresaId: string;
+  numero: number;
+  fecha: string;
+  descripcion: string;
+  referencia?: string;
+  totalDebe: number;
+  totalHaber: number;
+  estado: EstadoAsiento;
+  tipo: string;
+  creadoPor: string;
+  createdAt: string;
+  detalles?: DetalleAsiento[];
+  _count?: { detalles: number };
+}
+
+export interface DetalleAsientoDto {
+  cuentaId: string;
+  debe: number;
+  haber: number;
+  descripcion?: string;
+}
+
+export interface CreateAsientoDto {
+  fecha?: string;
+  descripcion: string;
+  referencia?: string;
+  detalles: DetalleAsientoDto[];
+}
+
+// ---------- Cuentas por Cobrar ----------
+
+export interface CuentaPorCobrar {
+  id: string;
+  empresaId: string;
+  localId: string;
+  clienteId: string;
+  facturaId?: string;
+  estado: EstadoCuentaCobrar;
+  montoOriginal: number;
+  montoSaldo: number;
+  fechaVencimiento: string;
+  diasVencido: number;
+  cliente?: { id: string; name: string };
+  factura?: { id: string; numero: string; fecha: string };
+}
+
+export interface ResumenCxC {
+  totalPendiente: number;
+  totalVencido: number;
+  cantidadPendiente: number;
+  cantidadVencida: number;
+}
+
+// ---------- Cuentas por Pagar ----------
+
+export interface CuentaPorPagar {
+  id: string;
+  empresaId: string;
+  localId: string;
+  proveedorId: string;
+  ordenCompraId?: string;
+  estado: EstadoCuentaPagar;
+  montoOriginal: number;
+  montoSaldo: number;
+  fechaVencimiento: string;
+  diasVencido: number;
+  proveedor?: { id: string; name: string };
+  ordenCompra?: { id: string; numero: string; fecha: string };
+}
+
+export interface ResumenCxP {
+  totalPendiente: number;
+  totalVencido: number;
+  cantidadPendiente: number;
+  cantidadVencida: number;
+}
+
+// ---------- Bancos ----------
+
+export interface CuentaBancaria {
+  id: string;
+  empresaId: string;
+  numero: string;
+  alias?: string;
+  tipoCuenta: string;
+  saldo: number;
+  banco?: { id: string; nombre: string };
+  _count?: { movimientos: number };
+}
+
+export interface MovimientoBancario {
+  id: string;
+  empresaId: string;
+  cuentaBancariaId: string;
+  tipo: "CREDITO" | "DEBITO";
+  monto: number;
+  fecha: string;
+  concepto: string;
+  referencia?: string;
+  saldoAnterior: number;
+  saldoNuevo: number;
+  creadoPor: string;
+  createdAt: string;
+}
+
+export interface CreateMovimientoBancarioDto {
+  cuentaBancariaId: string;
+  tipo: "CREDITO" | "DEBITO";
+  monto: number;
+  concepto: string;
+  fecha?: string;
+  referencia?: string;
+}
+
+// ---------- Caja ----------
+
+export interface CajaLocal {
+  id: string;
+  empresaId: string;
+  localId: string;
+  saldo: number;
+  updatedAt: string;
+}
+
+export interface MovimientoCaja {
+  id: string;
+  empresaId: string;
+  localId: string;
+  tipo: "INGRESO" | "EGRESO";
+  monto: number;
+  concepto: string;
+  referencia?: string;
+  saldoAnterior: number;
+  saldoNuevo: number;
+  creadoPor: string;
+  fecha: string;
+  createdAt: string;
+}
+
+export interface MovimientoCajaDto {
+  tipo: "INGRESO" | "EGRESO";
+  monto: number;
+  concepto: string;
+  referencia?: string;
+}
+
+// ---------- Retenciones ----------
+
+export interface Retencion {
+  id: string;
+  empresaId: string;
+  localId: string;
+  tipo: TipoRetencion;
+  numero: string;
+  fecha: string;
+  proveedorNombre?: string;
+  clienteNombre?: string;
+  importe: number;
+  alicuota: number;
+  baseImponible: number;
+  descripcion?: string;
+  creadoPor: string;
+  createdAt: string;
+}
+
+export interface CreateRetencionDto {
+  tipo: TipoRetencion;
+  numero: string;
+  importe: number;
+  alicuota: number;
+  baseImponible: number;
+  fecha?: string;
+  proveedorNombre?: string;
+  clienteNombre?: string;
+  descripcion?: string;
+}

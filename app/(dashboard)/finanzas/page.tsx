@@ -1,58 +1,87 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { DollarSign, BookOpen, FileText, TrendingUp, Receipt, CreditCard } from 'lucide-react';
+import Link from "next/link";
+import {
+  DollarSign,
+  BookOpen,
+  FileText,
+  TrendingUp,
+  Receipt,
+  CreditCard,
+} from "lucide-react";
+import {
+  usePlanCuentas,
+  useAsientos,
+  useResumenCxC,
+  useResumenCxP,
+} from "@/hooks/useFinanzas";
 
 export default function FinanzasResumenPage() {
+  const { data: planData } = usePlanCuentas();
+  const { data: asientosData } = useAsientos({ limit: 1 });
+  const { data: resumenCxC } = useResumenCxC();
+  const { data: resumenCxP } = useResumenCxP();
+
+  const totalCuentas = planData?.data?.length ?? "—";
+  const totalAsientos = asientosData?.meta?.total ?? "—";
+  const totalCobrar =
+    resumenCxC?.data?.totalPendiente != null
+      ? `$${resumenCxC.data.totalPendiente.toLocaleString()}`
+      : "—";
+  const totalPagar =
+    resumenCxP?.data?.totalPendiente != null
+      ? `$${resumenCxP.data.totalPendiente.toLocaleString()}`
+      : "—";
+
   const menuItems = [
     {
-      href: '/finanzas/plan-cuentas',
+      href: "/finanzas/plan-cuentas",
       icon: BookOpen,
-      title: 'Plan de Cuentas',
-      description: 'Estructura contable de la empresa',
-      color: 'bg-blue-500',
-      stats: '150 cuentas'
+      title: "Plan de Cuentas",
+      description: "Estructura contable de la empresa",
+      color: "bg-blue-500",
+      stats: `${totalCuentas} cuentas`,
     },
     {
-      href: '/finanzas/asientos',
+      href: "/finanzas/asientos",
       icon: FileText,
-      title: 'Asientos Contables',
-      description: 'Registro de operaciones contables',
-      color: 'bg-purple-500',
-      stats: '245 asientos'
+      title: "Asientos Contables",
+      description: "Registro de operaciones contables",
+      color: "bg-purple-500",
+      stats: `${totalAsientos} asientos`,
     },
     {
-      href: '/finanzas/balance',
+      href: "/finanzas/balance",
       icon: TrendingUp,
-      title: 'Balance General',
-      description: 'Estado de situación patrimonial',
-      color: 'bg-green-500',
-      stats: 'Ver balance'
+      title: "Balance General",
+      description: "Estado de situación patrimonial",
+      color: "bg-green-500",
+      stats: "Ver balance",
     },
     {
-      href: '/finanzas/resultados',
+      href: "/finanzas/resultados",
       icon: Receipt,
-      title: 'Estado de Resultados',
-      description: 'Ganancias y pérdidas del período',
-      color: 'bg-orange-500',
-      stats: 'Ver resultados'
+      title: "Estado de Resultados",
+      description: "Ganancias y pérdidas del período",
+      color: "bg-orange-500",
+      stats: "Ver resultados",
     },
     {
-      href: '/finanzas/cuentas-cobrar',
+      href: "/finanzas/cuentas-cobrar",
       icon: DollarSign,
-      title: 'Cuentas por Cobrar',
-      description: 'Gestión de créditos a clientes',
-      color: 'bg-emerald-500',
-      stats: '$125,000'
+      title: "Cuentas por Cobrar",
+      description: "Gestión de créditos a clientes",
+      color: "bg-emerald-500",
+      stats: totalCobrar,
     },
     {
-      href: '/finanzas/cuentas-pagar',
+      href: "/finanzas/cuentas-pagar",
       icon: CreditCard,
-      title: 'Cuentas por Pagar',
-      description: 'Gestión de deudas con proveedores',
-      color: 'bg-red-500',
-      stats: '$102,850'
-    }
+      title: "Cuentas por Pagar",
+      description: "Gestión de deudas con proveedores",
+      color: "bg-red-500",
+      stats: totalPagar,
+    },
   ];
 
   return (
@@ -76,9 +105,15 @@ export default function FinanzasResumenPage() {
                   <Icon className="h-6 w-6" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-1">{item.title}</h3>
-                  <p className="text-sm text-gray-600 mb-2">{item.description}</p>
-                  <p className="text-xs text-gray-500 font-medium">{item.stats}</p>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                    {item.title}
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-2">
+                    {item.description}
+                  </p>
+                  <p className="text-xs text-gray-500 font-medium">
+                    {item.stats}
+                  </p>
                 </div>
               </div>
             </Link>
@@ -90,10 +125,13 @@ export default function FinanzasResumenPage() {
         <div className="flex items-start gap-3">
           <DollarSign className="h-6 w-6 text-green-600 mt-1" />
           <div>
-            <h3 className="text-lg font-semibold text-green-900 mb-2">Contabilidad en Tiempo Real</h3>
+            <h3 className="text-lg font-semibold text-green-900 mb-2">
+              Contabilidad en Tiempo Real
+            </h3>
             <p className="text-sm text-green-700">
-              El módulo financiero registra automáticamente todas las operaciones del sistema,
-              generando balances y estados financieros actualizados al instante.
+              El módulo financiero registra automáticamente todas las
+              operaciones del sistema, generando balances y estados financieros
+              actualizados al instante.
             </p>
           </div>
         </div>

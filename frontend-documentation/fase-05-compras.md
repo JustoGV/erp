@@ -9,6 +9,7 @@ Conectar el módulo de Compras al backend real: Proveedores → Requerimientos �
 ## 0. Contexto previo
 
 Las siguientes fases deben estar implementadas:
+
 - **Fase 01**: `api-client.ts`, `QueryProvider`, `AuthContext` real.
 - **Fase 02**: `LocalContext` real (proporciona el `localId` activo).
 - **Fase 03**: tipos de inventario en `api-types.ts` (la recepción incrementa stock).
@@ -22,15 +23,20 @@ Añadir al final del archivo:
 ```typescript
 // ─── COMPRAS ───────────────────────────────────────────────
 
-export type EstadoRequerimiento = 'PENDIENTE' | 'AUTORIZADO' | 'RECHAZADO' | 'COMPLETADO' | 'CANCELADO';
+export type EstadoRequerimiento =
+  | "PENDIENTE"
+  | "AUTORIZADO"
+  | "RECHAZADO"
+  | "COMPLETADO"
+  | "CANCELADO";
 
 export type EstadoOrdenCompra =
-  | 'BORRADOR'
-  | 'ENVIADA'
-  | 'CONFIRMADA'
-  | 'RECIBIDA_PARCIAL'
-  | 'RECIBIDA_COMPLETA'
-  | 'CANCELADA';
+  | "BORRADOR"
+  | "ENVIADA"
+  | "CONFIRMADA"
+  | "RECIBIDA_PARCIAL"
+  | "RECIBIDA_COMPLETA"
+  | "CANCELADA";
 
 // ---------- Proveedor ----------
 
@@ -40,13 +46,13 @@ export interface Proveedor {
   localId: string;
   code: string;
   name: string;
-  taxId?: string;          // CUIT / RUC
+  taxId?: string; // CUIT / RUC
   email?: string;
   phone?: string;
   address?: string;
   city?: string;
   state?: string;
-  paymentTerms: number;    // días de pago acordados
+  paymentTerms: number; // días de pago acordados
   active: boolean;
   createdAt: string;
   updatedAt: string;
@@ -118,10 +124,10 @@ export interface Requerimiento {
 }
 
 export interface ItemRequerimientoDto {
-  productoId?: string;         // opcional: si el producto existe en el sistema
-  descripcion: string;         // nombre/descripción del artículo
+  productoId?: string; // opcional: si el producto existe en el sistema
+  descripcion: string; // nombre/descripción del artículo
   cantidad: number;
-  unidad: string;              // ej: 'KG', 'UNI', 'CAJA'
+  unidad: string; // ej: 'KG', 'UNI', 'CAJA'
   precioEstimado?: number;
   observaciones?: string;
 }
@@ -130,7 +136,7 @@ export interface CreateRequerimientoDto {
   solicitante: string;
   departamento: string;
   justificacion: string;
-  fechaNecesidad: string;      // ISO date, ej: '2026-04-01'
+  fechaNecesidad: string; // ISO date, ej: '2026-04-01'
   observaciones?: string;
   items: ItemRequerimientoDto[];
 }
@@ -174,24 +180,24 @@ export interface OrdenCompra {
   items?: ItemOrdenCompra[];
   recepciones?: RecepcionCompra[];
   pagos?: PagoProveedor[];
-  totalPagado?: number;        // calculado en findOne
-  saldoPendiente?: number;     // calculado en findOne
+  totalPagado?: number; // calculado en findOne
+  saldoPendiente?: number; // calculado en findOne
   _count?: { items: number; recepciones: number; pagos: number };
 }
 
 export interface ItemOrdenCompraDto {
-  productoId?: string;         // opcional
+  productoId?: string; // opcional
   descripcion: string;
   cantidad: number;
   unidad: string;
   precioUnitario: number;
-  descuento?: number;          // porcentaje, ej: 10 = 10%
+  descuento?: number; // porcentaje, ej: 10 = 10%
 }
 
 export interface CreateOrdenCompraDto {
   proveedorId: string;
   requerimientoId?: string;
-  fechaEntregaEstimada?: string;   // ISO date
+  fechaEntregaEstimada?: string; // ISO date
   condicionesPago?: string;
   observaciones?: string;
   items: ItemOrdenCompraDto[];
@@ -220,11 +226,15 @@ export interface RecepcionCompra {
   creadoPor: string;
   createdAt: string;
   items?: ItemRecepcion[];
-  ordenCompra?: { id: string; numero: string; proveedor?: { id: string; name: string } };
+  ordenCompra?: {
+    id: string;
+    numero: string;
+    proveedor?: { id: string; name: string };
+  };
 }
 
 export interface ItemRecepcionDto {
-  itemOrdenCompraId: string;   // ID del ItemOrdenCompra (no del producto)
+  itemOrdenCompraId: string; // ID del ItemOrdenCompra (no del producto)
   cantidadRecibida: number;
   cantidadRechazada?: number;
   motivoRechazo?: string;
@@ -247,19 +257,23 @@ export interface PagoProveedor {
   proveedorId: string;
   fecha: string;
   monto: number;
-  metodoPago: string;    // 'EFECTIVO' | 'TRANSFERENCIA' | 'CHEQUE' | 'TARJETA' | otro
+  metodoPago: string; // 'EFECTIVO' | 'TRANSFERENCIA' | 'CHEQUE' | 'TARJETA' | otro
   referencia?: string;
   notas?: string;
   creadoPor: string;
   createdAt: string;
-  ordenCompra?: { id: string; numero: string; proveedor?: { id: string; name: string } };
+  ordenCompra?: {
+    id: string;
+    numero: string;
+    proveedor?: { id: string; name: string };
+  };
 }
 
 export interface CreatePagoProveedorDto {
   proveedorId: string;
   monto: number;
   metodoPago: string;
-  fecha?: string;          // ISO date
+  fecha?: string; // ISO date
   referencia?: string;
   notas?: string;
 }
@@ -270,7 +284,7 @@ export interface CreatePagoProveedorDto {
 ## 2. Crear `lib/services/compras.service.ts`
 
 ```typescript
-import apiClient from '@/lib/api-client';
+import apiClient from "@/lib/api-client";
 import type {
   ApiResponse,
   PaginatedResponse,
@@ -286,88 +300,129 @@ import type {
   CreateRecepcionDto,
   PagoProveedor,
   CreatePagoProveedorDto,
-} from '@/lib/api-types';
+} from "@/lib/api-types";
 
 // ─── Proveedores ──────────────────────────────────────────────
 
 export const proveedoresService = {
-  getAll: (params?: { page?: number; limit?: number; localId?: string; search?: string }) =>
-    apiClient.get<PaginatedResponse<Proveedor>>('/proveedores', { params }).then(r => r.data),
+  getAll: (params?: {
+    page?: number;
+    limit?: number;
+    localId?: string;
+    search?: string;
+  }) =>
+    apiClient
+      .get<PaginatedResponse<Proveedor>>("/proveedores", { params })
+      .then((r) => r.data),
 
   getOne: (id: string) =>
-    apiClient.get<ApiResponse<Proveedor>>(`/proveedores/${id}`).then(r => r.data),
+    apiClient
+      .get<ApiResponse<Proveedor>>(`/proveedores/${id}`)
+      .then((r) => r.data),
 
   // Cuentas por pagar pendientes con este proveedor
   getDeuda: (id: string) =>
-    apiClient.get<ApiResponse<DeudaProveedorResponse>>(`/proveedores/${id}/deuda`).then(r => r.data),
+    apiClient
+      .get<ApiResponse<DeudaProveedorResponse>>(`/proveedores/${id}/deuda`)
+      .then((r) => r.data),
 
   create: (dto: CreateProveedorDto) =>
-    apiClient.post<ApiResponse<Proveedor>>('/proveedores', dto).then(r => r.data),
+    apiClient
+      .post<ApiResponse<Proveedor>>("/proveedores", dto)
+      .then((r) => r.data),
 
   update: (id: string, dto: UpdateProveedorDto) =>
-    apiClient.patch<ApiResponse<Proveedor>>(`/proveedores/${id}`, dto).then(r => r.data),
+    apiClient
+      .patch<ApiResponse<Proveedor>>(`/proveedores/${id}`, dto)
+      .then((r) => r.data),
 };
 
 // ─── Requerimientos ───────────────────────────────────────────
 
 export const requerimientosService = {
   getAll: (params?: { page?: number; limit?: number; localId?: string }) =>
-    apiClient.get<PaginatedResponse<Requerimiento>>('/requerimientos', { params }).then(r => r.data),
+    apiClient
+      .get<PaginatedResponse<Requerimiento>>("/requerimientos", { params })
+      .then((r) => r.data),
 
   getOne: (id: string) =>
-    apiClient.get<ApiResponse<Requerimiento>>(`/requerimientos/${id}`).then(r => r.data),
+    apiClient
+      .get<ApiResponse<Requerimiento>>(`/requerimientos/${id}`)
+      .then((r) => r.data),
 
   // localId se pasa como query param requerido
   create: (dto: CreateRequerimientoDto, localId: string) =>
     apiClient
-      .post<ApiResponse<Requerimiento>>('/requerimientos', dto, { params: { localId } })
-      .then(r => r.data),
+      .post<
+        ApiResponse<Requerimiento>
+      >("/requerimientos", dto, { params: { localId } })
+      .then((r) => r.data),
 
   // Estado pasa a AUTORIZADO
   autorizar: (id: string) =>
-    apiClient.patch<ApiResponse<Requerimiento>>(`/requerimientos/${id}/autorizar`).then(r => r.data),
+    apiClient
+      .patch<ApiResponse<Requerimiento>>(`/requerimientos/${id}/autorizar`)
+      .then((r) => r.data),
 };
 
 // ─── Órdenes de Compra ────────────────────────────────────────
 
 export const ordenesCompraService = {
   getAll: (params?: { page?: number; limit?: number; localId?: string }) =>
-    apiClient.get<PaginatedResponse<OrdenCompra>>('/ordenes-compra', { params }).then(r => r.data),
+    apiClient
+      .get<PaginatedResponse<OrdenCompra>>("/ordenes-compra", { params })
+      .then((r) => r.data),
 
   // Incluye totalPagado y saldoPendiente
   getOne: (id: string) =>
-    apiClient.get<ApiResponse<OrdenCompra>>(`/ordenes-compra/${id}`).then(r => r.data),
+    apiClient
+      .get<ApiResponse<OrdenCompra>>(`/ordenes-compra/${id}`)
+      .then((r) => r.data),
 
   // localId se pasa como query param requerido; crea en estado BORRADOR
   create: (dto: CreateOrdenCompraDto, localId: string) =>
     apiClient
-      .post<ApiResponse<OrdenCompra>>('/ordenes-compra', dto, { params: { localId } })
-      .then(r => r.data),
+      .post<
+        ApiResponse<OrdenCompra>
+      >("/ordenes-compra", dto, { params: { localId } })
+      .then((r) => r.data),
 
   // Estado pasa de BORRADOR → ENVIADA
   aprobar: (id: string) =>
-    apiClient.patch<ApiResponse<OrdenCompra>>(`/ordenes-compra/${id}/aprobar`).then(r => r.data),
+    apiClient
+      .patch<ApiResponse<OrdenCompra>>(`/ordenes-compra/${id}/aprobar`)
+      .then((r) => r.data),
 };
 
 // ─── Recepciones ──────────────────────────────────────────────
 
 export const recepcionesService = {
   getAll: (params?: { page?: number; limit?: number; localId?: string }) =>
-    apiClient.get<PaginatedResponse<RecepcionCompra>>('/recepciones', { params }).then(r => r.data),
+    apiClient
+      .get<PaginatedResponse<RecepcionCompra>>("/recepciones", { params })
+      .then((r) => r.data),
 
   // Registrar recepción: incrementa stock automáticamente en transacción
   create: (dto: CreateRecepcionDto) =>
-    apiClient.post<ApiResponse<{ recepcion: RecepcionCompra; ordenEstadoNuevo: string }>>('/recepciones', dto).then(r => r.data),
+    apiClient
+      .post<
+        ApiResponse<{ recepcion: RecepcionCompra; ordenEstadoNuevo: string }>
+      >("/recepciones", dto)
+      .then((r) => r.data),
 };
 
 // ─── Pagos a Proveedores ──────────────────────────────────────
 
 export const pagosProveedorService = {
   getAll: (params?: { page?: number; limit?: number; localId?: string }) =>
-    apiClient.get<PaginatedResponse<PagoProveedor>>('/pagos-proveedor', { params }).then(r => r.data),
+    apiClient
+      .get<PaginatedResponse<PagoProveedor>>("/pagos-proveedor", { params })
+      .then((r) => r.data),
 
   create: (dto: CreatePagoProveedorDto) =>
-    apiClient.post<ApiResponse<PagoProveedor>>('/pagos-proveedor', dto).then(r => r.data),
+    apiClient
+      .post<ApiResponse<PagoProveedor>>("/pagos-proveedor", dto)
+      .then((r) => r.data),
 };
 ```
 
@@ -376,14 +431,14 @@ export const pagosProveedorService = {
 ## 3. Crear `hooks/useCompras.ts`
 
 ```typescript
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   proveedoresService,
   requerimientosService,
   ordenesCompraService,
   recepcionesService,
   pagosProveedorService,
-} from '@/lib/services/compras.service';
+} from "@/lib/services/compras.service";
 import type {
   CreateProveedorDto,
   UpdateProveedorDto,
@@ -391,20 +446,25 @@ import type {
   CreateOrdenCompraDto,
   CreateRecepcionDto,
   CreatePagoProveedorDto,
-} from '@/lib/api-types';
+} from "@/lib/api-types";
 
 // ─── Proveedores ──────────────────────────────────────────────
 
-export function useProveedores(params?: { page?: number; limit?: number; localId?: string; search?: string }) {
+export function useProveedores(params?: {
+  page?: number;
+  limit?: number;
+  localId?: string;
+  search?: string;
+}) {
   return useQuery({
-    queryKey: ['proveedores', params],
+    queryKey: ["proveedores", params],
     queryFn: () => proveedoresService.getAll(params),
   });
 }
 
 export function useProveedor(id: string) {
   return useQuery({
-    queryKey: ['proveedores', id],
+    queryKey: ["proveedores", id],
     queryFn: () => proveedoresService.getOne(id),
     enabled: !!id,
   });
@@ -412,7 +472,7 @@ export function useProveedor(id: string) {
 
 export function useProveedorDeuda(id: string) {
   return useQuery({
-    queryKey: ['proveedores', id, 'deuda'],
+    queryKey: ["proveedores", id, "deuda"],
     queryFn: () => proveedoresService.getDeuda(id),
     enabled: !!id,
   });
@@ -422,7 +482,7 @@ export function useCrearProveedor() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (dto: CreateProveedorDto) => proveedoresService.create(dto),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['proveedores'] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["proveedores"] }),
   });
 }
 
@@ -432,24 +492,28 @@ export function useActualizarProveedor() {
     mutationFn: ({ id, dto }: { id: string; dto: UpdateProveedorDto }) =>
       proveedoresService.update(id, dto),
     onSuccess: (_data, { id }) => {
-      qc.invalidateQueries({ queryKey: ['proveedores'] });
-      qc.invalidateQueries({ queryKey: ['proveedores', id] });
+      qc.invalidateQueries({ queryKey: ["proveedores"] });
+      qc.invalidateQueries({ queryKey: ["proveedores", id] });
     },
   });
 }
 
 // ─── Requerimientos ───────────────────────────────────────────
 
-export function useRequerimientos(params?: { page?: number; limit?: number; localId?: string }) {
+export function useRequerimientos(params?: {
+  page?: number;
+  limit?: number;
+  localId?: string;
+}) {
   return useQuery({
-    queryKey: ['requerimientos', params],
+    queryKey: ["requerimientos", params],
     queryFn: () => requerimientosService.getAll(params),
   });
 }
 
 export function useRequerimiento(id: string) {
   return useQuery({
-    queryKey: ['requerimientos', id],
+    queryKey: ["requerimientos", id],
     queryFn: () => requerimientosService.getOne(id),
     enabled: !!id,
   });
@@ -458,9 +522,14 @@ export function useRequerimiento(id: string) {
 export function useCrearRequerimiento() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ dto, localId }: { dto: CreateRequerimientoDto; localId: string }) =>
-      requerimientosService.create(dto, localId),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['requerimientos'] }),
+    mutationFn: ({
+      dto,
+      localId,
+    }: {
+      dto: CreateRequerimientoDto;
+      localId: string;
+    }) => requerimientosService.create(dto, localId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["requerimientos"] }),
   });
 }
 
@@ -469,24 +538,28 @@ export function useAutorizarRequerimiento() {
   return useMutation({
     mutationFn: (id: string) => requerimientosService.autorizar(id),
     onSuccess: (_data, id) => {
-      qc.invalidateQueries({ queryKey: ['requerimientos'] });
-      qc.invalidateQueries({ queryKey: ['requerimientos', id] });
+      qc.invalidateQueries({ queryKey: ["requerimientos"] });
+      qc.invalidateQueries({ queryKey: ["requerimientos", id] });
     },
   });
 }
 
 // ─── Órdenes de Compra ────────────────────────────────────────
 
-export function useOrdenesCompra(params?: { page?: number; limit?: number; localId?: string }) {
+export function useOrdenesCompra(params?: {
+  page?: number;
+  limit?: number;
+  localId?: string;
+}) {
   return useQuery({
-    queryKey: ['ordenesCompra', params],
+    queryKey: ["ordenesCompra", params],
     queryFn: () => ordenesCompraService.getAll(params),
   });
 }
 
 export function useOrdenCompra(id: string) {
   return useQuery({
-    queryKey: ['ordenesCompra', id],
+    queryKey: ["ordenesCompra", id],
     queryFn: () => ordenesCompraService.getOne(id),
     enabled: !!id,
   });
@@ -495,12 +568,17 @@ export function useOrdenCompra(id: string) {
 export function useCrearOrdenCompra() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ dto, localId }: { dto: CreateOrdenCompraDto; localId: string }) =>
-      ordenesCompraService.create(dto, localId),
+    mutationFn: ({
+      dto,
+      localId,
+    }: {
+      dto: CreateOrdenCompraDto;
+      localId: string;
+    }) => ordenesCompraService.create(dto, localId),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['ordenesCompra'] });
+      qc.invalidateQueries({ queryKey: ["ordenesCompra"] });
       // Si vino de un requerimiento, su estado habrá cambiado
-      qc.invalidateQueries({ queryKey: ['requerimientos'] });
+      qc.invalidateQueries({ queryKey: ["requerimientos"] });
     },
   });
 }
@@ -510,17 +588,21 @@ export function useAprobarOrdenCompra() {
   return useMutation({
     mutationFn: (id: string) => ordenesCompraService.aprobar(id),
     onSuccess: (_data, id) => {
-      qc.invalidateQueries({ queryKey: ['ordenesCompra'] });
-      qc.invalidateQueries({ queryKey: ['ordenesCompra', id] });
+      qc.invalidateQueries({ queryKey: ["ordenesCompra"] });
+      qc.invalidateQueries({ queryKey: ["ordenesCompra", id] });
     },
   });
 }
 
 // ─── Recepciones ──────────────────────────────────────────────
 
-export function useRecepciones(params?: { page?: number; limit?: number; localId?: string }) {
+export function useRecepciones(params?: {
+  page?: number;
+  limit?: number;
+  localId?: string;
+}) {
   return useQuery({
-    queryKey: ['recepciones', params],
+    queryKey: ["recepciones", params],
     queryFn: () => recepcionesService.getAll(params),
   });
 }
@@ -530,19 +612,23 @@ export function useRegistrarRecepcion() {
   return useMutation({
     mutationFn: (dto: CreateRecepcionDto) => recepcionesService.create(dto),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['recepciones'] });
-      qc.invalidateQueries({ queryKey: ['ordenesCompra'] });
+      qc.invalidateQueries({ queryKey: ["recepciones"] });
+      qc.invalidateQueries({ queryKey: ["ordenesCompra"] });
       // El stock sube al recibir mercadería
-      qc.invalidateQueries({ queryKey: ['inventario'] });
+      qc.invalidateQueries({ queryKey: ["inventario"] });
     },
   });
 }
 
 // ─── Pagos ────────────────────────────────────────────────────
 
-export function usePagosProveedor(params?: { page?: number; limit?: number; localId?: string }) {
+export function usePagosProveedor(params?: {
+  page?: number;
+  limit?: number;
+  localId?: string;
+}) {
   return useQuery({
-    queryKey: ['pagosProveedor', params],
+    queryKey: ["pagosProveedor", params],
     queryFn: () => pagosProveedorService.getAll(params),
   });
 }
@@ -550,11 +636,12 @@ export function usePagosProveedor(params?: { page?: number; limit?: number; loca
 export function useRegistrarPagoProveedor() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (dto: CreatePagoProveedorDto) => pagosProveedorService.create(dto),
+    mutationFn: (dto: CreatePagoProveedorDto) =>
+      pagosProveedorService.create(dto),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['pagosProveedor'] });
-      qc.invalidateQueries({ queryKey: ['proveedores'] });
-      qc.invalidateQueries({ queryKey: ['ordenesCompra'] });
+      qc.invalidateQueries({ queryKey: ["pagosProveedor"] });
+      qc.invalidateQueries({ queryKey: ["proveedores"] });
+      qc.invalidateQueries({ queryKey: ["ordenesCompra"] });
     },
   });
 }
@@ -567,16 +654,16 @@ export function useRegistrarPagoProveedor() {
 Reemplazar el componente completo:
 
 ```tsx
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { ShoppingCart, Users, FileText, Truck, CreditCard } from 'lucide-react';
-import { useProveedores } from '@/hooks/useCompras';
-import { useRequerimientos } from '@/hooks/useCompras';
-import { useOrdenesCompra } from '@/hooks/useCompras';
-import { useRecepciones } from '@/hooks/useCompras';
-import { usePagosProveedor } from '@/hooks/useCompras';
-import { useLocal } from '@/contexts/LocalContext';
+import Link from "next/link";
+import { ShoppingCart, Users, FileText, Truck, CreditCard } from "lucide-react";
+import { useProveedores } from "@/hooks/useCompras";
+import { useRequerimientos } from "@/hooks/useCompras";
+import { useOrdenesCompra } from "@/hooks/useCompras";
+import { useRecepciones } from "@/hooks/useCompras";
+import { usePagosProveedor } from "@/hooks/useCompras";
+import { useLocal } from "@/contexts/LocalContext";
 
 export default function ComprasResumenPage() {
   const { localId } = useLocal();
@@ -587,51 +674,51 @@ export default function ComprasResumenPage() {
   const { data: recepcionesData } = useRecepciones({ localId, limit: 1 });
   const { data: pagosData } = usePagosProveedor({ localId, limit: 1 });
 
-  const totalProveedores = proveedoresData?.meta?.total ?? '—';
-  const totalRequerimientos = requerimientosData?.meta?.total ?? '—';
-  const totalOrdenes = ordenesData?.meta?.total ?? '—';
-  const totalRecepciones = recepcionesData?.meta?.total ?? '—';
-  const totalPagos = pagosData?.meta?.total ?? '—';
+  const totalProveedores = proveedoresData?.meta?.total ?? "—";
+  const totalRequerimientos = requerimientosData?.meta?.total ?? "—";
+  const totalOrdenes = ordenesData?.meta?.total ?? "—";
+  const totalRecepciones = recepcionesData?.meta?.total ?? "—";
+  const totalPagos = pagosData?.meta?.total ?? "—";
 
   const menuItems = [
     {
-      href: '/compras/proveedores',
+      href: "/compras/proveedores",
       icon: Users,
-      title: 'Proveedores',
-      description: 'Gestión de proveedores y cuentas',
-      color: 'bg-purple-500',
+      title: "Proveedores",
+      description: "Gestión de proveedores y cuentas",
+      color: "bg-purple-500",
       stats: `${totalProveedores} proveedores`,
     },
     {
-      href: '/compras/requerimientos',
+      href: "/compras/requerimientos",
       icon: FileText,
-      title: 'Requerimientos',
-      description: 'Solicitudes de compra',
-      color: 'bg-yellow-500',
+      title: "Requerimientos",
+      description: "Solicitudes de compra",
+      color: "bg-yellow-500",
       stats: `${totalRequerimientos} requerimientos`,
     },
     {
-      href: '/compras/ordenes',
+      href: "/compras/ordenes",
       icon: ShoppingCart,
-      title: 'Órdenes de Compra',
-      description: 'Órdenes a proveedores',
-      color: 'bg-indigo-500',
+      title: "Órdenes de Compra",
+      description: "Órdenes a proveedores",
+      color: "bg-indigo-500",
       stats: `${totalOrdenes} órdenes`,
     },
     {
-      href: '/compras/recepciones',
+      href: "/compras/recepciones",
       icon: Truck,
-      title: 'Recepciones',
-      description: 'Avisos de recepción de mercadería',
-      color: 'bg-green-500',
+      title: "Recepciones",
+      description: "Avisos de recepción de mercadería",
+      color: "bg-green-500",
       stats: `${totalRecepciones} recepciones`,
     },
     {
-      href: '/compras/pagos',
+      href: "/compras/pagos",
       icon: CreditCard,
-      title: 'Pagos',
-      description: 'Gestión de pagos a proveedores',
-      color: 'bg-red-500',
+      title: "Pagos",
+      description: "Gestión de pagos a proveedores",
+      color: "bg-red-500",
       stats: `${totalPagos} pagos registrados`,
     },
   ];
@@ -640,7 +727,9 @@ export default function ComprasResumenPage() {
     <div className="p-6 space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Módulo de Compras</h1>
-        <p className="text-gray-600 mt-1">Gestión completa del área de adquisiciones</p>
+        <p className="text-gray-600 mt-1">
+          Gestión completa del área de adquisiciones
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -657,9 +746,15 @@ export default function ComprasResumenPage() {
                   <Icon className="h-6 w-6" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-1">{item.title}</h3>
-                  <p className="text-sm text-gray-600 mb-2">{item.description}</p>
-                  <p className="text-xs text-gray-500 font-medium">{item.stats}</p>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                    {item.title}
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-2">
+                    {item.description}
+                  </p>
+                  <p className="text-xs text-gray-500 font-medium">
+                    {item.stats}
+                  </p>
                 </div>
               </div>
             </Link>
@@ -671,13 +766,17 @@ export default function ComprasResumenPage() {
         <div className="flex items-start gap-3">
           <ShoppingCart className="h-6 w-6 text-purple-600 mt-1" />
           <div>
-            <h3 className="text-lg font-semibold text-purple-900 mb-2">Flujo de Compras</h3>
+            <h3 className="text-lg font-semibold text-purple-900 mb-2">
+              Flujo de Compras
+            </h3>
             <p className="text-sm text-purple-700">
               El módulo de compras gestiona el ciclo completo de adquisiciones.
             </p>
             <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-purple-800">
               <span className="font-medium">Flujo:</span>
-              <span className="px-2 py-1 bg-purple-100 rounded">Requerimiento</span>
+              <span className="px-2 py-1 bg-purple-100 rounded">
+                Requerimiento
+              </span>
               <span>→</span>
               <span className="px-2 py-1 bg-purple-100 rounded">Orden</span>
               <span>→</span>
@@ -700,14 +799,14 @@ export default function ComprasResumenPage() {
 ### 5.1 Listar proveedores con búsqueda
 
 ```tsx
-'use client';
-import { useState } from 'react';
-import { useProveedores } from '@/hooks/useCompras';
-import { useLocal } from '@/contexts/LocalContext';
+"use client";
+import { useState } from "react";
+import { useProveedores } from "@/hooks/useCompras";
+import { useLocal } from "@/contexts/LocalContext";
 
 export default function ProveedoresPage() {
   const { localId } = useLocal();
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
 
   const { data, isLoading } = useProveedores({ localId, search, limit: 20 });
 
@@ -717,11 +816,13 @@ export default function ProveedoresPage() {
     <div>
       <input
         value={search}
-        onChange={e => setSearch(e.target.value)}
+        onChange={(e) => setSearch(e.target.value)}
         placeholder="Buscar por nombre, código o CUIT..."
       />
-      {data?.data.map(p => (
-        <div key={p.id}>{p.code} — {p.name} ({p.paymentTerms} días)</div>
+      {data?.data.map((p) => (
+        <div key={p.id}>
+          {p.code} — {p.name} ({p.paymentTerms} días)
+        </div>
       ))}
     </div>
   );
@@ -731,7 +832,7 @@ export default function ProveedoresPage() {
 ### 5.2 Ver deuda pendiente con un proveedor
 
 ```tsx
-import { useProveedorDeuda } from '@/hooks/useCompras';
+import { useProveedorDeuda } from "@/hooks/useCompras";
 
 function DeudaProveedor({ proveedorId }: { proveedorId: string }) {
   const { data } = useProveedorDeuda(proveedorId);
@@ -740,9 +841,10 @@ function DeudaProveedor({ proveedorId }: { proveedorId: string }) {
   return (
     <div>
       <p className="font-bold">Deuda total: ${deuda?.totalDeuda.toFixed(2)}</p>
-      {deuda?.saldos.map(s => (
+      {deuda?.saldos.map((s) => (
         <div key={s.cuentaId}>
-          OC #{s.ordenNumero} — Saldo: ${s.saldoPendiente.toFixed(2)} ({s.estado})
+          OC #{s.ordenNumero} — Saldo: ${s.saldoPendiente.toFixed(2)} (
+          {s.estado})
         </div>
       ))}
     </div>
@@ -753,8 +855,8 @@ function DeudaProveedor({ proveedorId }: { proveedorId: string }) {
 ### 5.3 Crear un requerimiento de compra
 
 ```tsx
-import { useCrearRequerimiento } from '@/hooks/useCompras';
-import { useLocal } from '@/contexts/LocalContext';
+import { useCrearRequerimiento } from "@/hooks/useCompras";
+import { useLocal } from "@/contexts/LocalContext";
 
 function NuevoRequerimientoForm() {
   const { localId } = useLocal();
@@ -764,22 +866,22 @@ function NuevoRequerimientoForm() {
     mutate({
       localId,
       dto: {
-        solicitante: 'Juan Pérez',
-        departamento: 'Producción',
-        justificacion: 'Reposición mensual de insumos',
-        fechaNecesidad: '2026-04-01',
+        solicitante: "Juan Pérez",
+        departamento: "Producción",
+        justificacion: "Reposición mensual de insumos",
+        fechaNecesidad: "2026-04-01",
         items: [
           {
-            descripcion: 'Tornillos M8 x 30mm',
+            descripcion: "Tornillos M8 x 30mm",
             cantidad: 500,
-            unidad: 'UNI',
+            unidad: "UNI",
             precioEstimado: 2.5,
           },
           {
-            productoId: 'uuid-producto-existente',   // si está en el sistema
-            descripcion: 'Aceite lubricante',
+            productoId: "uuid-producto-existente", // si está en el sistema
+            descripcion: "Aceite lubricante",
             cantidad: 20,
-            unidad: 'LT',
+            unidad: "LT",
           },
         ],
       },
@@ -788,7 +890,7 @@ function NuevoRequerimientoForm() {
 
   return (
     <button onClick={handleSubmit} disabled={isPending}>
-      {isPending ? 'Guardando...' : 'Crear requerimiento'}
+      {isPending ? "Guardando..." : "Crear requerimiento"}
     </button>
   );
 }
@@ -803,7 +905,7 @@ import {
   useAprobarOrdenCompra,
   useRegistrarRecepcion,
   useRegistrarPagoProveedor,
-} from '@/hooks/useCompras';
+} from "@/hooks/useCompras";
 
 // 1. Autorizar requerimiento (PENDIENTE → AUTORIZADO)
 const autorizar = useAutorizarRequerimiento();
@@ -815,11 +917,16 @@ crearOC.mutate({
   localId,
   dto: {
     proveedorId,
-    requerimientoId,          // opcional: vincula con el requerimiento
-    fechaEntregaEstimada: '2026-04-15',
-    condicionesPago: '30 días neto',
+    requerimientoId, // opcional: vincula con el requerimiento
+    fechaEntregaEstimada: "2026-04-15",
+    condicionesPago: "30 días neto",
     items: [
-      { descripcion: 'Tornillos M8 x 30mm', cantidad: 500, unidad: 'UNI', precioUnitario: 2.5 },
+      {
+        descripcion: "Tornillos M8 x 30mm",
+        cantidad: 500,
+        unidad: "UNI",
+        precioUnitario: 2.5,
+      },
     ],
   },
 });
@@ -833,10 +940,8 @@ aprobar.mutate(ordenCompraId);
 const recepcionar = useRegistrarRecepcion();
 recepcionar.mutate({
   ordenCompraId,
-  nroRemito: '0001-00012345',
-  items: [
-    { itemOrdenCompraId: 'uuid-item-oc', cantidadRecibida: 500 },
-  ],
+  nroRemito: "0001-00012345",
+  items: [{ itemOrdenCompraId: "uuid-item-oc", cantidadRecibida: 500 }],
 });
 
 // 5. Registrar pago (se asocia al proveedor, puede ser independiente de la OC)
@@ -844,9 +949,9 @@ const pagar = useRegistrarPagoProveedor();
 pagar.mutate({
   proveedorId,
   monto: 1250,
-  metodoPago: 'TRANSFERENCIA',
-  referencia: 'CBU 0000123456789',
-  fecha: '2026-04-20',
+  metodoPago: "TRANSFERENCIA",
+  referencia: "CBU 0000123456789",
+  fecha: "2026-04-20",
 });
 ```
 
@@ -856,15 +961,15 @@ pagar.mutate({
 crearOC.mutate({
   localId,
   dto: {
-    proveedorId: 'uuid-proveedor',
+    proveedorId: "uuid-proveedor",
     items: [
       {
-        productoId: 'uuid-producto',         // si existe en el sistema
-        descripcion: 'Materia prima A',
+        productoId: "uuid-producto", // si existe en el sistema
+        descripcion: "Materia prima A",
         cantidad: 100,
-        unidad: 'KG',
+        unidad: "KG",
         precioUnitario: 150,
-        descuento: 5,                        // 5% de descuento
+        descuento: 5, // 5% de descuento
       },
     ],
   },
@@ -875,48 +980,50 @@ crearOC.mutate({
 
 ## 6. Referencia rápida de endpoints
 
-| Acción | Método | Endpoint |
-|--------|--------|----------|
-| Listar proveedores | `GET` | `/proveedores?localId=&search=` |
-| Obtener proveedor | `GET` | `/proveedores/:id` |
-| Deuda con proveedor | `GET` | `/proveedores/:id/deuda` |
-| Crear proveedor | `POST` | `/proveedores` |
-| Actualizar proveedor | `PATCH` | `/proveedores/:id` |
-| Listar requerimientos | `GET` | `/requerimientos?localId=` |
-| Obtener requerimiento | `GET` | `/requerimientos/:id` |
-| Crear requerimiento | `POST` | `/requerimientos?localId=UUID` |
-| Autorizar requerimiento | `PATCH` | `/requerimientos/:id/autorizar` |
-| Listar órdenes de compra | `GET` | `/ordenes-compra?localId=` |
-| Obtener OC | `GET` | `/ordenes-compra/:id` |
-| Crear OC | `POST` | `/ordenes-compra?localId=UUID` |
-| Aprobar OC | `PATCH` | `/ordenes-compra/:id/aprobar` |
-| Listar recepciones | `GET` | `/recepciones?localId=` |
-| Registrar recepción | `POST` | `/recepciones` |
-| Listar pagos | `GET` | `/pagos-proveedor?localId=` |
-| Registrar pago | `POST` | `/pagos-proveedor` |
+| Acción                   | Método  | Endpoint                        |
+| ------------------------ | ------- | ------------------------------- |
+| Listar proveedores       | `GET`   | `/proveedores?localId=&search=` |
+| Obtener proveedor        | `GET`   | `/proveedores/:id`              |
+| Deuda con proveedor      | `GET`   | `/proveedores/:id/deuda`        |
+| Crear proveedor          | `POST`  | `/proveedores`                  |
+| Actualizar proveedor     | `PATCH` | `/proveedores/:id`              |
+| Listar requerimientos    | `GET`   | `/requerimientos?localId=`      |
+| Obtener requerimiento    | `GET`   | `/requerimientos/:id`           |
+| Crear requerimiento      | `POST`  | `/requerimientos?localId=UUID`  |
+| Autorizar requerimiento  | `PATCH` | `/requerimientos/:id/autorizar` |
+| Listar órdenes de compra | `GET`   | `/ordenes-compra?localId=`      |
+| Obtener OC               | `GET`   | `/ordenes-compra/:id`           |
+| Crear OC                 | `POST`  | `/ordenes-compra?localId=UUID`  |
+| Aprobar OC               | `PATCH` | `/ordenes-compra/:id/aprobar`   |
+| Listar recepciones       | `GET`   | `/recepciones?localId=`         |
+| Registrar recepción      | `POST`  | `/recepciones`                  |
+| Listar pagos             | `GET`   | `/pagos-proveedor?localId=`     |
+| Registrar pago           | `POST`  | `/pagos-proveedor`              |
 
 ---
 
 ## 7. Valores de estado
 
 ### `EstadoRequerimiento`
-| Valor | Descripción |
-|-------|-------------|
-| `PENDIENTE` | Recién creado (default) |
+
+| Valor        | Descripción                 |
+| ------------ | --------------------------- |
+| `PENDIENTE`  | Recién creado (default)     |
 | `AUTORIZADO` | Aprobado — puede generar OC |
-| `RECHAZADO` | No aprobado |
-| `COMPLETADO` | Ya generó una OC |
-| `CANCELADO` | Cancelado |
+| `RECHAZADO`  | No aprobado                 |
+| `COMPLETADO` | Ya generó una OC            |
+| `CANCELADO`  | Cancelado                   |
 
 ### `EstadoOrdenCompra`
-| Valor | Descripción |
-|-------|-------------|
-| `BORRADOR` | Recién creada (default) |
-| `ENVIADA` | Enviada al proveedor (tras aprobar) |
-| `CONFIRMADA` | Confirmada por el proveedor |
-| `RECIBIDA_PARCIAL` | Al menos una recepción parcial |
-| `RECIBIDA_COMPLETA` | Todo el pedido recibido |
-| `CANCELADA` | Cancelada |
+
+| Valor               | Descripción                         |
+| ------------------- | ----------------------------------- |
+| `BORRADOR`          | Recién creada (default)             |
+| `ENVIADA`           | Enviada al proveedor (tras aprobar) |
+| `CONFIRMADA`        | Confirmada por el proveedor         |
+| `RECIBIDA_PARCIAL`  | Al menos una recepción parcial      |
+| `RECIBIDA_COMPLETA` | Todo el pedido recibido             |
+| `CANCELADA`         | Cancelada                           |
 
 ---
 

@@ -18,14 +18,14 @@ export interface Empleado {
   id: string;
   empresaId: string;
   localId: string;
-  code: string;          // código único por empresa, ej. "EMP-001"
-  name: string;          // nombre completo
+  code: string; // código único por empresa, ej. "EMP-001"
+  name: string; // nombre completo
   email?: string;
   phone?: string;
-  position: string;      // cargo / puesto
-  department: string;    // área / departamento
-  salary: number;        // sueldo
-  hireDate: string;      // fecha ingreso (ISO string)
+  position: string; // cargo / puesto
+  department: string; // área / departamento
+  salary: number; // sueldo
+  hireDate: string; // fecha ingreso (ISO string)
   active: boolean;
   createdAt: string;
   updatedAt: string;
@@ -39,21 +39,21 @@ export interface Empleado {
 }
 
 export interface CreateEmpleadoDto {
-  code: string;           // obligatorio, único por empresa
-  name: string;           // obligatorio
+  code: string; // obligatorio, único por empresa
+  name: string; // obligatorio
   email?: string;
   phone?: string;
-  position: string;       // obligatorio
-  department: string;     // obligatorio
-  salary: number;         // obligatorio, >= 0
-  hireDate: string;       // obligatorio, formato "YYYY-MM-DD"
-  active?: boolean;       // default: true
+  position: string; // obligatorio
+  department: string; // obligatorio
+  salary: number; // obligatorio, >= 0
+  hireDate: string; // obligatorio, formato "YYYY-MM-DD"
+  active?: boolean; // default: true
 }
 
 export type UpdateEmpleadoDto = Partial<CreateEmpleadoDto>;
 
 // ─── Asistencia ─────────────────────────────────────────────────────────────
-//   Un registro por (empleado + fecha). 
+//   Un registro por (empleado + fecha).
 //   presente  = ausente: false
 //   ausente   = ausente: true, justificado: false
 //   justificado = ausente: true, justificado: true
@@ -63,8 +63,8 @@ export interface Asistencia {
   empresaId: string;
   empleadoId: string;
   fecha: string;
-  entrada?: string;     // datetime ISO
-  salida?: string;      // datetime ISO
+  entrada?: string; // datetime ISO
+  salida?: string; // datetime ISO
   ausente: boolean;
   justificado: boolean;
   notas?: string;
@@ -73,11 +73,11 @@ export interface Asistencia {
 
 export interface CreateAsistenciaDto {
   empleadoId: string;
-  fecha: string;            // "YYYY-MM-DD"
-  ausente?: boolean;        // default: false
-  justificado?: boolean;    // default: false (solo aplica si ausente: true)
-  entrada?: string;         // datetime ISO, ej. "2026-02-18T09:05:00Z"
-  salida?: string;          // datetime ISO
+  fecha: string; // "YYYY-MM-DD"
+  ausente?: boolean; // default: false
+  justificado?: boolean; // default: false (solo aplica si ausente: true)
+  entrada?: string; // datetime ISO, ej. "2026-02-18T09:05:00Z"
+  salida?: string; // datetime ISO
   notas?: string;
 }
 
@@ -97,9 +97,9 @@ export interface RegistroHoras {
 
 export interface CreateRegistroHorasDto {
   empleadoId: string;
-  fecha: string;            // "YYYY-MM-DD"
-  horasNormales: number;    // obligatorio, >= 0
-  horasExtra?: number;      // default: 0
+  fecha: string; // "YYYY-MM-DD"
+  horasNormales: number; // obligatorio, >= 0
+  horasExtra?: number; // default: 0
   descripcion?: string;
 }
 
@@ -111,25 +111,25 @@ export interface Liquidacion {
   id: string;
   empresaId: string;
   empleadoId: string;
-  periodo: string;      // formato "YYYY-MM", ej. "2026-02"
+  periodo: string; // formato "YYYY-MM", ej. "2026-02"
   sueldobruto: number;
   deducciones: number;
-  sueldoNeto: number;   // calculado por el backend
-  estado: 'BORRADOR' | 'APROBADA';
+  sueldoNeto: number; // calculado por el backend
+  estado: "BORRADOR" | "APROBADA";
   fechaPago?: string;
   notas?: string;
   createdAt: string;
   updatedAt: string;
   // incluido en findAll y findOne:
-  empleado?: Pick<Empleado, 'id' | 'code' | 'name' | 'position' | 'department'>;
+  empleado?: Pick<Empleado, "id" | "code" | "name" | "position" | "department">;
 }
 
 export interface CreateLiquidacionDto {
   empleadoId: string;
-  periodo: string;        // obligatorio, formato "YYYY-MM"
-  sueldobruto: number;    // obligatorio, >= 0
-  deducciones?: number;   // default: 0
-  fechaPago?: string;     // datetime ISO opcional
+  periodo: string; // obligatorio, formato "YYYY-MM"
+  sueldobruto: number; // obligatorio, >= 0
+  deducciones?: number; // default: 0
+  fechaPago?: string; // datetime ISO opcional
   notas?: string;
 }
 
@@ -141,8 +141,8 @@ export interface Vacacion {
   empleadoId: string;
   fechaDesde: string;
   fechaHasta: string;
-  diasHabiles: number;    // calculado por el backend
-  estado: 'PENDIENTE' | 'APROBADA' | 'RECHAZADA';
+  diasHabiles: number; // calculado por el backend
+  estado: "PENDIENTE" | "APROBADA" | "RECHAZADA";
   aprobadoPor?: string;
   notas?: string;
   createdAt: string;
@@ -151,20 +151,20 @@ export interface Vacacion {
 
 export interface CreateVacacionDto {
   empleadoId: string;
-  fechaDesde: string;   // "YYYY-MM-DD"
-  fechaHasta: string;   // "YYYY-MM-DD"
+  fechaDesde: string; // "YYYY-MM-DD"
+  fechaHasta: string; // "YYYY-MM-DD"
   notas?: string;
 }
 
 // ─── ResumenHoras ────────────────────────────────────────────────────────────
 
 export interface ResumenHoras {
-  periodo: string;              // ej. "02/2026"
+  periodo: string; // ej. "02/2026"
   totalHorasNormales: number;
   totalHorasExtra: number;
-  diasPresente: number;         // ausente === false
-  diasAusente: number;          // ausente && !justificado
-  diasJustificados: number;     // ausente && justificado
+  diasPresente: number; // ausente === false
+  diasAusente: number; // ausente && !justificado
+  diasJustificados: number; // ausente && justificado
 }
 
 // ─── Respuestas paginadas ────────────────────────────────────────────────────
@@ -205,7 +205,7 @@ interface PaginationMeta {
 Crear `lib/services/rrhh.service.ts`:
 
 ```typescript
-import { apiClient } from '@/lib/api-client';
+import { apiClient } from "@/lib/api-client";
 import type {
   Empleado,
   CreateEmpleadoDto,
@@ -223,7 +223,7 @@ import type {
   PaginatedAsistencias,
   PaginatedHoras,
   PaginatedLiquidaciones,
-} from '@/lib/types/rrhh';
+} from "@/lib/types/rrhh";
 
 // ─── Parámetros comunes de paginación ────────────────────────────────────────
 
@@ -239,7 +239,7 @@ interface PaginationParams {
 export const empleadosService = {
   /** Lista de empleados. Búsqueda por name, code, position o department. */
   getAll: (params?: PaginationParams) =>
-    apiClient.get<PaginatedEmpleados>('/empleados', { params }),
+    apiClient.get<PaginatedEmpleados>("/empleados", { params }),
 
   /** Legajo completo del empleado con conteos (_count). */
   getById: (id: string) =>
@@ -251,10 +251,9 @@ export const empleadosService = {
    * @param anio YYYY
    */
   getResumenHoras: (id: string, mes: number, anio: number) =>
-    apiClient.get<{ data: ResumenHoras }>(
-      `/empleados/${id}/resumen-horas`,
-      { params: { mes, anio } }
-    ),
+    apiClient.get<{ data: ResumenHoras }>(`/empleados/${id}/resumen-horas`, {
+      params: { mes, anio },
+    }),
 
   /**
    * Crear empleado. Requiere localId como query param.
@@ -276,8 +275,9 @@ export const asistenciasService = {
    * Lista de asistencias.
    * Filtros opcionales: empleadoId, fecha (string "YYYY-MM-DD").
    */
-  getAll: (params?: PaginationParams & { empleadoId?: string; fecha?: string }) =>
-    apiClient.get<PaginatedAsistencias>('/asistencias', { params }),
+  getAll: (
+    params?: PaginationParams & { empleadoId?: string; fecha?: string },
+  ) => apiClient.get<PaginatedAsistencias>("/asistencias", { params }),
 
   /**
    * Registrar asistencia para un empleado en una fecha.
@@ -288,7 +288,7 @@ export const asistenciasService = {
    *   - Justificado:  { ausente: true, justificado: true }
    */
   create: (dto: CreateAsistenciaDto) =>
-    apiClient.post<{ data: Asistencia }>('/asistencias', dto),
+    apiClient.post<{ data: Asistencia }>("/asistencias", dto),
 };
 
 // ─── Horas ───────────────────────────────────────────────────────────────────
@@ -296,14 +296,14 @@ export const asistenciasService = {
 export const horasService = {
   /** Lista de registros de horas. Filtrar por empleadoId opcional. */
   getAll: (params?: PaginationParams & { empleadoId?: string }) =>
-    apiClient.get<PaginatedHoras>('/horas', { params }),
+    apiClient.get<PaginatedHoras>("/horas", { params }),
 
   /**
    * Registrar horas de un empleado en una fecha.
    * La combinación (empleadoId + fecha) es única.
    */
   create: (dto: CreateRegistroHorasDto) =>
-    apiClient.post<{ data: RegistroHoras }>('/horas', dto),
+    apiClient.post<{ data: RegistroHoras }>("/horas", dto),
 };
 
 // ─── Liquidaciones ───────────────────────────────────────────────────────────
@@ -311,7 +311,7 @@ export const horasService = {
 export const liquidacionesService = {
   /** Lista de liquidaciones de la empresa/local. */
   getAll: (params?: PaginationParams) =>
-    apiClient.get<PaginatedLiquidaciones>('/liquidaciones', { params }),
+    apiClient.get<PaginatedLiquidaciones>("/liquidaciones", { params }),
 
   /** Detalle de una liquidación. */
   getById: (id: string) =>
@@ -325,7 +325,7 @@ export const liquidacionesService = {
    *   { empleadoId, periodo: "2026-02", sueldobruto: 280000, deducciones: 39480 }
    */
   create: (dto: CreateLiquidacionDto) =>
-    apiClient.post<{ data: Liquidacion }>('/liquidaciones', dto),
+    apiClient.post<{ data: Liquidacion }>("/liquidaciones", dto),
 
   /**
    * Aprobar liquidación (cambia estado a APROBADA). Solo Administrador.
@@ -344,7 +344,7 @@ export const vacacionesService = {
    */
   getByEmpleado: (empleadoId: string) =>
     apiClient.get<{ data: Vacacion[]; resumen: { diasTomados: number } }>(
-      `/vacaciones/empleado/${empleadoId}`
+      `/vacaciones/empleado/${empleadoId}`,
     ),
 
   /**
@@ -353,7 +353,7 @@ export const vacacionesService = {
    * Error 400 si se solapa con otra solicitud PENDIENTE o APROBADA.
    */
   create: (dto: CreateVacacionDto) =>
-    apiClient.post<{ data: Vacacion }>('/vacaciones', dto),
+    apiClient.post<{ data: Vacacion }>("/vacaciones", dto),
 
   /** Aprobar solicitud de vacaciones. Solo Administrador. */
   aprobar: (id: string) =>
@@ -364,7 +364,9 @@ export const vacacionesService = {
    * El motivo se guarda en el campo notas de la vacación.
    */
   rechazar: (id: string, motivo: string) =>
-    apiClient.patch<{ data: Vacacion }>(`/vacaciones/${id}/rechazar`, { motivo }),
+    apiClient.patch<{ data: Vacacion }>(`/vacaciones/${id}/rechazar`, {
+      motivo,
+    }),
 };
 ```
 
@@ -375,14 +377,14 @@ export const vacacionesService = {
 Crear `hooks/useRRHH.ts`:
 
 ```typescript
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   empleadosService,
   asistenciasService,
   horasService,
   liquidacionesService,
   vacacionesService,
-} from '@/lib/services/rrhh.service';
+} from "@/lib/services/rrhh.service";
 import type {
   CreateEmpleadoDto,
   UpdateEmpleadoDto,
@@ -390,33 +392,33 @@ import type {
   CreateRegistroHorasDto,
   CreateLiquidacionDto,
   CreateVacacionDto,
-} from '@/lib/types/rrhh';
+} from "@/lib/types/rrhh";
 
 // ─────────────────────────── Keys ───────────────────────────────────────────
 
 export const rrhhKeys = {
   empleados: {
-    all: ['empleados'] as const,
-    list: (params?: object) => ['empleados', 'list', params] as const,
-    detail: (id: string) => ['empleados', id] as const,
+    all: ["empleados"] as const,
+    list: (params?: object) => ["empleados", "list", params] as const,
+    detail: (id: string) => ["empleados", id] as const,
     resumen: (id: string, mes: number, anio: number) =>
-      ['empleados', id, 'resumen-horas', mes, anio] as const,
+      ["empleados", id, "resumen-horas", mes, anio] as const,
   },
   asistencias: {
-    all: ['asistencias'] as const,
-    list: (params?: object) => ['asistencias', 'list', params] as const,
+    all: ["asistencias"] as const,
+    list: (params?: object) => ["asistencias", "list", params] as const,
   },
   horas: {
-    all: ['horas'] as const,
-    list: (params?: object) => ['horas', 'list', params] as const,
+    all: ["horas"] as const,
+    list: (params?: object) => ["horas", "list", params] as const,
   },
   liquidaciones: {
-    all: ['liquidaciones'] as const,
-    list: (params?: object) => ['liquidaciones', 'list', params] as const,
-    detail: (id: string) => ['liquidaciones', id] as const,
+    all: ["liquidaciones"] as const,
+    list: (params?: object) => ["liquidaciones", "list", params] as const,
+    detail: (id: string) => ["liquidaciones", id] as const,
   },
   vacaciones: {
-    byEmpleado: (empleadoId: string) => ['vacaciones', empleadoId] as const,
+    byEmpleado: (empleadoId: string) => ["vacaciones", empleadoId] as const,
   },
 };
 
@@ -455,8 +457,13 @@ export function useResumenHoras(id: string, mes: number, anio: number) {
 export function useCrearEmpleado() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ dto, localId }: { dto: CreateEmpleadoDto; localId: string }) =>
-      empleadosService.create(dto, localId),
+    mutationFn: ({
+      dto,
+      localId,
+    }: {
+      dto: CreateEmpleadoDto;
+      localId: string;
+    }) => empleadosService.create(dto, localId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: rrhhKeys.empleados.all });
     },
@@ -470,7 +477,9 @@ export function useActualizarEmpleado() {
       empleadosService.update(id, dto),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: rrhhKeys.empleados.all });
-      queryClient.invalidateQueries({ queryKey: rrhhKeys.empleados.detail(id) });
+      queryClient.invalidateQueries({
+        queryKey: rrhhKeys.empleados.detail(id),
+      });
     },
   });
 }
@@ -588,7 +597,7 @@ export function useSolicitarVacaciones() {
     onSuccess: () => {
       // Invalidar vacaciones del empleado específico si lo conocemos,
       // o invalidar genéricamente
-      queryClient.invalidateQueries({ queryKey: ['vacaciones'] });
+      queryClient.invalidateQueries({ queryKey: ["vacaciones"] });
     },
   });
 }
@@ -598,7 +607,7 @@ export function useAprobarVacaciones() {
   return useMutation({
     mutationFn: (id: string) => vacacionesService.aprobar(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vacaciones'] });
+      queryClient.invalidateQueries({ queryKey: ["vacaciones"] });
     },
   });
 }
@@ -609,7 +618,7 @@ export function useRechazarVacaciones() {
     mutationFn: ({ id, motivo }: { id: string; motivo: string }) =>
       vacacionesService.rechazar(id, motivo),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vacaciones'] });
+      queryClient.invalidateQueries({ queryKey: ["vacaciones"] });
     },
   });
 }
@@ -622,11 +631,15 @@ export function useRechazarVacaciones() {
 Reemplazar la página de RRHH que usa `mockEmpleados` con datos reales del backend:
 
 ```tsx
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useLocal } from '@/contexts/LocalContext';
-import { useEmpleados, useLiquidaciones, useAsistencias } from '@/hooks/useRRHH';
+import Link from "next/link";
+import { useLocal } from "@/contexts/LocalContext";
+import {
+  useEmpleados,
+  useLiquidaciones,
+  useAsistencias,
+} from "@/hooks/useRRHH";
 
 export default function RRHHPage() {
   const { selectedLocal, isAllLocales } = useLocal();
@@ -640,22 +653,22 @@ export default function RRHHPage() {
   // Liquidaciones del mes actual
   const periodoActual = (() => {
     const hoy = new Date();
-    return `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
+    return `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, "0")}`;
   })();
   const { data: liquidacionesData } = useLiquidaciones({ localId });
 
   // Asistencias del día de hoy
-  const hoy = new Date().toISOString().split('T')[0];
+  const hoy = new Date().toISOString().split("T")[0];
   const { data: ausenciasHoy } = useAsistencias({ localId, fecha: hoy });
 
   // Calcular stats
   const totalEmpleados = empleadosData?.meta?.total ?? 0;
 
-  const ausenciasMes = ausenciasHoy?.data?.filter(a => a.ausente).length ?? 0;
+  const ausenciasMes = ausenciasHoy?.data?.filter((a) => a.ausente).length ?? 0;
 
-  const liquidacionesMes = liquidacionesData?.data?.filter(
-    l => l.periodo === periodoActual
-  ).length ?? 0;
+  const liquidacionesMes =
+    liquidacionesData?.data?.filter((l) => l.periodo === periodoActual)
+      .length ?? 0;
 
   return (
     <div className="space-y-6">
@@ -684,11 +697,7 @@ export default function RRHHPage() {
           value={String(ausenciasMes)}
           href="/rrhh/asistencias"
         />
-        <QuickStatCard
-          title="Registros horas"
-          value="—"
-          href="/rrhh/horas"
-        />
+        <QuickStatCard title="Registros horas" value="—" href="/rrhh/horas" />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -778,20 +787,25 @@ function ModuleCard({
 Lista de empleados con búsqueda:
 
 ```tsx
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useLocal } from '@/contexts/LocalContext';
-import { useEmpleados } from '@/hooks/useRRHH';
+import { useState } from "react";
+import { useLocal } from "@/contexts/LocalContext";
+import { useEmpleados } from "@/hooks/useRRHH";
 
 export default function EmpleadosPage() {
   const { selectedLocal, isAllLocales } = useLocal();
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
 
   const localId = isAllLocales ? undefined : selectedLocal?.id;
 
-  const { data, isLoading } = useEmpleados({ localId, search, page, limit: 20 });
+  const { data, isLoading } = useEmpleados({
+    localId,
+    search,
+    page,
+    limit: 20,
+  });
 
   if (isLoading) return <div>Cargando...</div>;
 
@@ -808,7 +822,10 @@ export default function EmpleadosPage() {
         type="text"
         placeholder="Buscar por nombre, código, cargo o área..."
         value={search}
-        onChange={e => { setSearch(e.target.value); setPage(1); }}
+        onChange={(e) => {
+          setSearch(e.target.value);
+          setPage(1);
+        }}
         className="input w-full max-w-md"
       />
 
@@ -824,14 +841,14 @@ export default function EmpleadosPage() {
           </tr>
         </thead>
         <tbody>
-          {data?.data.map(emp => (
+          {data?.data.map((emp) => (
             <tr key={emp.id}>
               <td>{emp.code}</td>
               <td>{emp.name}</td>
               <td>{emp.position}</td>
               <td>{emp.department}</td>
-              <td>${Number(emp.salary).toLocaleString('es-AR')}</td>
-              <td>{emp.active ? 'Activo' : 'Inactivo'}</td>
+              <td>${Number(emp.salary).toLocaleString("es-AR")}</td>
+              <td>{emp.active ? "Activo" : "Inactivo"}</td>
             </tr>
           ))}
         </tbody>
@@ -850,12 +867,12 @@ export default function EmpleadosPage() {
 Formulario de alta de empleado:
 
 ```tsx
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { useLocal } from '@/contexts/LocalContext';
-import { useCrearEmpleado } from '@/hooks/useRRHH';
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useLocal } from "@/contexts/LocalContext";
+import { useCrearEmpleado } from "@/hooks/useRRHH";
 
 export default function NuevoEmpleadoPage() {
   const router = useRouter();
@@ -863,14 +880,14 @@ export default function NuevoEmpleadoPage() {
   const crearEmpleado = useCrearEmpleado();
 
   const [form, setForm] = useState({
-    code: '',
-    name: '',
-    email: '',
-    phone: '',
-    position: '',
-    department: '',
+    code: "",
+    name: "",
+    email: "",
+    phone: "",
+    position: "",
+    department: "",
     salary: 0,
-    hireDate: '',
+    hireDate: "",
     active: true,
   });
 
@@ -885,7 +902,7 @@ export default function NuevoEmpleadoPage() {
       },
       localId: selectedLocal.id,
     });
-    router.push('/rrhh/empleados');
+    router.push("/rrhh/empleados");
   };
 
   return (
@@ -898,7 +915,7 @@ export default function NuevoEmpleadoPage() {
         <input
           className="input w-full"
           value={form.code}
-          onChange={e => setForm(f => ({ ...f, code: e.target.value }))}
+          onChange={(e) => setForm((f) => ({ ...f, code: e.target.value }))}
           placeholder="EMP-001"
           required
         />
@@ -910,7 +927,7 @@ export default function NuevoEmpleadoPage() {
         <input
           className="input w-full"
           value={form.name}
-          onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+          onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
           required
         />
       </div>
@@ -922,7 +939,7 @@ export default function NuevoEmpleadoPage() {
             type="email"
             className="input w-full"
             value={form.email}
-            onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+            onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
           />
         </div>
         <div>
@@ -930,7 +947,7 @@ export default function NuevoEmpleadoPage() {
           <input
             className="input w-full"
             value={form.phone}
-            onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+            onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
           />
         </div>
       </div>
@@ -941,7 +958,9 @@ export default function NuevoEmpleadoPage() {
           <input
             className="input w-full"
             value={form.position}
-            onChange={e => setForm(f => ({ ...f, position: e.target.value }))}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, position: e.target.value }))
+            }
             required
           />
         </div>
@@ -950,7 +969,9 @@ export default function NuevoEmpleadoPage() {
           <input
             className="input w-full"
             value={form.department}
-            onChange={e => setForm(f => ({ ...f, department: e.target.value }))}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, department: e.target.value }))
+            }
             required
           />
         </div>
@@ -965,7 +986,9 @@ export default function NuevoEmpleadoPage() {
             step="0.01"
             className="input w-full"
             value={form.salary}
-            onChange={e => setForm(f => ({ ...f, salary: +e.target.value }))}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, salary: +e.target.value }))
+            }
             required
           />
         </div>
@@ -975,7 +998,9 @@ export default function NuevoEmpleadoPage() {
             type="date"
             className="input w-full"
             value={form.hireDate}
-            onChange={e => setForm(f => ({ ...f, hireDate: e.target.value }))}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, hireDate: e.target.value }))
+            }
             required
           />
         </div>
@@ -992,7 +1017,7 @@ export default function NuevoEmpleadoPage() {
         className="btn btn-primary"
         disabled={crearEmpleado.isPending || !selectedLocal?.id}
       >
-        {crearEmpleado.isPending ? 'Guardando...' : 'Crear empleado'}
+        {crearEmpleado.isPending ? "Guardando..." : "Crear empleado"}
       </button>
     </form>
   );
@@ -1006,32 +1031,39 @@ export default function NuevoEmpleadoPage() {
 Registrar y listar asistencias, con filtro por fecha y empleado:
 
 ```tsx
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useLocal } from '@/contexts/LocalContext';
-import { useAsistencias, useRegistrarAsistencia, useEmpleados } from '@/hooks/useRRHH';
+import { useState } from "react";
+import { useLocal } from "@/contexts/LocalContext";
+import {
+  useAsistencias,
+  useRegistrarAsistencia,
+  useEmpleados,
+} from "@/hooks/useRRHH";
 
 export default function AsistenciasPage() {
   const { selectedLocal, isAllLocales } = useLocal();
   const localId = isAllLocales ? undefined : selectedLocal?.id;
 
   // Filtro por fecha (hoy por defecto)
-  const [fecha, setFecha] = useState(new Date().toISOString().split('T')[0]);
+  const [fecha, setFecha] = useState(new Date().toISOString().split("T")[0]);
 
-  const { data: asistenciasData, isLoading } = useAsistencias({ localId, fecha });
+  const { data: asistenciasData, isLoading } = useAsistencias({
+    localId,
+    fecha,
+  });
   const { data: empleadosData } = useEmpleados({ localId, limit: 100 });
   const registrar = useRegistrarAsistencia();
 
   const handleRegistrar = async (
     empleadoId: string,
-    tipo: 'presente' | 'ausente' | 'justificado'
+    tipo: "presente" | "ausente" | "justificado",
   ) => {
     await registrar.mutateAsync({
       empleadoId,
       fecha,
-      ausente: tipo !== 'presente',
-      justificado: tipo === 'justificado',
+      ausente: tipo !== "presente",
+      justificado: tipo === "justificado",
     });
   };
 
@@ -1047,7 +1079,7 @@ export default function AsistenciasPage() {
           type="date"
           className="input"
           value={fecha}
-          onChange={e => setFecha(e.target.value)}
+          onChange={(e) => setFecha(e.target.value)}
         />
       </div>
 
@@ -1063,19 +1095,19 @@ export default function AsistenciasPage() {
           </tr>
         </thead>
         <tbody>
-          {asistenciasData?.data.map(a => (
+          {asistenciasData?.data.map((a) => (
             <tr key={a.id}>
               {/* Para mostrar el nombre buscar en empleadosData */}
               <td>{a.empleadoId}</td>
               <td>
                 {a.ausente
                   ? a.justificado
-                    ? 'Justificado'
-                    : 'Ausente'
-                  : 'Presente'}
+                    ? "Justificado"
+                    : "Ausente"
+                  : "Presente"}
               </td>
-              <td>{a.entrada ?? '—'}</td>
-              <td>{a.salida ?? '—'}</td>
+              <td>{a.entrada ?? "—"}</td>
+              <td>{a.salida ?? "—"}</td>
             </tr>
           ))}
         </tbody>
@@ -1101,18 +1133,21 @@ export default function AsistenciasPage() {
 Registrar horas normales y extras:
 
 ```tsx
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useLocal } from '@/contexts/LocalContext';
-import { useHoras, useRegistrarHoras, useEmpleados } from '@/hooks/useRRHH';
+import { useState } from "react";
+import { useLocal } from "@/contexts/LocalContext";
+import { useHoras, useRegistrarHoras, useEmpleados } from "@/hooks/useRRHH";
 
 export default function HorasPage() {
   const { selectedLocal, isAllLocales } = useLocal();
   const localId = isAllLocales ? undefined : selectedLocal?.id;
 
-  const [empleadoId, setEmpleadoId] = useState('');
-  const { data: horasData } = useHoras({ localId, empleadoId: empleadoId || undefined });
+  const [empleadoId, setEmpleadoId] = useState("");
+  const { data: horasData } = useHoras({
+    localId,
+    empleadoId: empleadoId || undefined,
+  });
   const { data: empleadosData } = useEmpleados({ localId, limit: 100 });
   const registrar = useRegistrarHoras();
 
@@ -1120,11 +1155,11 @@ export default function HorasPage() {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     await registrar.mutateAsync({
-      empleadoId: fd.get('empleadoId') as string,
-      fecha: fd.get('fecha') as string,
-      horasNormales: Number(fd.get('horasNormales')),
-      horasExtra: Number(fd.get('horasExtra')) || undefined,
-      descripcion: (fd.get('descripcion') as string) || undefined,
+      empleadoId: fd.get("empleadoId") as string,
+      fecha: fd.get("fecha") as string,
+      horasNormales: Number(fd.get("horasNormales")),
+      horasExtra: Number(fd.get("horasExtra")) || undefined,
+      descripcion: (fd.get("descripcion") as string) || undefined,
     });
     e.currentTarget.reset();
   };
@@ -1138,8 +1173,10 @@ export default function HorasPage() {
 
         <select name="empleadoId" className="input w-full" required>
           <option value="">Seleccionar empleado...</option>
-          {empleadosData?.data.map(e => (
-            <option key={e.id} value={e.id}>{e.name} ({e.code})</option>
+          {empleadosData?.data.map((e) => (
+            <option key={e.id} value={e.id}>
+              {e.name} ({e.code})
+            </option>
           ))}
         </select>
 
@@ -1181,7 +1218,7 @@ export default function HorasPage() {
           className="btn btn-primary"
           disabled={registrar.isPending}
         >
-          {registrar.isPending ? 'Guardando...' : 'Registrar'}
+          {registrar.isPending ? "Guardando..." : "Registrar"}
         </button>
       </form>
 
@@ -1190,11 +1227,13 @@ export default function HorasPage() {
         <select
           className="input mb-4"
           value={empleadoId}
-          onChange={e => setEmpleadoId(e.target.value)}
+          onChange={(e) => setEmpleadoId(e.target.value)}
         >
           <option value="">Todos los empleados</option>
-          {empleadosData?.data.map(e => (
-            <option key={e.id} value={e.id}>{e.name}</option>
+          {empleadosData?.data.map((e) => (
+            <option key={e.id} value={e.id}>
+              {e.name}
+            </option>
           ))}
         </select>
 
@@ -1209,13 +1248,13 @@ export default function HorasPage() {
             </tr>
           </thead>
           <tbody>
-            {horasData?.data.map(h => (
+            {horasData?.data.map((h) => (
               <tr key={h.id}>
                 <td>{h.empleadoId}</td>
                 <td>{h.fecha}</td>
                 <td>{Number(h.horasNormales)}</td>
                 <td>{Number(h.horasExtra)}</td>
-                <td>{h.descripcion ?? '—'}</td>
+                <td>{h.descripcion ?? "—"}</td>
               </tr>
             ))}
           </tbody>
@@ -1235,16 +1274,16 @@ export default function HorasPage() {
 Listar liquidaciones y crear una nueva:
 
 ```tsx
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useLocal } from '@/contexts/LocalContext';
+import { useState } from "react";
+import { useLocal } from "@/contexts/LocalContext";
 import {
   useLiquidaciones,
   useCrearLiquidacion,
   useAprobarLiquidacion,
   useEmpleados,
-} from '@/hooks/useRRHH';
+} from "@/hooks/useRRHH";
 
 export default function LiquidacionesPage() {
   const { selectedLocal, isAllLocales } = useLocal();
@@ -1256,11 +1295,11 @@ export default function LiquidacionesPage() {
   const aprobarLiq = useAprobarLiquidacion();
 
   const [form, setForm] = useState({
-    empleadoId: '',
-    periodo: '',     // formato "YYYY-MM"
+    empleadoId: "",
+    periodo: "", // formato "YYYY-MM"
     sueldobruto: 0,
     deducciones: 0,
-    notas: '',
+    notas: "",
   });
 
   const handleCrear = async (e: React.FormEvent) => {
@@ -1272,7 +1311,13 @@ export default function LiquidacionesPage() {
       deducciones: Number(form.deducciones) || undefined,
       notas: form.notas || undefined,
     });
-    setForm({ empleadoId: '', periodo: '', sueldobruto: 0, deducciones: 0, notas: '' });
+    setForm({
+      empleadoId: "",
+      periodo: "",
+      sueldobruto: 0,
+      deducciones: 0,
+      notas: "",
+    });
   };
 
   if (isLoading) return <div>Cargando...</div>;
@@ -1288,12 +1333,16 @@ export default function LiquidacionesPage() {
         <select
           className="input w-full"
           value={form.empleadoId}
-          onChange={e => setForm(f => ({ ...f, empleadoId: e.target.value }))}
+          onChange={(e) =>
+            setForm((f) => ({ ...f, empleadoId: e.target.value }))
+          }
           required
         >
           <option value="">Seleccionar empleado...</option>
-          {empleadosData?.data.map(e => (
-            <option key={e.id} value={e.id}>{e.name} ({e.code})</option>
+          {empleadosData?.data.map((e) => (
+            <option key={e.id} value={e.id}>
+              {e.name} ({e.code})
+            </option>
           ))}
         </select>
 
@@ -1304,7 +1353,9 @@ export default function LiquidacionesPage() {
             type="month"
             className="input w-full"
             value={form.periodo}
-            onChange={e => setForm(f => ({ ...f, periodo: e.target.value }))}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, periodo: e.target.value }))
+            }
             required
           />
           {/* input[type=month] devuelve "YYYY-MM" que es exactamente lo que espera la API */}
@@ -1319,7 +1370,9 @@ export default function LiquidacionesPage() {
               step="0.01"
               className="input w-full"
               value={form.sueldobruto}
-              onChange={e => setForm(f => ({ ...f, sueldobruto: +e.target.value }))}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, sueldobruto: +e.target.value }))
+              }
               required
             />
           </div>
@@ -1331,15 +1384,20 @@ export default function LiquidacionesPage() {
               step="0.01"
               className="input w-full"
               value={form.deducciones}
-              onChange={e => setForm(f => ({ ...f, deducciones: +e.target.value }))}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, deducciones: +e.target.value }))
+              }
             />
           </div>
         </div>
 
         <p className="text-sm text-gray-600">
-          Sueldo neto estimado:{' '}
+          Sueldo neto estimado:{" "}
           <strong>
-            ${(Number(form.sueldobruto) - Number(form.deducciones)).toLocaleString('es-AR')}
+            $
+            {(
+              Number(form.sueldobruto) - Number(form.deducciones)
+            ).toLocaleString("es-AR")}
           </strong>
         </p>
 
@@ -1347,13 +1405,14 @@ export default function LiquidacionesPage() {
           className="input w-full"
           placeholder="Notas (opcional)"
           value={form.notas}
-          onChange={e => setForm(f => ({ ...f, notas: e.target.value }))}
+          onChange={(e) => setForm((f) => ({ ...f, notas: e.target.value }))}
           rows={2}
         />
 
         {crearLiq.isError && (
           <p className="text-red-600 text-sm">
-            Error. Verificá que no exista ya una liquidación para ese empleado y período.
+            Error. Verificá que no exista ya una liquidación para ese empleado y
+            período.
           </p>
         )}
 
@@ -1362,7 +1421,7 @@ export default function LiquidacionesPage() {
           className="btn btn-primary"
           disabled={crearLiq.isPending}
         >
-          {crearLiq.isPending ? 'Creando...' : 'Crear liquidación'}
+          {crearLiq.isPending ? "Creando..." : "Crear liquidación"}
         </button>
       </form>
 
@@ -1380,20 +1439,26 @@ export default function LiquidacionesPage() {
           </tr>
         </thead>
         <tbody>
-          {data?.data.map(liq => (
+          {data?.data.map((liq) => (
             <tr key={liq.id}>
               <td>{liq.empleado?.name ?? liq.empleadoId}</td>
               <td>{liq.periodo}</td>
-              <td>${Number(liq.sueldobruto).toLocaleString('es-AR')}</td>
-              <td>${Number(liq.deducciones).toLocaleString('es-AR')}</td>
-              <td>${Number(liq.sueldoNeto).toLocaleString('es-AR')}</td>
+              <td>${Number(liq.sueldobruto).toLocaleString("es-AR")}</td>
+              <td>${Number(liq.deducciones).toLocaleString("es-AR")}</td>
+              <td>${Number(liq.sueldoNeto).toLocaleString("es-AR")}</td>
               <td>
-                <span className={liq.estado === 'APROBADA' ? 'text-green-600' : 'text-yellow-600'}>
+                <span
+                  className={
+                    liq.estado === "APROBADA"
+                      ? "text-green-600"
+                      : "text-yellow-600"
+                  }
+                >
                   {liq.estado}
                 </span>
               </td>
               <td>
-                {liq.estado === 'BORRADOR' && (
+                {liq.estado === "BORRADOR" && (
                   <button
                     className="btn btn-sm btn-success"
                     onClick={() => aprobarLiq.mutate(liq.id)}
@@ -1419,23 +1484,23 @@ export default function LiquidacionesPage() {
 Solicitar vacaciones y gestionar solicitudes:
 
 ```tsx
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useLocal } from '@/contexts/LocalContext';
+import { useState } from "react";
+import { useLocal } from "@/contexts/LocalContext";
 import {
   useSolicitarVacaciones,
   useAprobarVacaciones,
   useRechazarVacaciones,
   useVacacionesByEmpleado,
   useEmpleados,
-} from '@/hooks/useRRHH';
+} from "@/hooks/useRRHH";
 
 export default function VacacionesPage() {
   const { selectedLocal, isAllLocales } = useLocal();
   const localId = isAllLocales ? undefined : selectedLocal?.id;
 
-  const [empleadoId, setEmpleadoId] = useState('');
+  const [empleadoId, setEmpleadoId] = useState("");
   const { data: empleadosData } = useEmpleados({ localId, limit: 100 });
   const { data: vacData } = useVacacionesByEmpleado(empleadoId);
 
@@ -1447,10 +1512,10 @@ export default function VacacionesPage() {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     await solicitar.mutateAsync({
-      empleadoId: fd.get('empleadoId') as string,
-      fechaDesde: fd.get('fechaDesde') as string,
-      fechaHasta: fd.get('fechaHasta') as string,
-      notas: (fd.get('notas') as string) || undefined,
+      empleadoId: fd.get("empleadoId") as string,
+      fechaDesde: fd.get("fechaDesde") as string,
+      fechaHasta: fd.get("fechaHasta") as string,
+      notas: (fd.get("notas") as string) || undefined,
     });
     e.currentTarget.reset();
   };
@@ -1465,19 +1530,31 @@ export default function VacacionesPage() {
 
         <select name="empleadoId" className="input w-full" required>
           <option value="">Seleccionar empleado...</option>
-          {empleadosData?.data.map(e => (
-            <option key={e.id} value={e.id}>{e.name} ({e.code})</option>
+          {empleadosData?.data.map((e) => (
+            <option key={e.id} value={e.id}>
+              {e.name} ({e.code})
+            </option>
           ))}
         </select>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="label">Desde *</label>
-            <input type="date" name="fechaDesde" className="input w-full" required />
+            <input
+              type="date"
+              name="fechaDesde"
+              className="input w-full"
+              required
+            />
           </div>
           <div>
             <label className="label">Hasta *</label>
-            <input type="date" name="fechaHasta" className="input w-full" required />
+            <input
+              type="date"
+              name="fechaHasta"
+              className="input w-full"
+              required
+            />
           </div>
         </div>
 
@@ -1499,7 +1576,7 @@ export default function VacacionesPage() {
           className="btn btn-primary"
           disabled={solicitar.isPending}
         >
-          {solicitar.isPending ? 'Enviando...' : 'Solicitar vacaciones'}
+          {solicitar.isPending ? "Enviando..." : "Solicitar vacaciones"}
         </button>
       </form>
 
@@ -1510,18 +1587,21 @@ export default function VacacionesPage() {
           <select
             className="input"
             value={empleadoId}
-            onChange={e => setEmpleadoId(e.target.value)}
+            onChange={(e) => setEmpleadoId(e.target.value)}
           >
             <option value="">Seleccionar...</option>
-            {empleadosData?.data.map(e => (
-              <option key={e.id} value={e.id}>{e.name}</option>
+            {empleadosData?.data.map((e) => (
+              <option key={e.id} value={e.id}>
+                {e.name}
+              </option>
             ))}
           </select>
         </div>
 
         {vacData && (
           <p className="text-sm text-gray-600 mb-2">
-            Días tomados (aprobados): <strong>{vacData.resumen.diasTomados}</strong>
+            Días tomados (aprobados):{" "}
+            <strong>{vacData.resumen.diasTomados}</strong>
           </p>
         )}
 
@@ -1537,7 +1617,7 @@ export default function VacacionesPage() {
             </tr>
           </thead>
           <tbody>
-            {vacData?.data.map(v => (
+            {vacData?.data.map((v) => (
               <tr key={v.id}>
                 <td>{v.fechaDesde}</td>
                 <td>{v.fechaHasta}</td>
@@ -1545,19 +1625,19 @@ export default function VacacionesPage() {
                 <td>
                   <span
                     className={
-                      v.estado === 'APROBADA'
-                        ? 'text-green-600'
-                        : v.estado === 'RECHAZADA'
-                        ? 'text-red-600'
-                        : 'text-yellow-600'
+                      v.estado === "APROBADA"
+                        ? "text-green-600"
+                        : v.estado === "RECHAZADA"
+                          ? "text-red-600"
+                          : "text-yellow-600"
                     }
                   >
                     {v.estado}
                   </span>
                 </td>
-                <td>{v.notas ?? '—'}</td>
+                <td>{v.notas ?? "—"}</td>
                 <td className="flex gap-2">
-                  {v.estado === 'PENDIENTE' && (
+                  {v.estado === "PENDIENTE" && (
                     <>
                       <button
                         className="btn btn-sm btn-success"
@@ -1570,7 +1650,7 @@ export default function VacacionesPage() {
                         onClick={() =>
                           rechazar.mutate({
                             id: v.id,
-                            motivo: 'Rechazado por administración',
+                            motivo: "Rechazado por administración",
                           })
                         }
                       >
@@ -1593,63 +1673,63 @@ export default function VacacionesPage() {
 
 ## 6. Referencia de endpoints
 
-| Método  | Endpoint                                           | Descripción                            | Rol        |
-| ------- | -------------------------------------------------- | -------------------------------------- | ---------- |
-| `GET`   | `/api/v1/empleados`                                | Listar empleados (paginado + búsqueda) | Todos      |
-| `GET`   | `/api/v1/empleados/:id`                            | Detalle con `_count`                   | Todos      |
-| `GET`   | `/api/v1/empleados/:id/resumen-horas?mes=&anio=`   | Resumen mensual horas/asistencias      | Todos      |
-| `POST`  | `/api/v1/empleados?localId=UUID`                   | Crear empleado                         | Admin      |
-| `PATCH` | `/api/v1/empleados/:id`                            | Actualizar empleado                    | Admin      |
-| `GET`   | `/api/v1/asistencias?empleadoId=&fecha=`           | Listar asistencias                     | Todos      |
-| `POST`  | `/api/v1/asistencias`                              | Registrar asistencia                   | Todos      |
-| `GET`   | `/api/v1/horas?empleadoId=`                        | Listar registros de horas              | Todos      |
-| `POST`  | `/api/v1/horas`                                    | Registrar horas                        | Todos      |
-| `GET`   | `/api/v1/liquidaciones`                            | Listar liquidaciones                   | Todos      |
-| `GET`   | `/api/v1/liquidaciones/:id`                        | Detalle de liquidación                 | Todos      |
-| `POST`  | `/api/v1/liquidaciones`                            | Crear liquidación                      | Admin      |
-| `PATCH` | `/api/v1/liquidaciones/:id/aprobar`                | Aprobar liquidación                    | Admin      |
-| `GET`   | `/api/v1/vacaciones/empleado/:id`                  | Historial vacaciones de un empleado    | Todos      |
-| `POST`  | `/api/v1/vacaciones`                               | Solicitar vacaciones                   | Todos      |
-| `PATCH` | `/api/v1/vacaciones/:id/aprobar`                   | Aprobar solicitud                      | Admin      |
-| `PATCH` | `/api/v1/vacaciones/:id/rechazar`                  | Rechazar solicitud (body: `{motivo}`)  | Admin      |
+| Método  | Endpoint                                         | Descripción                            | Rol   |
+| ------- | ------------------------------------------------ | -------------------------------------- | ----- |
+| `GET`   | `/api/v1/empleados`                              | Listar empleados (paginado + búsqueda) | Todos |
+| `GET`   | `/api/v1/empleados/:id`                          | Detalle con `_count`                   | Todos |
+| `GET`   | `/api/v1/empleados/:id/resumen-horas?mes=&anio=` | Resumen mensual horas/asistencias      | Todos |
+| `POST`  | `/api/v1/empleados?localId=UUID`                 | Crear empleado                         | Admin |
+| `PATCH` | `/api/v1/empleados/:id`                          | Actualizar empleado                    | Admin |
+| `GET`   | `/api/v1/asistencias?empleadoId=&fecha=`         | Listar asistencias                     | Todos |
+| `POST`  | `/api/v1/asistencias`                            | Registrar asistencia                   | Todos |
+| `GET`   | `/api/v1/horas?empleadoId=`                      | Listar registros de horas              | Todos |
+| `POST`  | `/api/v1/horas`                                  | Registrar horas                        | Todos |
+| `GET`   | `/api/v1/liquidaciones`                          | Listar liquidaciones                   | Todos |
+| `GET`   | `/api/v1/liquidaciones/:id`                      | Detalle de liquidación                 | Todos |
+| `POST`  | `/api/v1/liquidaciones`                          | Crear liquidación                      | Admin |
+| `PATCH` | `/api/v1/liquidaciones/:id/aprobar`              | Aprobar liquidación                    | Admin |
+| `GET`   | `/api/v1/vacaciones/empleado/:id`                | Historial vacaciones de un empleado    | Todos |
+| `POST`  | `/api/v1/vacaciones`                             | Solicitar vacaciones                   | Todos |
+| `PATCH` | `/api/v1/vacaciones/:id/aprobar`                 | Aprobar solicitud                      | Admin |
+| `PATCH` | `/api/v1/vacaciones/:id/rechazar`                | Rechazar solicitud (body: `{motivo}`)  | Admin |
 
 ---
 
 ## 7. Errores frecuentes
 
-| Situación                                      | Código | Causa                                              |
-| ---------------------------------------------- | ------ | -------------------------------------------------- |
-| Crear empleado con `code` duplicado            | 409    | Ya existe ese código en la empresa                 |
-| Registrar asistencia con misma fecha/empleado  | 5xx    | Unique constraint `[empleadoId, fecha]`            |
-| Registrar horas con misma fecha/empleado       | 5xx    | Unique constraint `[empleadoId, fecha]`            |
-| Crear liquidación con mismo periodo/empleado   | 400    | Ya existe liquidación para ese período             |
-| Aprobar liquidación ya aprobada                | 404    | El backend busca con `estado: BORRADOR`            |
-| Crear vacaciones con solapamiento              | 400    | Se solapa con PENDIENTE o APROBADA                 |
-| Aprobar/rechazar vacaciones no pendientes      | 404    | El backend busca con `estado: PENDIENTE`           |
-| `POST /empleados` sin `?localId=`              | 400    | `localId` es requerido como query param            |
+| Situación                                     | Código | Causa                                    |
+| --------------------------------------------- | ------ | ---------------------------------------- |
+| Crear empleado con `code` duplicado           | 409    | Ya existe ese código en la empresa       |
+| Registrar asistencia con misma fecha/empleado | 5xx    | Unique constraint `[empleadoId, fecha]`  |
+| Registrar horas con misma fecha/empleado      | 5xx    | Unique constraint `[empleadoId, fecha]`  |
+| Crear liquidación con mismo periodo/empleado  | 400    | Ya existe liquidación para ese período   |
+| Aprobar liquidación ya aprobada               | 404    | El backend busca con `estado: BORRADOR`  |
+| Crear vacaciones con solapamiento             | 400    | Se solapa con PENDIENTE o APROBADA       |
+| Aprobar/rechazar vacaciones no pendientes     | 404    | El backend busca con `estado: PENDIENTE` |
+| `POST /empleados` sin `?localId=`             | 400    | `localId` es requerido como query param  |
 
 ---
 
 ## 8. Resumen de discrepancias: docs vs código real
 
-| Campo docs                | Campo real         | Entidad      |
-| ------------------------- | ------------------ | ------------ |
-| `legajo`                  | `code`             | Empleado     |
-| `apellido` + `nombre`     | `name`             | Empleado     |
-| `telefono`                | `phone`            | Empleado     |
-| `cargo`                   | `position`         | Empleado     |
-| `categoria: CategoriaLaboral` | `department` (string libre) | Empleado |
-| `salarioBase`             | `salary`           | Empleado     |
-| `fechaIngreso`            | `hireDate`         | Empleado     |
-| `estado: EstadoEmpleado`  | `active: boolean`  | Empleado     |
-| `fechaEgreso`             | **no existe**      | Empleado     |
-| `estado: EstadoAsistencia`| `ausente` + `justificado` (booleans) | Asistencia |
-| `horaEntrada`             | `entrada`          | Asistencia   |
-| `horaSalida`              | `salida`           | Asistencia   |
-| `observaciones`           | `notas`            | Asistencia, Liquidacion, Vacacion |
-| `concepto`                | `descripcion`      | RegistroHoras |
-| `periodoDesde` + `periodoHasta` | `periodo: "YYYY-MM"` | Liquidacion |
-| `conceptos: []` (array)   | `sueldobruto` + `deducciones` (campos directos) | Liquidacion |
-| `totalBruto`              | `sueldobruto`      | Liquidacion  |
-| `totalDescuentos`         | `deducciones`      | Liquidacion  |
-| `totalNeto`               | `sueldoNeto`       | Liquidacion  |
+| Campo docs                      | Campo real                                      | Entidad                           |
+| ------------------------------- | ----------------------------------------------- | --------------------------------- |
+| `legajo`                        | `code`                                          | Empleado                          |
+| `apellido` + `nombre`           | `name`                                          | Empleado                          |
+| `telefono`                      | `phone`                                         | Empleado                          |
+| `cargo`                         | `position`                                      | Empleado                          |
+| `categoria: CategoriaLaboral`   | `department` (string libre)                     | Empleado                          |
+| `salarioBase`                   | `salary`                                        | Empleado                          |
+| `fechaIngreso`                  | `hireDate`                                      | Empleado                          |
+| `estado: EstadoEmpleado`        | `active: boolean`                               | Empleado                          |
+| `fechaEgreso`                   | **no existe**                                   | Empleado                          |
+| `estado: EstadoAsistencia`      | `ausente` + `justificado` (booleans)            | Asistencia                        |
+| `horaEntrada`                   | `entrada`                                       | Asistencia                        |
+| `horaSalida`                    | `salida`                                        | Asistencia                        |
+| `observaciones`                 | `notas`                                         | Asistencia, Liquidacion, Vacacion |
+| `concepto`                      | `descripcion`                                   | RegistroHoras                     |
+| `periodoDesde` + `periodoHasta` | `periodo: "YYYY-MM"`                            | Liquidacion                       |
+| `conceptos: []` (array)         | `sueldobruto` + `deducciones` (campos directos) | Liquidacion                       |
+| `totalBruto`                    | `sueldobruto`                                   | Liquidacion                       |
+| `totalDescuentos`               | `deducciones`                                   | Liquidacion                       |
+| `totalNeto`                     | `sueldoNeto`                                    | Liquidacion                       |

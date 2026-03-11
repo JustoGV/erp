@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { QueryProvider } from "@/components/providers/QueryProvider";
+import { ToastProvider } from "@/contexts/ToastContext";
+import { GlobalErrorCatcher } from "@/components/GlobalErrorCatcher";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,7 +23,12 @@ export default function RootLayout({
     <html lang="es">
       <body className={inter.className}>
         <QueryProvider>
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider>
+            <ToastProvider>
+              <GlobalErrorCatcher />
+              {children}
+            </ToastProvider>
+          </AuthProvider>
         </QueryProvider>
       </body>
     </html>

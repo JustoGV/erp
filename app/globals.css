@@ -33,7 +33,9 @@
 
 body {
   @apply bg-slate-50 text-slate-900 antialiased;
-  font-feature-settings: "rlig" 1, "calt" 1;
+  font-feature-settings:
+    "rlig" 1,
+    "calt" 1;
 }
 
 @layer components {
@@ -43,21 +45,21 @@ body {
            transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed
            focus:outline-none focus:ring-2 focus:ring-offset-2;
   }
-  
+
   .btn-primary {
     @apply bg-gradient-to-r from-blue-600 to-blue-700 text-white 
            hover:from-blue-700 hover:to-blue-800 
            active:from-blue-800 active:to-blue-900
            shadow-sm hover:shadow-md focus:ring-blue-500;
   }
-  
+
   .btn-secondary {
     @apply bg-white text-slate-700 border border-slate-300
            hover:bg-slate-50 hover:border-slate-400
            active:bg-slate-100 shadow-sm hover:shadow
            focus:ring-slate-500;
   }
-  
+
   .btn-danger {
     @apply bg-gradient-to-r from-red-600 to-red-700 text-white 
            hover:from-red-700 hover:to-red-800
@@ -75,7 +77,7 @@ body {
     @apply text-slate-700 hover:bg-slate-100 active:bg-slate-200
            focus:ring-slate-500;
   }
-  
+
   /* Inputs */
   .input {
     @apply w-full px-4 py-2.5 bg-white border border-slate-300 rounded-lg
@@ -93,7 +95,7 @@ body {
   .label {
     @apply block text-sm font-medium text-slate-700 mb-2;
   }
-  
+
   /* Cards */
   .card {
     @apply bg-white rounded-xl shadow-sm border border-slate-200 p-6
@@ -113,7 +115,7 @@ body {
   .card-title {
     @apply text-lg font-semibold text-slate-900;
   }
-  
+
   /* Tables */
   .table-container {
     @apply overflow-hidden rounded-lg border border-slate-200 shadow-sm;
@@ -122,15 +124,15 @@ body {
   .table {
     @apply min-w-full divide-y divide-slate-200;
   }
-  
+
   .table thead {
     @apply bg-slate-50;
   }
-  
+
   .table th {
     @apply px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider;
   }
-  
+
   .table tbody {
     @apply bg-white divide-y divide-slate-100;
   }
@@ -142,24 +144,24 @@ body {
   .table-row-hover {
     @apply hover:bg-slate-50 transition-colors duration-150;
   }
-  
+
   /* Badges */
   .badge {
     @apply inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full;
   }
-  
+
   .badge-success {
     @apply bg-emerald-100 text-emerald-800 ring-1 ring-emerald-600/20;
   }
-  
+
   .badge-warning {
     @apply bg-amber-100 text-amber-800 ring-1 ring-amber-600/20;
   }
-  
+
   .badge-danger {
     @apply bg-red-100 text-red-800 ring-1 ring-red-600/20;
   }
-  
+
   .badge-info {
     @apply bg-blue-100 text-blue-800 ring-1 ring-blue-600/20;
   }
@@ -186,19 +188,38 @@ body {
     animation: slideIn 0.3s ease-out;
   }
 
+  .animate-slide-in {
+    animation: slideInRight 0.3s ease-out;
+  }
+
   @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
   }
 
   @keyframes slideIn {
-    from { 
+    from {
       opacity: 0;
       transform: translateY(10px);
     }
-    to { 
+    to {
       opacity: 1;
       transform: translateY(0);
+    }
+  }
+
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(100%);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
     }
   }
 

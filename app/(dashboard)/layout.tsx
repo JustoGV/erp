@@ -3,6 +3,7 @@
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import { LocalProvider } from "@/contexts/LocalContext";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -39,7 +40,9 @@ export default function DashboardLayout({
         <div className="flex-1 flex flex-col overflow-hidden">
           <Header />
           <main className="flex-1 overflow-y-auto p-6 custom-scrollbar">
-            <div className="max-w-[1600px] mx-auto fade-in">{children}</div>
+            <div className="max-w-[1600px] mx-auto fade-in">
+              <ErrorBoundary section="dashboard">{children}</ErrorBoundary>
+            </div>
           </main>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
+import { logger } from "@/lib/logger";
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api/v1";
@@ -53,8 +54,39 @@ apiClient.interceptors.response.use(
       _retry?: boolean;
     };
 
+    const status = error.response?.status;
+    const url = originalRequest?.url ?? "unknown";
+    const method = originalRequest?.method?.toUpperCase() ?? "?";
+
+    // ── Log de errores HTTP según el tipo ──
+    if (status && status !== 401) {
+      const body = error.response?.data as Record<string, unknown> | undefined;
+      const msg = (body?.message as string) ?? error.message;
+
+      if (status === 422 || status === 400) {
+        // Error de validación — probablemente un dato mal ingresado
+        logger.warn(`Validación fallida ${method} ${url}: ${msg}`, "api", {
+          status,
+          errors: body?.errors,
+        });
+      } else if (status === 403) {
+        logger.warn(`Acceso denegado ${method} ${url}`, "api", { status });
+      } else if (status === 404) {
+        logger.info(`Recurso no encontrado ${method} ${url}`, "api");
+      } else if (status >= 500) {
+        logger.error(`Error del servidor ${method} ${url}: ${msg}`, "api", {
+          status,
+          body: JSON.stringify(body).slice(0, 300),
+        });
+      }
+    } else if (!status) {
+      // Error de red / timeout
+      logger.error(`Error de red ${method} ${url}: ${error.message}`, "api", {
+        code: error.code,
+      });
+    }
     // Si el error es 401 y no hemos reintentado ya
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (status === 401 && !originalRequest._retry) {
       // Si ya hay un refresh en curso, encolar la petición
       if (isRefreshing) {
         return new Promise((resolve, reject) => {

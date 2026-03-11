@@ -1,16 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { useReporteVentas } from "@/hooks/useReportes";
-import { downloadReporteXLSX } from "@/lib/services/reportes.service";
+import { useReporteCompras } from "@/hooks/useReportes";
 
-export default function ReporteVentasPage() {
+export default function ReporteComprasPage() {
   const hoy = new Date();
   const primerDia = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, "0")}-01`;
   const [filtros, setFiltros] = useState({ desde: primerDia, hasta: "" });
   const [aplicados, setAplicados] = useState(filtros);
 
-  const { data, isLoading } = useReporteVentas(aplicados);
+  const { data, isLoading } = useReporteCompras(aplicados);
   const r = data?.data;
 
   const fmt = (n?: number) =>
@@ -18,26 +17,18 @@ export default function ReporteVentasPage() {
       ? `$${Number(n).toLocaleString("es-AR", { minimumFractionDigits: 0 })}`
       : "—";
 
-  const handleDescargar = () =>
-    downloadReporteXLSX("ventas", aplicados, `ventas-${aplicados.desde}.xlsx`);
-
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Reporte de Ventas</h1>
-        <button onClick={handleDescargar} className="btn btn-secondary">
-          Exportar Excel
-        </button>
-      </div>
+      <h1 className="text-2xl font-bold">Reporte de Compras</h1>
 
       {/* Filtros */}
       <div className="card flex flex-wrap gap-4 items-end">
         <div>
-          <label htmlFor="ventas-desde" className="label">
+          <label htmlFor="compras-desde" className="label">
             Desde
           </label>
           <input
-            id="ventas-desde"
+            id="compras-desde"
             type="date"
             className="input"
             value={filtros.desde}
@@ -47,11 +38,11 @@ export default function ReporteVentasPage() {
           />
         </div>
         <div>
-          <label htmlFor="ventas-hasta" className="label">
+          <label htmlFor="compras-hasta" className="label">
             Hasta
           </label>
           <input
-            id="ventas-hasta"
+            id="compras-hasta"
             type="date"
             className="input"
             value={filtros.hasta}
@@ -75,51 +66,51 @@ export default function ReporteVentasPage() {
           {/* Resumen */}
           <div className="grid grid-cols-2 gap-4">
             <div className="card">
-              <p className="text-sm text-gray-600">Total Facturado</p>
-              <p className="text-3xl font-bold text-green-700 mt-1">
-                {fmt(r?.resumen.totalFacturado)}
+              <p className="text-sm text-gray-600">Total Comprado</p>
+              <p className="text-3xl font-bold text-orange-700 mt-1">
+                {fmt(r?.resumen.totalComprado)}
               </p>
             </div>
             <div className="card">
-              <p className="text-sm text-gray-600">Cantidad de Facturas</p>
-              <p className="text-3xl font-bold text-gray-900 mt-1">
-                {r?.resumen.cantidadFacturas ?? "—"}
+              <p className="text-sm text-gray-600">Total Pagado</p>
+              <p className="text-3xl font-bold text-green-700 mt-1">
+                {fmt(r?.resumen.totalPagado)}
               </p>
             </div>
           </div>
 
-          {/* Tabla de facturas */}
+          {/* Tabla órdenes */}
           <div className="card overflow-x-auto">
             <h3 className="font-semibold mb-4">
-              Facturas ({r?.facturas.length ?? 0})
+              Órdenes de Compra ({r?.ordenes.length ?? 0})
             </h3>
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left border-b text-gray-500">
                   <th className="pb-2 pr-4">Número</th>
                   <th className="pb-2 pr-4">Fecha</th>
-                  <th className="pb-2 pr-4">Cliente</th>
+                  <th className="pb-2 pr-4">Proveedor</th>
                   <th className="pb-2 pr-4 text-right">Total</th>
                   <th className="pb-2">Estado</th>
                 </tr>
               </thead>
               <tbody>
-                {r?.facturas.map((f) => (
-                  <tr key={f.numero} className="border-b last:border-0">
-                    <td className="py-2 pr-4 font-mono text-xs">{f.numero}</td>
-                    <td className="py-2 pr-4">{f.fecha?.slice(0, 10)}</td>
-                    <td className="py-2 pr-4">{f.cliente}</td>
+                {r?.ordenes.map((o) => (
+                  <tr key={o.numero} className="border-b last:border-0">
+                    <td className="py-2 pr-4 font-mono text-xs">{o.numero}</td>
+                    <td className="py-2 pr-4">{o.fecha?.slice(0, 10)}</td>
+                    <td className="py-2 pr-4">{o.proveedor}</td>
                     <td className="py-2 pr-4 text-right font-semibold">
-                      {fmt(f.total)}
+                      {fmt(o.total)}
                     </td>
                     <td className="py-2">
                       <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100">
-                        {f.estado}
+                        {o.estado}
                       </span>
                     </td>
                   </tr>
                 ))}
-                {!r?.facturas.length && (
+                {!r?.ordenes.length && (
                   <tr>
                     <td colSpan={5} className="py-6 text-center text-gray-400">
                       Sin resultados para el período seleccionado
@@ -130,26 +121,26 @@ export default function ReporteVentasPage() {
             </table>
           </div>
 
-          {/* Por cliente */}
-          {r?.porCliente && r.porCliente.length > 0 && (
+          {/* Por proveedor */}
+          {r?.porProveedor && r.porProveedor.length > 0 && (
             <div className="card">
-              <h3 className="font-semibold mb-4">Ventas por cliente</h3>
+              <h3 className="font-semibold mb-4">Compras por proveedor</h3>
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-left border-b text-gray-500">
-                    <th className="pb-2 pr-4">Cliente</th>
+                    <th className="pb-2 pr-4">Proveedor</th>
                     <th className="pb-2 pr-4 text-right">Total</th>
-                    <th className="pb-2 text-right">Facturas</th>
+                    <th className="pb-2 text-right">Órdenes</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {r.porCliente.map((c) => (
-                    <tr key={c.nombre} className="border-b last:border-0">
-                      <td className="py-2 pr-4">{c.nombre}</td>
+                  {r.porProveedor.map((p) => (
+                    <tr key={p.nombre} className="border-b last:border-0">
+                      <td className="py-2 pr-4">{p.nombre}</td>
                       <td className="py-2 pr-4 text-right font-semibold">
-                        {fmt(c.total)}
+                        {fmt(p.total)}
                       </td>
-                      <td className="py-2 text-right">{c.cantidad}</td>
+                      <td className="py-2 text-right">{p.cantidad}</td>
                     </tr>
                   ))}
                 </tbody>

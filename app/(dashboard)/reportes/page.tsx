@@ -1,201 +1,169 @@
-import Link from 'next/link';
-import { TrendingUp, DollarSign, ShoppingCart, Package, Users } from 'lucide-react';
+"use client";
 
-export default function ReportesPage() {
+import Link from "next/link";
+import {
+  BarChart3,
+  ShoppingCart,
+  Package,
+  Users,
+  TrendingUp,
+  AlertCircle,
+  Factory,
+} from "lucide-react";
+import { useDashboardKPIs } from "@/hooks/useReportes";
+
+function KpiCard({
+  label,
+  value,
+  sub,
+  color,
+}: {
+  label: string;
+  value: string | number;
+  sub?: string;
+  color: string;
+}) {
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Reportes y Análisis</h1>
-          <p className="text-gray-600 mt-1">Análisis completo del desempeño empresarial</p>
-        </div>
-      </div>
-
-      {/* Reportes de Ventas */}
-      <div className="card">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-green-100 text-green-600 rounded-lg">
-            <TrendingUp size={24} />
-          </div>
-          <h2 className="text-xl font-semibold text-gray-900">Reportes de Ventas</h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <ReportCard
-            title="Ventas del Mes"
-            description="Análisis de ventas mensuales"
-            href="/reportes/ventas-mes"
-          />
-          <ReportCard
-            title="Ventas por Cliente"
-            description="Ranking de clientes"
-            href="/reportes/ventas-cliente"
-          />
-          <ReportCard
-            title="Ventas por Producto"
-            description="Productos más vendidos"
-            href="/reportes/ventas-producto"
-          />
-          <ReportCard
-            title="Evolución de Ventas"
-            description="Tendencia histórica"
-            href="/reportes/evolucion-ventas"
-          />
-          <ReportCard
-            title="Margen de Ventas"
-            description="Rentabilidad por producto"
-            href="/reportes/margen-ventas"
-          />
-          <ReportCard
-            title="Presupuestos vs Ventas"
-            description="Tasa de conversión"
-            href="/reportes/conversion"
-          />
-        </div>
-      </div>
-
-      {/* Reportes de Compras */}
-      <div className="card">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-purple-100 text-purple-600 rounded-lg">
-            <ShoppingCart size={24} />
-          </div>
-          <h2 className="text-xl font-semibold text-gray-900">Reportes de Compras</h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <ReportCard
-            title="Compras del Mes"
-            description="Análisis de compras mensuales"
-            href="/reportes/compras-mes"
-          />
-          <ReportCard
-            title="Compras por Proveedor"
-            description="Ranking de proveedores"
-            href="/reportes/compras-proveedor"
-          />
-          <ReportCard
-            title="Órdenes Pendientes"
-            description="Órdenes sin recibir"
-            href="/reportes/ordenes-pendientes"
-          />
-        </div>
-      </div>
-
-      {/* Reportes de Inventario */}
-      <div className="card">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-orange-100 text-orange-600 rounded-lg">
-            <Package size={24} />
-          </div>
-          <h2 className="text-xl font-semibold text-gray-900">Reportes de Inventario</h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <ReportCard
-            title="Stock Actual"
-            description="Inventario disponible"
-            href="/reportes/stock-actual"
-          />
-          <ReportCard
-            title="Stock Bajo Mínimo"
-            description="Productos a reponer"
-            href="/reportes/stock-minimo"
-          />
-          <ReportCard
-            title="Rotación de Inventario"
-            description="Análisis de rotación"
-            href="/reportes/rotacion"
-          />
-          <ReportCard
-            title="Valorización de Stock"
-            description="Valor del inventario"
-            href="/reportes/valorizacion"
-          />
-          <ReportCard
-            title="Movimientos de Stock"
-            description="Historial de movimientos"
-            href="/reportes/movimientos-stock"
-          />
-        </div>
-      </div>
-
-      {/* Reportes Financieros */}
-      <div className="card">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg">
-            <DollarSign size={24} />
-          </div>
-          <h2 className="text-xl font-semibold text-gray-900">Reportes Financieros</h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <ReportCard
-            title="Estado de Caja"
-            description="Flujo de caja diario"
-            href="/reportes/estado-caja"
-          />
-          <ReportCard
-            title="Cuentas por Cobrar"
-            description="Deudas de clientes"
-            href="/reportes/cuentas-cobrar"
-          />
-          <ReportCard
-            title="Cuentas por Pagar"
-            description="Deudas con proveedores"
-            href="/reportes/cuentas-pagar"
-          />
-          <ReportCard
-            title="Balance General"
-            description="Estado patrimonial"
-            href="/reportes/balance"
-          />
-          <ReportCard
-            title="Estado de Resultados"
-            description="Ingresos y egresos"
-            href="/reportes/resultados"
-          />
-          <ReportCard
-            title="Flujo de Fondos"
-            description="Proyección financiera"
-            href="/reportes/flujo-fondos"
-          />
-        </div>
-      </div>
-
-      {/* Reportes de RRHH */}
-      <div className="card">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-pink-100 text-pink-600 rounded-lg">
-            <Users size={24} />
-          </div>
-          <h2 className="text-xl font-semibold text-gray-900">Reportes de RRHH</h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <ReportCard
-            title="Liquidaciones"
-            description="Sueldos del mes"
-            href="/reportes/liquidaciones"
-          />
-          <ReportCard
-            title="Asistencias"
-            description="Control de asistencia"
-            href="/reportes/asistencias"
-          />
-          <ReportCard
-            title="Costos de Personal"
-            description="Análisis de costos laborales"
-            href="/reportes/costos-personal"
-          />
-        </div>
-      </div>
+    <div className={`rounded-lg p-5 ${color} text-white`}>
+      <p className="text-sm opacity-80">{label}</p>
+      <p className="text-3xl font-bold mt-1">{value}</p>
+      {sub && <p className="text-xs opacity-75 mt-1">{sub}</p>}
     </div>
   );
 }
 
-function ReportCard({ title, description, href }: { title: string; description: string; href: string }) {
+const REPORTES = [
+  {
+    href: "/reportes/ventas",
+    icon: BarChart3,
+    title: "Ventas",
+    description:
+      "Facturas por período, cliente o local. Con exportación a Excel.",
+    color: "bg-blue-500",
+  },
+  {
+    href: "/reportes/compras",
+    icon: ShoppingCart,
+    title: "Compras",
+    description: "Órdenes de compra por período y proveedor.",
+    color: "bg-orange-500",
+  },
+  {
+    href: "/reportes/inventario",
+    icon: Package,
+    title: "Inventario",
+    description:
+      "Stock valorizado con alertas de stock mínimo. Con exportación a Excel.",
+    color: "bg-purple-500",
+  },
+  {
+    href: "/reportes/rrhh",
+    icon: Users,
+    title: "Recursos Humanos",
+    description: "Nómina y liquidaciones de sueldos. Con exportación a Excel.",
+    color: "bg-green-500",
+  },
+  {
+    href: "/reportes/resultados",
+    icon: TrendingUp,
+    title: "Estado de Resultados",
+    description: "Ingresos, egresos y resultado neto por período.",
+    color: "bg-indigo-500",
+  },
+];
+
+export default function ReportesPage() {
+  const { data: kpisData, isLoading } = useDashboardKPIs();
+  const kpis = kpisData?.data;
+
+  const fmt = (n?: number) =>
+    n != null
+      ? `$${Number(n).toLocaleString("es-AR", { minimumFractionDigits: 0 })}`
+      : "—";
+
   return (
-    <Link href={href}>
-      <div className="p-4 border border-gray-200 rounded-lg hover:border-primary-500 hover:shadow-md transition-all cursor-pointer">
-        <h3 className="font-semibold text-gray-900 mb-1">{title}</h3>
-        <p className="text-sm text-gray-600">{description}</p>
+    <div className="p-6 space-y-8">
+      <div>
+        <h1 className="text-2xl font-bold">Reportes y Analítica</h1>
+        <p className="text-gray-600 mt-1">
+          Panel ejecutivo y reportes detallados por módulo
+        </p>
       </div>
-    </Link>
+
+      {/* KPIs del mes */}
+      <section>
+        <h2 className="text-lg font-semibold mb-4">KPIs del mes en curso</h2>
+        {isLoading ? (
+          <div className="text-gray-400">Cargando KPIs...</div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <KpiCard
+              label="Ventas del mes"
+              value={fmt(kpis?.ventasMes.total)}
+              sub={`${kpis?.ventasMes.cantidad ?? "—"} facturas`}
+              color="bg-blue-600"
+            />
+            <KpiCard
+              label="Compras del mes"
+              value={fmt(kpis?.comprasMes.total)}
+              sub={`${kpis?.comprasMes.cantidad ?? "—"} órdenes`}
+              color="bg-orange-500"
+            />
+            <KpiCard
+              label="Stock en alerta"
+              value={kpis?.stockAlertas ?? "—"}
+              sub="productos"
+              color={kpis?.stockAlertas ? "bg-red-500" : "bg-gray-500"}
+            />
+            <KpiCard
+              label="Órdenes producción"
+              value={kpis?.ordenesProdPendientes ?? "—"}
+              sub="pendientes"
+              color="bg-indigo-500"
+            />
+            <KpiCard
+              label="Empleados activos"
+              value={kpis?.empleadosActivos ?? "—"}
+              color="bg-green-600"
+            />
+            <KpiCard
+              label="CxC vencidas"
+              value={kpis?.cxcVencidas ?? "—"}
+              sub="cuentas"
+              color={kpis?.cxcVencidas ? "bg-rose-600" : "bg-gray-500"}
+            />
+          </div>
+        )}
+      </section>
+
+      {/* Reportes disponibles */}
+      <section>
+        <h2 className="text-lg font-semibold mb-4">Reportes disponibles</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {REPORTES.map((r) => {
+            const Icon = r.icon;
+            return (
+              <Link
+                key={r.href}
+                href={r.href}
+                className="bg-white rounded-lg shadow hover:shadow-lg transition-all p-6 border border-gray-200 hover:border-blue-300"
+              >
+                <div className="flex items-start gap-4">
+                  <div className={`p-3 ${r.color} text-white rounded-lg`}>
+                    <Icon className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                      {r.title}
+                    </h3>
+                    <p className="text-sm text-gray-600">{r.description}</p>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+    </div>
   );
 }

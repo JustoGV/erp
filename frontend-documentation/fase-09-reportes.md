@@ -16,13 +16,13 @@ Crear `lib/types/reportes.ts`:
 // ─── Filtros generales ───────────────────────────────────────────────────────
 
 export interface ReporteFiltros {
-  desde?: string;       // "YYYY-MM-DD"
-  hasta?: string;       // "YYYY-MM-DD"
-  localId?: string;     // UUID
-  clienteId?: string;   // UUID
+  desde?: string; // "YYYY-MM-DD"
+  hasta?: string; // "YYYY-MM-DD"
+  localId?: string; // UUID
+  clienteId?: string; // UUID
   proveedorId?: string; // UUID
-  empleadoId?: string;  // UUID
-  formato?: 'json' | 'xlsx'; // default: 'json'
+  empleadoId?: string; // UUID
+  formato?: "json" | "xlsx"; // default: 'json'
   agrupacion?: string;
 }
 
@@ -107,7 +107,7 @@ export interface ItemInventarioResumen {
   local: string;
   cantidad: number;
   costo: number;
-  valorizado: number;    // costo × cantidad
+  valorizado: number; // costo × cantidad
   alertaStock: boolean;
 }
 
@@ -126,7 +126,7 @@ export interface LiquidacionResumen {
   nombre: string;
   cargo: string;
   departamento: string;
-  periodo: string;       // "2025-01"
+  periodo: string; // "2025-01"
   totalBruto: number;
   totalDescuentos: number;
   totalNeto: number;
@@ -152,7 +152,7 @@ export interface ReporteResultados {
   };
   ingresos: number;
   egresos: number;
-  resultado: number;    // ingresos - egresos
+  resultado: number; // ingresos - egresos
   esGanancia: boolean;
 }
 ```
@@ -164,7 +164,7 @@ export interface ReporteResultados {
 Crear `lib/services/reportes.service.ts`:
 
 ```typescript
-import { apiClient } from '@/lib/api-client';
+import { apiClient } from "@/lib/api-client";
 import type {
   DashboardKPIs,
   ReporteFiltros,
@@ -173,7 +173,7 @@ import type {
   ReporteInventario,
   ReporteRRHH,
   ReporteResultados,
-} from '@/lib/types/reportes';
+} from "@/lib/types/reportes";
 
 export const reportesService = {
   /**
@@ -182,7 +182,7 @@ export const reportesService = {
    * empleadosActivos, cxcVencidas.
    */
   getDashboard: () =>
-    apiClient.get<{ data: DashboardKPIs }>('/reportes/dashboard'),
+    apiClient.get<{ data: DashboardKPIs }>("/reportes/dashboard"),
 
   /**
    * Reporte de ventas. Soporta export XLSX (formato='xlsx').
@@ -190,8 +190,8 @@ export const reportesService = {
    * @param filtros.localId         filtrar por local
    * @param filtros.clienteId       filtrar por cliente
    */
-  getVentas: (filtros?: Omit<ReporteFiltros, 'proveedorId' | 'empleadoId'>) =>
-    apiClient.get<{ data: ReporteVentas }>('/reportes/ventas', {
+  getVentas: (filtros?: Omit<ReporteFiltros, "proveedorId" | "empleadoId">) =>
+    apiClient.get<{ data: ReporteVentas }>("/reportes/ventas", {
       params: filtros,
     }),
 
@@ -199,8 +199,10 @@ export const reportesService = {
    * Reporte de compras.
    * @param filtros.proveedorId     filtrar por proveedor
    */
-  getCompras: (filtros?: Omit<ReporteFiltros, 'clienteId' | 'empleadoId' | 'localId'>) =>
-    apiClient.get<{ data: ReporteCompras }>('/reportes/compras', {
+  getCompras: (
+    filtros?: Omit<ReporteFiltros, "clienteId" | "empleadoId" | "localId">,
+  ) =>
+    apiClient.get<{ data: ReporteCompras }>("/reportes/compras", {
       params: filtros,
     }),
 
@@ -208,8 +210,8 @@ export const reportesService = {
    * Reporte de inventario valorizado. Soporta export XLSX.
    * @param filtros.localId         filtrar por local
    */
-  getInventario: (filtros?: Pick<ReporteFiltros, 'localId' | 'formato'>) =>
-    apiClient.get<{ data: ReporteInventario }>('/reportes/inventario', {
+  getInventario: (filtros?: Pick<ReporteFiltros, "localId" | "formato">) =>
+    apiClient.get<{ data: ReporteInventario }>("/reportes/inventario", {
       params: filtros,
     }),
 
@@ -217,14 +219,16 @@ export const reportesService = {
    * Reporte de nómina / liquidaciones. Solo Administrador. Soporta XLSX.
    * @param filtros.empleadoId      filtrar por empleado
    */
-  getRRHH: (filtros?: Omit<ReporteFiltros, 'clienteId' | 'proveedorId' | 'localId'>) =>
-    apiClient.get<{ data: ReporteRRHH }>('/reportes/rrhh', { params: filtros }),
+  getRRHH: (
+    filtros?: Omit<ReporteFiltros, "clienteId" | "proveedorId" | "localId">,
+  ) =>
+    apiClient.get<{ data: ReporteRRHH }>("/reportes/rrhh", { params: filtros }),
 
   /**
    * Estado de resultados (PyG). Solo Administrador y Contable.
    */
-  getResultados: (filtros?: Pick<ReporteFiltros, 'desde' | 'hasta'>) =>
-    apiClient.get<{ data: ReporteResultados }>('/reportes/resultados', {
+  getResultados: (filtros?: Pick<ReporteFiltros, "desde" | "hasta">) =>
+    apiClient.get<{ data: ReporteResultados }>("/reportes/resultados", {
       params: filtros,
     }),
 };
@@ -235,28 +239,33 @@ export const reportesService = {
 // NO usar apiClient.get normal — necesitás un fetch con responseType blob.
 
 export async function downloadReporteXLSX(
-  tipo: 'ventas' | 'inventario' | 'rrhh',
+  tipo: "ventas" | "inventario" | "rrhh",
   filtros?: ReporteFiltros,
-  nombreArchivo?: string
+  nombreArchivo?: string,
 ): Promise<void> {
-  const params = new URLSearchParams({ ...filtros, formato: 'xlsx' } as Record<string, string>);
+  const params = new URLSearchParams({ ...filtros, formato: "xlsx" } as Record<
+    string,
+    string
+  >);
   // Obtener el token de donde tu app lo guarda:
-  const token = /* tu función de obtener accessToken */ '';
+  const token = /* tu función de obtener accessToken */ "";
 
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/reportes/${tipo}?${params.toString()}`,
     {
       headers: { Authorization: `Bearer ${token}` },
-    }
+    },
   );
 
-  if (!res.ok) throw new Error('Error al descargar el reporte');
+  if (!res.ok) throw new Error("Error al descargar el reporte");
 
   const blob = await res.blob();
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  const a = document.createElement("a");
   a.href = url;
-  a.download = nombreArchivo ?? `reporte-${tipo}-${new Date().toISOString().slice(0, 10)}.xlsx`;
+  a.download =
+    nombreArchivo ??
+    `reporte-${tipo}-${new Date().toISOString().slice(0, 10)}.xlsx`;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -269,17 +278,19 @@ export async function downloadReporteXLSX(
 Crear `hooks/useReportes.ts`:
 
 ```typescript
-import { useQuery } from '@tanstack/react-query';
-import { reportesService } from '@/lib/services/reportes.service';
-import type { ReporteFiltros } from '@/lib/types/reportes';
+import { useQuery } from "@tanstack/react-query";
+import { reportesService } from "@/lib/services/reportes.service";
+import type { ReporteFiltros } from "@/lib/types/reportes";
 
 export const reportesKeys = {
-  dashboard: ['reportes', 'dashboard'] as const,
-  ventas: (f?: Partial<ReporteFiltros>) => ['reportes', 'ventas', f] as const,
-  compras: (f?: Partial<ReporteFiltros>) => ['reportes', 'compras', f] as const,
-  inventario: (f?: Partial<ReporteFiltros>) => ['reportes', 'inventario', f] as const,
-  rrhh: (f?: Partial<ReporteFiltros>) => ['reportes', 'rrhh', f] as const,
-  resultados: (f?: Partial<ReporteFiltros>) => ['reportes', 'resultados', f] as const,
+  dashboard: ["reportes", "dashboard"] as const,
+  ventas: (f?: Partial<ReporteFiltros>) => ["reportes", "ventas", f] as const,
+  compras: (f?: Partial<ReporteFiltros>) => ["reportes", "compras", f] as const,
+  inventario: (f?: Partial<ReporteFiltros>) =>
+    ["reportes", "inventario", f] as const,
+  rrhh: (f?: Partial<ReporteFiltros>) => ["reportes", "rrhh", f] as const,
+  resultados: (f?: Partial<ReporteFiltros>) =>
+    ["reportes", "resultados", f] as const,
 };
 
 export function useDashboardKPIs() {
@@ -289,7 +300,9 @@ export function useDashboardKPIs() {
   });
 }
 
-export function useReporteVentas(filtros?: Parameters<typeof reportesService.getVentas>[0]) {
+export function useReporteVentas(
+  filtros?: Parameters<typeof reportesService.getVentas>[0],
+) {
   return useQuery({
     queryKey: reportesKeys.ventas(filtros),
     queryFn: () => reportesService.getVentas(filtros),
@@ -297,7 +310,9 @@ export function useReporteVentas(filtros?: Parameters<typeof reportesService.get
   });
 }
 
-export function useReporteCompras(filtros?: Parameters<typeof reportesService.getCompras>[0]) {
+export function useReporteCompras(
+  filtros?: Parameters<typeof reportesService.getCompras>[0],
+) {
   return useQuery({
     queryKey: reportesKeys.compras(filtros),
     queryFn: () => reportesService.getCompras(filtros),
@@ -305,7 +320,9 @@ export function useReporteCompras(filtros?: Parameters<typeof reportesService.ge
   });
 }
 
-export function useReporteInventario(filtros?: Parameters<typeof reportesService.getInventario>[0]) {
+export function useReporteInventario(
+  filtros?: Parameters<typeof reportesService.getInventario>[0],
+) {
   return useQuery({
     queryKey: reportesKeys.inventario(filtros),
     queryFn: () => reportesService.getInventario(filtros),
@@ -313,7 +330,9 @@ export function useReporteInventario(filtros?: Parameters<typeof reportesService
   });
 }
 
-export function useReporteRRHH(filtros?: Parameters<typeof reportesService.getRRHH>[0]) {
+export function useReporteRRHH(
+  filtros?: Parameters<typeof reportesService.getRRHH>[0],
+) {
   return useQuery({
     queryKey: reportesKeys.rrhh(filtros),
     queryFn: () => reportesService.getRRHH(filtros),
@@ -321,7 +340,9 @@ export function useReporteRRHH(filtros?: Parameters<typeof reportesService.getRR
   });
 }
 
-export function useReporteResultados(filtros?: Parameters<typeof reportesService.getResultados>[0]) {
+export function useReporteResultados(
+  filtros?: Parameters<typeof reportesService.getResultados>[0],
+) {
   return useQuery({
     queryKey: reportesKeys.resultados(filtros),
     queryFn: () => reportesService.getResultados(filtros),
@@ -337,9 +358,9 @@ export function useReporteResultados(filtros?: Parameters<typeof reportesService
 Reemplazar la página con tarjetas ficticias por una página con KPIs reales y links a los 5 reportes reales:
 
 ```tsx
-'use client';
+"use client";
 
-import Link from 'next/link';
+import Link from "next/link";
 import {
   BarChart3,
   ShoppingCart,
@@ -348,8 +369,8 @@ import {
   TrendingUp,
   AlertCircle,
   Factory,
-} from 'lucide-react';
-import { useDashboardKPIs } from '@/hooks/useReportes';
+} from "lucide-react";
+import { useDashboardKPIs } from "@/hooks/useReportes";
 
 function KpiCard({
   label,
@@ -373,40 +394,42 @@ function KpiCard({
 
 const REPORTES = [
   {
-    href: '/reportes/ventas',
+    href: "/reportes/ventas",
     icon: BarChart3,
-    title: 'Ventas',
-    description: 'Facturas por período, cliente o local. Con exportación a Excel.',
-    color: 'bg-blue-500',
+    title: "Ventas",
+    description:
+      "Facturas por período, cliente o local. Con exportación a Excel.",
+    color: "bg-blue-500",
   },
   {
-    href: '/reportes/compras',
+    href: "/reportes/compras",
     icon: ShoppingCart,
-    title: 'Compras',
-    description: 'Órdenes de compra por período y proveedor.',
-    color: 'bg-orange-500',
+    title: "Compras",
+    description: "Órdenes de compra por período y proveedor.",
+    color: "bg-orange-500",
   },
   {
-    href: '/reportes/inventario',
+    href: "/reportes/inventario",
     icon: Package,
-    title: 'Inventario',
-    description: 'Stock valorizado con alertas de stock mínimo. Con exportación a Excel.',
-    color: 'bg-purple-500',
+    title: "Inventario",
+    description:
+      "Stock valorizado con alertas de stock mínimo. Con exportación a Excel.",
+    color: "bg-purple-500",
   },
   {
-    href: '/reportes/rrhh',
+    href: "/reportes/rrhh",
     icon: Users,
-    title: 'Recursos Humanos',
-    description: 'Nómina y liquidaciones de sueldos. Con exportación a Excel.',
-    color: 'bg-green-500',
+    title: "Recursos Humanos",
+    description: "Nómina y liquidaciones de sueldos. Con exportación a Excel.",
+    color: "bg-green-500",
     adminOnly: true,
   },
   {
-    href: '/reportes/resultados',
+    href: "/reportes/resultados",
     icon: TrendingUp,
-    title: 'Estado de Resultados',
-    description: 'Ingresos, egresos y resultado neto por período.',
-    color: 'bg-indigo-500',
+    title: "Estado de Resultados",
+    description: "Ingresos, egresos y resultado neto por período.",
+    color: "bg-indigo-500",
     adminOnly: true,
   },
 ];
@@ -415,13 +438,18 @@ export default function ReportesPage() {
   const { data: kpisData, isLoading } = useDashboardKPIs();
   const kpis = kpisData?.data;
 
-  const fmt = (n?: number) => n != null ? `$${Number(n).toLocaleString('es-AR', { minimumFractionDigits: 0 })}` : '—';
+  const fmt = (n?: number) =>
+    n != null
+      ? `$${Number(n).toLocaleString("es-AR", { minimumFractionDigits: 0 })}`
+      : "—";
 
   return (
     <div className="p-6 space-y-8">
       <div>
         <h1 className="text-2xl font-bold">Reportes y Analítica</h1>
-        <p className="text-gray-600 mt-1">Panel ejecutivo y reportes detallados por módulo</p>
+        <p className="text-gray-600 mt-1">
+          Panel ejecutivo y reportes detallados por módulo
+        </p>
       </div>
 
       {/* KPIs del mes */}
@@ -447,7 +475,7 @@ export default function ReportesPage() {
               label="Alertas de stock"
               value={kpis?.stockAlertas ?? 0}
               sub="productos bajo mínimo"
-              color={kpis?.stockAlertas ? 'bg-red-600' : 'bg-gray-500'}
+              color={kpis?.stockAlertas ? "bg-red-600" : "bg-gray-500"}
             />
             <KpiCard
               label="Órdenes producción"
@@ -465,7 +493,7 @@ export default function ReportesPage() {
               label="CxC vencidas"
               value={kpis?.cxcVencidas ?? 0}
               sub="facturas impagas"
-              color={kpis?.cxcVencidas ? 'bg-red-700' : 'bg-gray-500'}
+              color={kpis?.cxcVencidas ? "bg-red-700" : "bg-gray-500"}
             />
           </div>
         )}
@@ -489,14 +517,18 @@ export default function ReportesPage() {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <h3 className="text-lg font-semibold text-gray-900">{r.title}</h3>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        {r.title}
+                      </h3>
                       {r.adminOnly && (
                         <span className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded">
                           Admin
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-gray-600 mt-1">{r.description}</p>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {r.description}
+                    </p>
                   </div>
                 </div>
               </Link>
@@ -516,23 +548,23 @@ export default function ReportesPage() {
 ### `app/(dashboard)/reportes/ventas/page.tsx`
 
 ```tsx
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useReporteVentas } from '@/hooks/useReportes';
-import { downloadReporteXLSX } from '@/lib/services/reportes.service';
+import { useState } from "react";
+import { useReporteVentas } from "@/hooks/useReportes";
+import { downloadReporteXLSX } from "@/lib/services/reportes.service";
 
 export default function ReporteVentasPage() {
   const hoy = new Date();
-  const primerDia = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-01`;
-  const [filtros, setFiltros] = useState({ desde: primerDia, hasta: '' });
+  const primerDia = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, "0")}-01`;
+  const [filtros, setFiltros] = useState({ desde: primerDia, hasta: "" });
   const [aplicados, setAplicados] = useState(filtros);
 
   const { data, isLoading } = useReporteVentas(aplicados);
   const r = data?.data;
 
   const handleDescargar = () =>
-    downloadReporteXLSX('ventas', aplicados, `ventas-${aplicados.desde}.xlsx`);
+    downloadReporteXLSX("ventas", aplicados, `ventas-${aplicados.desde}.xlsx`);
 
   return (
     <div className="space-y-6">
@@ -547,15 +579,30 @@ export default function ReporteVentasPage() {
       <div className="card flex flex-wrap gap-4 items-end">
         <div>
           <label className="label">Desde</label>
-          <input type="date" className="input" value={filtros.desde}
-            onChange={e => setFiltros(f => ({ ...f, desde: e.target.value }))} />
+          <input
+            type="date"
+            className="input"
+            value={filtros.desde}
+            onChange={(e) =>
+              setFiltros((f) => ({ ...f, desde: e.target.value }))
+            }
+          />
         </div>
         <div>
           <label className="label">Hasta</label>
-          <input type="date" className="input" value={filtros.hasta}
-            onChange={e => setFiltros(f => ({ ...f, hasta: e.target.value }))} />
+          <input
+            type="date"
+            className="input"
+            value={filtros.hasta}
+            onChange={(e) =>
+              setFiltros((f) => ({ ...f, hasta: e.target.value }))
+            }
+          />
         </div>
-        <button className="btn btn-primary" onClick={() => setAplicados(filtros)}>
+        <button
+          className="btn btn-primary"
+          onClick={() => setAplicados(filtros)}
+        >
           Aplicar filtros
         </button>
       </div>
@@ -569,31 +616,46 @@ export default function ReporteVentasPage() {
             <div className="card">
               <p className="text-sm text-gray-500">Total facturado</p>
               <p className="text-3xl font-bold text-blue-700">
-                ${Number(r?.resumen.totalFacturado ?? 0).toLocaleString('es-AR')}
+                $
+                {Number(r?.resumen.totalFacturado ?? 0).toLocaleString("es-AR")}
               </p>
             </div>
             <div className="card">
               <p className="text-sm text-gray-500">Cantidad de facturas</p>
-              <p className="text-3xl font-bold text-blue-700">{r?.resumen.cantidadFacturas ?? 0}</p>
+              <p className="text-3xl font-bold text-blue-700">
+                {r?.resumen.cantidadFacturas ?? 0}
+              </p>
             </div>
           </div>
 
           {/* Tabla de facturas */}
           <div className="card overflow-x-auto">
-            <h3 className="font-semibold mb-4">Facturas ({r?.facturas.length ?? 0})</h3>
+            <h3 className="font-semibold mb-4">
+              Facturas ({r?.facturas.length ?? 0})
+            </h3>
             <table className="w-full text-sm">
               <thead>
-                <tr><th>Número</th><th>Fecha</th><th>Cliente</th><th>Subtotal</th><th>Descuento</th><th>Total</th><th>Estado</th></tr>
+                <tr>
+                  <th>Número</th>
+                  <th>Fecha</th>
+                  <th>Cliente</th>
+                  <th>Subtotal</th>
+                  <th>Descuento</th>
+                  <th>Total</th>
+                  <th>Estado</th>
+                </tr>
               </thead>
               <tbody>
                 {r?.facturas.map((f, i) => (
                   <tr key={i}>
                     <td>{f.numero}</td>
-                    <td>{new Date(f.fecha).toLocaleDateString('es-AR')}</td>
+                    <td>{new Date(f.fecha).toLocaleDateString("es-AR")}</td>
                     <td>{f.cliente}</td>
-                    <td>${Number(f.subtotal).toLocaleString('es-AR')}</td>
-                    <td>${Number(f.descuento).toLocaleString('es-AR')}</td>
-                    <td className="font-semibold">${Number(f.total).toLocaleString('es-AR')}</td>
+                    <td>${Number(f.subtotal).toLocaleString("es-AR")}</td>
+                    <td>${Number(f.descuento).toLocaleString("es-AR")}</td>
+                    <td className="font-semibold">
+                      ${Number(f.total).toLocaleString("es-AR")}
+                    </td>
                     <td>{f.estado}</td>
                   </tr>
                 ))}
@@ -606,13 +668,19 @@ export default function ReporteVentasPage() {
             <div className="card">
               <h3 className="font-semibold mb-4">Ventas por cliente</h3>
               <table className="w-full text-sm">
-                <thead><tr><th>Cliente</th><th>Facturas</th><th>Total</th></tr></thead>
+                <thead>
+                  <tr>
+                    <th>Cliente</th>
+                    <th>Facturas</th>
+                    <th>Total</th>
+                  </tr>
+                </thead>
                 <tbody>
                   {r.porCliente.map((c, i) => (
                     <tr key={i}>
                       <td>{c.nombre}</td>
                       <td>{c.cantidad}</td>
-                      <td>${Number(c.total).toLocaleString('es-AR')}</td>
+                      <td>${Number(c.total).toLocaleString("es-AR")}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -631,10 +699,10 @@ export default function ReporteVentasPage() {
 ### `app/(dashboard)/reportes/inventario/page.tsx`
 
 ```tsx
-'use client';
+"use client";
 
-import { useReporteInventario } from '@/hooks/useReportes';
-import { downloadReporteXLSX } from '@/lib/services/reportes.service';
+import { useReporteInventario } from "@/hooks/useReportes";
+import { downloadReporteXLSX } from "@/lib/services/reportes.service";
 
 export default function ReporteInventarioPage() {
   const { data, isLoading } = useReporteInventario();
@@ -644,23 +712,35 @@ export default function ReporteInventarioPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Reporte de Inventario</h1>
-        <button onClick={() => downloadReporteXLSX('inventario')} className="btn btn-secondary">
+        <button
+          onClick={() => downloadReporteXLSX("inventario")}
+          className="btn btn-secondary"
+        >
           Exportar Excel
         </button>
       </div>
 
-      {isLoading ? <div>Cargando...</div> : (
+      {isLoading ? (
+        <div>Cargando...</div>
+      ) : (
         <>
           <div className="grid grid-cols-2 gap-4">
             <div className="card">
               <p className="text-sm text-gray-500">Valorización total</p>
               <p className="text-3xl font-bold text-purple-700">
-                ${Number(r?.resumen.valorizacionTotal ?? 0).toLocaleString('es-AR')}
+                $
+                {Number(r?.resumen.valorizacionTotal ?? 0).toLocaleString(
+                  "es-AR",
+                )}
               </p>
             </div>
             <div className="card">
-              <p className="text-sm text-gray-500">Productos con alerta de stock</p>
-              <p className={`text-3xl font-bold ${r?.resumen.productosConAlerta ? 'text-red-600' : 'text-green-600'}`}>
+              <p className="text-sm text-gray-500">
+                Productos con alerta de stock
+              </p>
+              <p
+                className={`text-3xl font-bold ${r?.resumen.productosConAlerta ? "text-red-600" : "text-green-600"}`}
+              >
                 {r?.resumen.productosConAlerta ?? 0}
               </p>
             </div>
@@ -669,20 +749,32 @@ export default function ReporteInventarioPage() {
           <div className="card overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr><th>SKU</th><th>Nombre</th><th>Categoría</th><th>Depósito</th><th>Local</th><th>Cantidad</th><th>Costo unit.</th><th>Valorizado</th><th>Alerta</th></tr>
+                <tr>
+                  <th>SKU</th>
+                  <th>Nombre</th>
+                  <th>Categoría</th>
+                  <th>Depósito</th>
+                  <th>Local</th>
+                  <th>Cantidad</th>
+                  <th>Costo unit.</th>
+                  <th>Valorizado</th>
+                  <th>Alerta</th>
+                </tr>
               </thead>
               <tbody>
                 {r?.items.map((item, i) => (
-                  <tr key={i} className={item.alertaStock ? 'bg-red-50' : ''}>
+                  <tr key={i} className={item.alertaStock ? "bg-red-50" : ""}>
                     <td>{item.sku}</td>
                     <td>{item.nombre}</td>
                     <td>{item.categoria}</td>
                     <td>{item.deposito}</td>
                     <td>{item.local}</td>
                     <td>{item.cantidad}</td>
-                    <td>${Number(item.costo).toLocaleString('es-AR')}</td>
-                    <td className="font-semibold">${Number(item.valorizado).toLocaleString('es-AR')}</td>
-                    <td>{item.alertaStock ? '⚠ Bajo mínimo' : '✓'}</td>
+                    <td>${Number(item.costo).toLocaleString("es-AR")}</td>
+                    <td className="font-semibold">
+                      ${Number(item.valorizado).toLocaleString("es-AR")}
+                    </td>
+                    <td>{item.alertaStock ? "⚠ Bajo mínimo" : "✓"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -700,10 +792,10 @@ export default function ReporteInventarioPage() {
 ### `app/(dashboard)/reportes/resultados/page.tsx`
 
 ```tsx
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useReporteResultados } from '@/hooks/useReportes';
+import { useState } from "react";
+import { useReporteResultados } from "@/hooks/useReportes";
 
 export default function ReporteResultadosPage() {
   const hoy = new Date();
@@ -723,41 +815,67 @@ export default function ReporteResultadosPage() {
       <div className="card flex gap-4 items-end flex-wrap">
         <div>
           <label className="label">Desde</label>
-          <input type="date" className="input" value={filtros.desde}
-            onChange={e => setFiltros(f => ({ ...f, desde: e.target.value }))} />
+          <input
+            type="date"
+            className="input"
+            value={filtros.desde}
+            onChange={(e) =>
+              setFiltros((f) => ({ ...f, desde: e.target.value }))
+            }
+          />
         </div>
         <div>
           <label className="label">Hasta</label>
-          <input type="date" className="input" value={filtros.hasta}
-            onChange={e => setFiltros(f => ({ ...f, hasta: e.target.value }))} />
+          <input
+            type="date"
+            className="input"
+            value={filtros.hasta}
+            onChange={(e) =>
+              setFiltros((f) => ({ ...f, hasta: e.target.value }))
+            }
+          />
         </div>
-        <button className="btn btn-primary" onClick={() => setAplicados(filtros)}>
+        <button
+          className="btn btn-primary"
+          onClick={() => setAplicados(filtros)}
+        >
           Consultar
         </button>
       </div>
 
-      {isLoading ? <div>Calculando...</div> : r ? (
+      {isLoading ? (
+        <div>Calculando...</div>
+      ) : r ? (
         <div className="card max-w-sm space-y-4">
           <h3 className="font-semibold">
             Período: {r.periodo.desde} → {r.periodo.hasta}
           </h3>
           <div className="flex justify-between border-b pb-2">
             <span className="text-gray-600">Ingresos</span>
-            <span className="text-green-700 font-semibold">${Number(r.ingresos).toLocaleString('es-AR')}</span>
+            <span className="text-green-700 font-semibold">
+              ${Number(r.ingresos).toLocaleString("es-AR")}
+            </span>
           </div>
           <div className="flex justify-between border-b pb-2">
             <span className="text-gray-600">Egresos</span>
-            <span className="text-red-600 font-semibold">${Number(r.egresos).toLocaleString('es-AR')}</span>
+            <span className="text-red-600 font-semibold">
+              ${Number(r.egresos).toLocaleString("es-AR")}
+            </span>
           </div>
           <div className="flex justify-between pt-2">
             <span className="font-bold text-lg">Resultado neto</span>
-            <span className={`font-bold text-2xl ${r.esGanancia ? 'text-green-700' : 'text-red-600'}`}>
-              {r.esGanancia ? '+' : '-'}${Math.abs(Number(r.resultado)).toLocaleString('es-AR')}
+            <span
+              className={`font-bold text-2xl ${r.esGanancia ? "text-green-700" : "text-red-600"}`}
+            >
+              {r.esGanancia ? "+" : "-"}$
+              {Math.abs(Number(r.resultado)).toLocaleString("es-AR")}
             </span>
           </div>
           <div className="text-center">
-            <span className={`px-3 py-1 rounded-full text-sm font-semibold ${r.esGanancia ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-700'}`}>
-              {r.esGanancia ? 'GANANCIA' : 'PÉRDIDA'}
+            <span
+              className={`px-3 py-1 rounded-full text-sm font-semibold ${r.esGanancia ? "bg-green-100 text-green-800" : "bg-red-100 text-red-700"}`}
+            >
+              {r.esGanancia ? "GANANCIA" : "PÉRDIDA"}
             </span>
           </div>
         </div>
@@ -778,22 +896,26 @@ Los endpoints de ventas, inventario y RRHH envían el binario directamente si `f
 // Ajustá según cómo tu app expone el token (useAuth, jotai, zustand, etc.)
 
 export async function downloadReporteXLSX(
-  tipo: 'ventas' | 'inventario' | 'rrhh',
-  filtros: Omit<ReporteFiltros, 'formato'> = {},
-  nombreArchivo?: string
+  tipo: "ventas" | "inventario" | "rrhh",
+  filtros: Omit<ReporteFiltros, "formato"> = {},
+  nombreArchivo?: string,
 ): Promise<void> {
-  const { getAccessToken } = await import('@/lib/auth'); // ajustar al real
+  const { getAccessToken } = await import("@/lib/auth"); // ajustar al real
   const token = getAccessToken();
 
   const params = new URLSearchParams();
-  Object.entries({ ...filtros, formato: 'xlsx' }).forEach(([k, v]) => {
-    if (v != null && v !== '') params.set(k, String(v));
+  Object.entries({ ...filtros, formato: "xlsx" }).forEach(([k, v]) => {
+    if (v != null && v !== "") params.set(k, String(v));
   });
 
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1';
-  const response = await fetch(`${baseUrl}/reportes/${tipo}?${params.toString()}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const baseUrl =
+    process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api/v1";
+  const response = await fetch(
+    `${baseUrl}/reportes/${tipo}?${params.toString()}`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    },
+  );
 
   if (!response.ok) {
     const err = await response.json().catch(() => ({}));
@@ -802,9 +924,11 @@ export async function downloadReporteXLSX(
 
   const blob = await response.blob();
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  const a = document.createElement("a");
   a.href = url;
-  a.download = nombreArchivo ?? `reporte-${tipo}-${new Date().toISOString().slice(0, 10)}.xlsx`;
+  a.download =
+    nombreArchivo ??
+    `reporte-${tipo}-${new Date().toISOString().slice(0, 10)}.xlsx`;
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -816,50 +940,50 @@ export async function downloadReporteXLSX(
 
 ## 7. Referencia de endpoints
 
-| Método | Endpoint                    | Descripción                          | Rol                | XLSX |
-| ------ | --------------------------- | ------------------------------------ | ------------------ | ---- |
-| `GET`  | `/api/v1/reportes/dashboard`  | KPIs del mes en curso               | Todos              | No   |
-| `GET`  | `/api/v1/reportes/ventas`     | Reporte de ventas con filtros        | Todos              | ✅   |
-| `GET`  | `/api/v1/reportes/compras`    | Reporte de compras con filtros       | Todos              | No   |
-| `GET`  | `/api/v1/reportes/inventario` | Stock valorizado                     | Todos              | ✅   |
-| `GET`  | `/api/v1/reportes/rrhh`       | Nómina y liquidaciones               | Admin              | ✅   |
-| `GET`  | `/api/v1/reportes/resultados` | Estado de resultados (PyG)           | Admin / Contable   | No   |
+| Método | Endpoint                      | Descripción                    | Rol              | XLSX |
+| ------ | ----------------------------- | ------------------------------ | ---------------- | ---- |
+| `GET`  | `/api/v1/reportes/dashboard`  | KPIs del mes en curso          | Todos            | No   |
+| `GET`  | `/api/v1/reportes/ventas`     | Reporte de ventas con filtros  | Todos            | ✅   |
+| `GET`  | `/api/v1/reportes/compras`    | Reporte de compras con filtros | Todos            | No   |
+| `GET`  | `/api/v1/reportes/inventario` | Stock valorizado               | Todos            | ✅   |
+| `GET`  | `/api/v1/reportes/rrhh`       | Nómina y liquidaciones         | Admin            | ✅   |
+| `GET`  | `/api/v1/reportes/resultados` | Estado de resultados (PyG)     | Admin / Contable | No   |
 
 ### Query params disponibles por endpoint
 
-| Param          | dashboard | ventas | compras | inventario | rrhh | resultados |
-| -------------- | :-------: | :----: | :-----: | :--------: | :--: | :--------: |
-| `desde`        |     —     |  ✅    |   ✅    |     —      |  ✅  |    ✅      |
-| `hasta`        |     —     |  ✅    |   ✅    |     —      |  ✅  |    ✅      |
-| `localId`      |     —     |  ✅    |    —    |    ✅      |   —  |     —      |
-| `clienteId`    |     —     |  ✅    |    —    |     —      |   —  |     —      |
-| `proveedorId`  |     —     |   —    |   ✅    |     —      |   —  |     —      |
-| `empleadoId`   |     —     |   —    |    —    |     —      |  ✅  |     —      |
-| `formato`      |     —     |  ✅    |    —    |    ✅      |  ✅  |     —      |
+| Param         | dashboard | ventas | compras | inventario | rrhh | resultados |
+| ------------- | :-------: | :----: | :-----: | :--------: | :--: | :--------: |
+| `desde`       |     —     |   ✅   |   ✅    |     —      |  ✅  |     ✅     |
+| `hasta`       |     —     |   ✅   |   ✅    |     —      |  ✅  |     ✅     |
+| `localId`     |     —     |   ✅   |    —    |     ✅     |  —   |     —      |
+| `clienteId`   |     —     |   ✅   |    —    |     —      |  —   |     —      |
+| `proveedorId` |     —     |   —    |   ✅    |     —      |  —   |     —      |
+| `empleadoId`  |     —     |   —    |    —    |     —      |  ✅  |     —      |
+| `formato`     |     —     |   ✅   |    —    |     ✅     |  ✅  |     —      |
 
 ---
 
 ## 8. Errores comunes
 
-| Error                  | Causa                                              | Solución                                      |
-| ---------------------- | -------------------------------------------------- | --------------------------------------------- |
-| `403 Forbidden`        | `rrhh` o `resultados` con rol Vendedor             | Mostrar sección solo si `user.rol === 'Administrador'` o `'Contable'` |
-| `400 Bad Request`      | Formato de fecha inválido (`desde`/`hasta`)        | Usar `YYYY-MM-DD` estrictamente               |
-| Blob en lugar de JSON  | Llamada a `/ventas?formato=xlsx` con `apiClient`   | Usar `downloadReporteXLSX()` que hace `fetch` raw |
-| `401 Unauthorized`     | Token expirado al descargar XLSX                   | Refrescar token antes de llamar `downloadReporteXLSX` |
+| Error                 | Causa                                            | Solución                                                              |
+| --------------------- | ------------------------------------------------ | --------------------------------------------------------------------- |
+| `403 Forbidden`       | `rrhh` o `resultados` con rol Vendedor           | Mostrar sección solo si `user.rol === 'Administrador'` o `'Contable'` |
+| `400 Bad Request`     | Formato de fecha inválido (`desde`/`hasta`)      | Usar `YYYY-MM-DD` estrictamente                                       |
+| Blob en lugar de JSON | Llamada a `/ventas?formato=xlsx` con `apiClient` | Usar `downloadReporteXLSX()` que hace `fetch` raw                     |
+| `401 Unauthorized`    | Token expirado al descargar XLSX                 | Refrescar token antes de llamar `downloadReporteXLSX`                 |
 
 ---
 
 ## 9. Rutas de frontend que deben existir
 
-| Ruta                        | Existe | Acción requerida                             |
-| --------------------------- | :----: | -------------------------------------------- |
-| `/reportes`                 |  ✅    | Reemplazar con la nueva página de esta fase  |
-| `/reportes/ventas`          |  ✅    | Conectar con `useReporteVentas`              |
-| `/reportes/compras`         |  ❌    | Crear (patrón similar a ventas sin XLSX)     |
-| `/reportes/inventario`      |  ❌    | Crear (ver patrón en sección 5)              |
-| `/reportes/rrhh`            |  ❌    | Crear (solo visible para Admin)              |
-| `/reportes/resultados`      |  ❌    | Crear (ver patrón en sección 5)              |
-| `/reportes/ventas-mes`      |  ❓    | **Eliminar** — no existe en el backend       |
-| `/reportes/ventas-cliente`  |  ❓    | **Eliminar** — no existe en el backend       |
-| `/reportes/stock-actual`    |  ❓    | **Eliminar** — no existe en el backend       |
+| Ruta                       | Existe | Acción requerida                            |
+| -------------------------- | :----: | ------------------------------------------- |
+| `/reportes`                |   ✅   | Reemplazar con la nueva página de esta fase |
+| `/reportes/ventas`         |   ✅   | Conectar con `useReporteVentas`             |
+| `/reportes/compras`        |   ❌   | Crear (patrón similar a ventas sin XLSX)    |
+| `/reportes/inventario`     |   ❌   | Crear (ver patrón en sección 5)             |
+| `/reportes/rrhh`           |   ❌   | Crear (solo visible para Admin)             |
+| `/reportes/resultados`     |   ❌   | Crear (ver patrón en sección 5)             |
+| `/reportes/ventas-mes`     |   ❓   | **Eliminar** — no existe en el backend      |
+| `/reportes/ventas-cliente` |   ❓   | **Eliminar** — no existe en el backend      |
+| `/reportes/stock-actual`   |   ❓   | **Eliminar** — no existe en el backend      |

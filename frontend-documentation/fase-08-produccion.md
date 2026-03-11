@@ -14,7 +14,7 @@ Conectar el módulo de producción: **Materiales**, **BOMs**, **Órdenes de Prod
 Crear `lib/types/produccion.ts`:
 
 ```typescript
-import type { TipoProducto } from './inventario'; // o definir aquí
+import type { TipoProducto } from "./inventario"; // o definir aquí
 
 // ─── MaterialProduccion ──────────────────────────────────────────────────────
 
@@ -22,9 +22,9 @@ export interface MaterialProduccion {
   id: string;
   empresaId: string;
   localId: string;
-  code: string;          // único por empresa
+  code: string; // único por empresa
   nombre: string;
-  tipo: TipoProducto;    // 'TERMINADO' | 'SEMI_TERMINADO' | 'MATERIA_PRIMA' | 'INSUMO'
+  tipo: TipoProducto; // 'TERMINADO' | 'SEMI_TERMINADO' | 'MATERIA_PRIMA' | 'INSUMO'
   unidad: string;
   stockActual?: number;
   stockMinimo?: number;
@@ -36,15 +36,15 @@ export interface MaterialProduccion {
 }
 
 export interface CreateMaterialProduccionDto {
-  code: string;           // obligatorio, único por empresa
-  nombre: string;         // obligatorio
-  tipo: TipoProducto;     // obligatorio
-  unidad: string;         // obligatorio, ej. "kg", "m", "UNI"
+  code: string; // obligatorio, único por empresa
+  nombre: string; // obligatorio
+  tipo: TipoProducto; // obligatorio
+  unidad: string; // obligatorio, ej. "kg", "m", "UNI"
   stockActual?: number;
   stockMinimo?: number;
   stockMaximo?: number;
   costoUnitario?: number;
-  proveedorId?: string;   // UUID opcional
+  proveedorId?: string; // UUID opcional
 }
 
 export type UpdateMaterialProduccionDto = Partial<CreateMaterialProduccionDto>;
@@ -57,17 +57,20 @@ export interface BomItem {
   materialId: string;
   cantidad: number;
   unidad?: string;
-  material?: Pick<MaterialProduccion, 'id' | 'code' | 'nombre' | 'costoUnitario'>;
+  material?: Pick<
+    MaterialProduccion,
+    "id" | "code" | "nombre" | "costoUnitario"
+  >;
 }
 
 export interface BOM {
   id: string;
   empresaId: string;
   localId: string;
-  code: string;           // ej. "BOM-SILLA-001"
-  productoId: string;     // ID del producto terminado (inventario)
-  cantidad: number;       // cantidad producida por lote
-  unidad: string;         // unidad del producto terminado
+  code: string; // ej. "BOM-SILLA-001"
+  productoId: string; // ID del producto terminado (inventario)
+  cantidad: number; // cantidad producida por lote
+  unidad: string; // unidad del producto terminado
   version?: number;
   activo: boolean;
   createdAt: string;
@@ -79,28 +82,28 @@ export interface BOM {
 }
 
 export interface BomItemDto {
-  materialId: string;    // UUID del MaterialProduccion
-  cantidad: number;      // cantidad requerida por lote, >= 0.0001
-  unidad?: string;       // opcional, ej. "kg"
+  materialId: string; // UUID del MaterialProduccion
+  cantidad: number; // cantidad requerida por lote, >= 0.0001
+  unidad?: string; // opcional, ej. "kg"
 }
 
 export interface CreateBomDto {
-  code: string;           // obligatorio, ej. "BOM-SILLA-001"
-  productoId: string;     // UUID del producto terminado
-  cantidad: number;       // cantidad de producto producido por lote
-  unidad: string;         // unidad del producto, ej. "UNI"
-  version?: number;       // default: 1
-  items: BomItemDto[];    // al menos 1 item
+  code: string; // obligatorio, ej. "BOM-SILLA-001"
+  productoId: string; // UUID del producto terminado
+  cantidad: number; // cantidad de producto producido por lote
+  unidad: string; // unidad del producto, ej. "UNI"
+  version?: number; // default: 1
+  items: BomItemDto[]; // al menos 1 item
 }
 
 // ─── OrdenProduccion ─────────────────────────────────────────────────────────
 // Estados: PLANIFICADA → EN_PROCESO → COMPLETADA | CANCELADA
 
 export type EstadoOrdenProduccion =
-  | 'PLANIFICADA'
-  | 'EN_PROCESO'
-  | 'COMPLETADA'
-  | 'CANCELADA';
+  | "PLANIFICADA"
+  | "EN_PROCESO"
+  | "COMPLETADA"
+  | "CANCELADA";
 
 export interface OrdenProduccion {
   id: string;
@@ -128,23 +131,26 @@ export interface OrdenProduccion {
 }
 
 export interface MaterialRequerido {
-  material: Pick<MaterialProduccion, 'id' | 'code' | 'nombre' | 'costoUnitario'>;
+  material: Pick<
+    MaterialProduccion,
+    "id" | "code" | "nombre" | "costoUnitario"
+  >;
   cantidadPorUnidad: number;
   cantidadTotal: number; // cantidadPorUnidad * cantidadPlanificada
   unidad?: string;
 }
 
 export interface CreateOrdenProduccionDto {
-  bomId: string;                    // UUID del BOM
-  cantidadPlanificada: number;      // >= 0.001
-  fechaFinPlanificada: string;      // "YYYY-MM-DD", obligatorio
+  bomId: string; // UUID del BOM
+  cantidadPlanificada: number; // >= 0.001
+  fechaFinPlanificada: string; // "YYYY-MM-DD", obligatorio
   operador?: string;
   notas?: string;
-  costoManoObra?: number;           // >= 0, default: 0
+  costoManoObra?: number; // >= 0, default: 0
 }
 
 export interface FinalizarOrdenDto {
-  cantidadRealizada: number;        // puede diferir de cantidadPlanificada
+  cantidadRealizada: number; // puede diferir de cantidadPlanificada
 }
 
 export interface CancelarOrdenDto {
@@ -163,7 +169,7 @@ export interface CalendarioOrden {
 }
 
 export interface AlertaMaterial {
-  material: Pick<MaterialProduccion, 'id' | 'code' | 'nombre' | 'unidad'>;
+  material: Pick<MaterialProduccion, "id" | "code" | "nombre" | "unidad">;
   stockActual: number;
   demandaPlanificada: number;
   deficit: number;
@@ -178,7 +184,7 @@ export interface AlertaMaterial {
 Crear `lib/services/produccion.service.ts`:
 
 ```typescript
-import { apiClient } from '@/lib/api-client';
+import { apiClient } from "@/lib/api-client";
 import type {
   MaterialProduccion,
   CreateMaterialProduccionDto,
@@ -191,14 +197,14 @@ import type {
   CancelarOrdenDto,
   CalendarioOrden,
   AlertaMaterial,
-} from '@/lib/types/produccion';
+} from "@/lib/types/produccion";
 
 // ─── Materiales de Producción ────────────────────────────────────────────────
 
 export const materialesProduccionService = {
   /** Lista todos los materiales de la empresa. No paginado. */
   getAll: () =>
-    apiClient.get<{ data: MaterialProduccion[] }>('/materiales-produccion'),
+    apiClient.get<{ data: MaterialProduccion[] }>("/materiales-produccion"),
 
   /**
    * Crear material de producción. Requiere localId como query param.
@@ -207,14 +213,14 @@ export const materialesProduccionService = {
   create: (dto: CreateMaterialProduccionDto, localId: string) =>
     apiClient.post<{ data: MaterialProduccion }>(
       `/materiales-produccion?localId=${localId}`,
-      dto
+      dto,
     ),
 
   /** Actualizar material (campos parciales). Solo Administrador. */
   update: (id: string, dto: UpdateMaterialProduccionDto) =>
     apiClient.patch<{ data: MaterialProduccion }>(
       `/materiales-produccion/${id}`,
-      dto
+      dto,
     ),
 };
 
@@ -222,15 +228,13 @@ export const materialesProduccionService = {
 
 export const bomService = {
   /** Lista todos los BOMs de la empresa. */
-  getAll: () =>
-    apiClient.get<{ data: BOM[] }>('/bom'),
+  getAll: () => apiClient.get<{ data: BOM[] }>("/bom"),
 
   /**
    * BOM completo con items, materiales y costo estimado.
    * Incluye: bom.materiales[].material y costo estimado calculado.
    */
-  getById: (id: string) =>
-    apiClient.get<{ data: BOM }>(`/bom/${id}`),
+  getById: (id: string) => apiClient.get<{ data: BOM }>(`/bom/${id}`),
 
   /**
    * Crear BOM. Requiere localId como query param. Solo Administrador.
@@ -246,7 +250,7 @@ export const bomService = {
 export const ordenesProduccionService = {
   /** Lista todas las órdenes. Incluye bom.producto. */
   getAll: () =>
-    apiClient.get<{ data: OrdenProduccion[] }>('/ordenes-produccion'),
+    apiClient.get<{ data: OrdenProduccion[] }>("/ordenes-produccion"),
 
   /**
    * Orden con materiales requeridos calculados.
@@ -262,7 +266,7 @@ export const ordenesProduccionService = {
   create: (dto: CreateOrdenProduccionDto, localId: string) =>
     apiClient.post<{ data: OrdenProduccion }>(
       `/ordenes-produccion?localId=${localId}`,
-      dto
+      dto,
     ),
 
   /**
@@ -271,7 +275,9 @@ export const ordenesProduccionService = {
    * Solo Administrador.
    */
   iniciar: (id: string) =>
-    apiClient.patch<{ data: OrdenProduccion }>(`/ordenes-produccion/${id}/iniciar`),
+    apiClient.patch<{ data: OrdenProduccion }>(
+      `/ordenes-produccion/${id}/iniciar`,
+    ),
 
   /**
    * Finalizar orden: EN_PROCESO → COMPLETADA.
@@ -282,7 +288,7 @@ export const ordenesProduccionService = {
   finalizar: (id: string, dto: FinalizarOrdenDto) =>
     apiClient.patch<{ data: OrdenProduccion }>(
       `/ordenes-produccion/${id}/finalizar`,
-      dto
+      dto,
     ),
 
   /**
@@ -292,7 +298,7 @@ export const ordenesProduccionService = {
   cancelar: (id: string, dto: CancelarOrdenDto) =>
     apiClient.patch<{ data: OrdenProduccion }>(
       `/ordenes-produccion/${id}/cancelar`,
-      dto
+      dto,
     ),
 };
 
@@ -305,7 +311,7 @@ export const planificacionService = {
    * @param hasta "YYYY-MM-DD"
    */
   getCalendario: (desde: string, hasta: string) =>
-    apiClient.get<{ data: CalendarioOrden[] }>('/planificacion', {
+    apiClient.get<{ data: CalendarioOrden[] }>("/planificacion", {
       params: { desde, hasta },
     }),
 
@@ -314,7 +320,7 @@ export const planificacionService = {
    * cubrir todas las órdenes en estado PLANIFICADA.
    */
   verificarMateriales: () =>
-    apiClient.get<{ data: AlertaMaterial[] }>('/planificacion/materiales'),
+    apiClient.get<{ data: AlertaMaterial[] }>("/planificacion/materiales"),
 };
 ```
 
@@ -325,13 +331,13 @@ export const planificacionService = {
 Crear `hooks/useProduccion.ts`:
 
 ```typescript
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   materialesProduccionService,
   bomService,
   ordenesProduccionService,
   planificacionService,
-} from '@/lib/services/produccion.service';
+} from "@/lib/services/produccion.service";
 import type {
   CreateMaterialProduccionDto,
   UpdateMaterialProduccionDto,
@@ -339,24 +345,24 @@ import type {
   CreateOrdenProduccionDto,
   FinalizarOrdenDto,
   CancelarOrdenDto,
-} from '@/lib/types/produccion';
+} from "@/lib/types/produccion";
 
 export const produccionKeys = {
   materiales: {
-    all: ['materiales-produccion'] as const,
+    all: ["materiales-produccion"] as const,
   },
   bom: {
-    all: ['bom'] as const,
-    detail: (id: string) => ['bom', id] as const,
+    all: ["bom"] as const,
+    detail: (id: string) => ["bom", id] as const,
   },
   ordenes: {
-    all: ['ordenes-produccion'] as const,
-    detail: (id: string) => ['ordenes-produccion', id] as const,
+    all: ["ordenes-produccion"] as const,
+    detail: (id: string) => ["ordenes-produccion", id] as const,
   },
   planificacion: {
     calendario: (desde: string, hasta: string) =>
-      ['planificacion', 'calendario', desde, hasta] as const,
-    materiales: ['planificacion', 'materiales'] as const,
+      ["planificacion", "calendario", desde, hasta] as const,
+    materiales: ["planificacion", "materiales"] as const,
   },
 };
 
@@ -380,7 +386,9 @@ export function useCrearMaterial() {
       localId: string;
     }) => materialesProduccionService.create(dto, localId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: produccionKeys.materiales.all });
+      queryClient.invalidateQueries({
+        queryKey: produccionKeys.materiales.all,
+      });
     },
   });
 }
@@ -388,10 +396,17 @@ export function useCrearMaterial() {
 export function useActualizarMaterial() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, dto }: { id: string; dto: UpdateMaterialProduccionDto }) =>
-      materialesProduccionService.update(id, dto),
+    mutationFn: ({
+      id,
+      dto,
+    }: {
+      id: string;
+      dto: UpdateMaterialProduccionDto;
+    }) => materialesProduccionService.update(id, dto),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: produccionKeys.materiales.all });
+      queryClient.invalidateQueries({
+        queryKey: produccionKeys.materiales.all,
+      });
     },
   });
 }
@@ -517,63 +532,76 @@ export function useVerificarMateriales() {
 Reemplazar los stats hardcodeados con datos reales:
 
 ```tsx
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { Factory, FileText, Package, ClipboardCheck, TrendingUp } from 'lucide-react';
-import { useOrdenesProduccion, useMaterialesProduccion, useBOMs } from '@/hooks/useProduccion';
+import Link from "next/link";
+import {
+  Factory,
+  FileText,
+  Package,
+  ClipboardCheck,
+  TrendingUp,
+} from "lucide-react";
+import {
+  useOrdenesProduccion,
+  useMaterialesProduccion,
+  useBOMs,
+} from "@/hooks/useProduccion";
 
 export default function ProduccionResumenPage() {
   const { data: ordenesData } = useOrdenesProduccion();
   const { data: materialesData } = useMaterialesProduccion();
   const { data: bomsData } = useBOMs();
 
-  const ordenesActivas = ordenesData?.data.filter(
-    o => o.estado === 'PLANIFICADA' || o.estado === 'EN_PROCESO'
-  ).length ?? 0;
+  const ordenesActivas =
+    ordenesData?.data.filter(
+      (o) => o.estado === "PLANIFICADA" || o.estado === "EN_PROCESO",
+    ).length ?? 0;
 
   const totalMateriales = materialesData?.data.length ?? 0;
   const totalBOMs = bomsData?.data.length ?? 0;
 
   const menuItems = [
     {
-      href: '/produccion/ordenes',
+      href: "/produccion/ordenes",
       icon: FileText,
-      title: 'Órdenes de Producción',
-      description: 'Gestión de órdenes de manufactura',
-      color: 'bg-blue-500',
+      title: "Órdenes de Producción",
+      description: "Gestión de órdenes de manufactura",
+      color: "bg-blue-500",
       stats: `${ordenesActivas} órdenes activas`,
     },
     {
-      href: '/produccion/bom',
+      href: "/produccion/bom",
       icon: ClipboardCheck,
-      title: 'Lista de Materiales (BOM)',
-      description: 'Estructuras y fórmulas de productos',
-      color: 'bg-green-500',
+      title: "Lista de Materiales (BOM)",
+      description: "Estructuras y fórmulas de productos",
+      color: "bg-green-500",
       stats: `${totalBOMs} BOMs definidas`,
     },
     {
-      href: '/produccion/materiales',
+      href: "/produccion/materiales",
       icon: Package,
-      title: 'Materiales',
-      description: 'Insumos y materias primas',
-      color: 'bg-purple-500',
+      title: "Materiales",
+      description: "Insumos y materias primas",
+      color: "bg-purple-500",
       stats: `${totalMateriales} materiales`,
     },
     {
-      href: '/produccion/planificacion',
+      href: "/produccion/planificacion",
       icon: TrendingUp,
-      title: 'Planificación',
-      description: 'Plan de producción y verificación de stock',
-      color: 'bg-indigo-500',
-      stats: 'Ver plan',
+      title: "Planificación",
+      description: "Plan de producción y verificación de stock",
+      color: "bg-indigo-500",
+      stats: "Ver plan",
     },
   ];
 
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Módulo de Producción</h1>
+        <h1 className="text-2xl font-bold text-gray-900">
+          Módulo de Producción
+        </h1>
         <p className="text-gray-600 mt-1">Gestión de manufactura y procesos</p>
       </div>
 
@@ -591,9 +619,15 @@ export default function ProduccionResumenPage() {
                   <Icon className="h-6 w-6" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-1">{item.title}</h3>
-                  <p className="text-sm text-gray-600 mb-2">{item.description}</p>
-                  <p className="text-xs text-gray-500 font-medium">{item.stats}</p>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                    {item.title}
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-2">
+                    {item.description}
+                  </p>
+                  <p className="text-xs text-gray-500 font-medium">
+                    {item.stats}
+                  </p>
                 </div>
               </div>
             </Link>
@@ -605,10 +639,13 @@ export default function ProduccionResumenPage() {
         <div className="flex items-start gap-3">
           <Factory className="h-6 w-6 text-blue-600 mt-1" />
           <div>
-            <h3 className="text-lg font-semibold text-blue-900 mb-2">Control de Manufactura</h3>
+            <h3 className="text-lg font-semibold text-blue-900 mb-2">
+              Control de Manufactura
+            </h3>
             <p className="text-sm text-blue-700">
-              El módulo de producción permite planificar, ejecutar y controlar órdenes de manufactura,
-              consumo de materiales y tiempos de producción.
+              El módulo de producción permite planificar, ejecutar y controlar
+              órdenes de manufactura, consumo de materiales y tiempos de
+              producción.
             </p>
           </div>
         </div>
@@ -627,14 +664,23 @@ export default function ProduccionResumenPage() {
 ### `app/(dashboard)/produccion/materiales/page.tsx`
 
 ```tsx
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useLocal } from '@/contexts/LocalContext';
-import { useMaterialesProduccion, useCrearMaterial, useActualizarMaterial } from '@/hooks/useProduccion';
-import type { TipoProducto } from '@/lib/types/inventario'; // o definir localmente
+import { useState } from "react";
+import { useLocal } from "@/contexts/LocalContext";
+import {
+  useMaterialesProduccion,
+  useCrearMaterial,
+  useActualizarMaterial,
+} from "@/hooks/useProduccion";
+import type { TipoProducto } from "@/lib/types/inventario"; // o definir localmente
 
-const TIPOS: TipoProducto[] = ['MATERIA_PRIMA', 'INSUMO', 'SEMI_TERMINADO', 'TERMINADO'];
+const TIPOS: TipoProducto[] = [
+  "MATERIA_PRIMA",
+  "INSUMO",
+  "SEMI_TERMINADO",
+  "TERMINADO",
+];
 
 export default function MaterialesPage() {
   const { selectedLocal } = useLocal();
@@ -642,15 +688,28 @@ export default function MaterialesPage() {
   const crear = useCrearMaterial();
 
   const [form, setForm] = useState({
-    code: '', nombre: '', tipo: 'MATERIA_PRIMA' as TipoProducto, unidad: '',
-    stockActual: 0, stockMinimo: 0, costoUnitario: 0,
+    code: "",
+    nombre: "",
+    tipo: "MATERIA_PRIMA" as TipoProducto,
+    unidad: "",
+    stockActual: 0,
+    stockMinimo: 0,
+    costoUnitario: 0,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedLocal?.id) return;
     await crear.mutateAsync({ dto: form, localId: selectedLocal.id });
-    setForm({ code: '', nombre: '', tipo: 'MATERIA_PRIMA', unidad: '', stockActual: 0, stockMinimo: 0, costoUnitario: 0 });
+    setForm({
+      code: "",
+      nombre: "",
+      tipo: "MATERIA_PRIMA",
+      unidad: "",
+      stockActual: 0,
+      stockMinimo: 0,
+      costoUnitario: 0,
+    });
   };
 
   if (isLoading) return <div>Cargando...</div>;
@@ -664,61 +723,136 @@ export default function MaterialesPage() {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="label">Código *</label>
-            <input className="input w-full" value={form.code}
-              onChange={e => setForm(f => ({ ...f, code: e.target.value }))} required />
+            <input
+              className="input w-full"
+              value={form.code}
+              onChange={(e) => setForm((f) => ({ ...f, code: e.target.value }))}
+              required
+            />
           </div>
           <div>
             <label className="label">Nombre *</label>
-            <input className="input w-full" value={form.nombre}
-              onChange={e => setForm(f => ({ ...f, nombre: e.target.value }))} required />
+            <input
+              className="input w-full"
+              value={form.nombre}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, nombre: e.target.value }))
+              }
+              required
+            />
           </div>
           <div>
             <label className="label">Tipo *</label>
-            <select className="input w-full" value={form.tipo}
-              onChange={e => setForm(f => ({ ...f, tipo: e.target.value as TipoProducto }))}>
-              {TIPOS.map(t => <option key={t} value={t}>{t}</option>)}
+            <select
+              className="input w-full"
+              value={form.tipo}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, tipo: e.target.value as TipoProducto }))
+              }
+            >
+              {TIPOS.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
             </select>
           </div>
           <div>
             <label className="label">Unidad *</label>
-            <input className="input w-full" placeholder="kg, UNI, m..." value={form.unidad}
-              onChange={e => setForm(f => ({ ...f, unidad: e.target.value }))} required />
+            <input
+              className="input w-full"
+              placeholder="kg, UNI, m..."
+              value={form.unidad}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, unidad: e.target.value }))
+              }
+              required
+            />
           </div>
           <div>
             <label className="label">Stock actual</label>
-            <input type="number" min="0" step="0.001" className="input w-full"
-              value={form.stockActual} onChange={e => setForm(f => ({ ...f, stockActual: +e.target.value }))} />
+            <input
+              type="number"
+              min="0"
+              step="0.001"
+              className="input w-full"
+              value={form.stockActual}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, stockActual: +e.target.value }))
+              }
+            />
           </div>
           <div>
             <label className="label">Stock mínimo</label>
-            <input type="number" min="0" step="0.001" className="input w-full"
-              value={form.stockMinimo} onChange={e => setForm(f => ({ ...f, stockMinimo: +e.target.value }))} />
+            <input
+              type="number"
+              min="0"
+              step="0.001"
+              className="input w-full"
+              value={form.stockMinimo}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, stockMinimo: +e.target.value }))
+              }
+            />
           </div>
           <div>
             <label className="label">Costo unitario</label>
-            <input type="number" min="0" step="0.01" className="input w-full"
-              value={form.costoUnitario} onChange={e => setForm(f => ({ ...f, costoUnitario: +e.target.value }))} />
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              className="input w-full"
+              value={form.costoUnitario}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, costoUnitario: +e.target.value }))
+              }
+            />
           </div>
         </div>
-        <button type="submit" className="btn btn-primary" disabled={crear.isPending || !selectedLocal?.id}>
-          {crear.isPending ? 'Guardando...' : 'Crear material'}
+        <button
+          type="submit"
+          className="btn btn-primary"
+          disabled={crear.isPending || !selectedLocal?.id}
+        >
+          {crear.isPending ? "Guardando..." : "Crear material"}
         </button>
       </form>
 
       <table className="w-full text-sm">
         <thead>
-          <tr><th>Código</th><th>Nombre</th><th>Tipo</th><th>Unidad</th><th>Stock</th><th>Stock Mín.</th><th>Costo Unit.</th></tr>
+          <tr>
+            <th>Código</th>
+            <th>Nombre</th>
+            <th>Tipo</th>
+            <th>Unidad</th>
+            <th>Stock</th>
+            <th>Stock Mín.</th>
+            <th>Costo Unit.</th>
+          </tr>
         </thead>
         <tbody>
-          {data?.data.map(m => (
-            <tr key={m.id} className={m.stockActual != null && m.stockMinimo != null && m.stockActual <= m.stockMinimo ? 'bg-red-50' : ''}>
+          {data?.data.map((m) => (
+            <tr
+              key={m.id}
+              className={
+                m.stockActual != null &&
+                m.stockMinimo != null &&
+                m.stockActual <= m.stockMinimo
+                  ? "bg-red-50"
+                  : ""
+              }
+            >
               <td>{m.code}</td>
               <td>{m.nombre}</td>
               <td>{m.tipo}</td>
               <td>{m.unidad}</td>
-              <td>{m.stockActual ?? '—'}</td>
-              <td>{m.stockMinimo ?? '—'}</td>
-              <td>{m.costoUnitario != null ? `$${Number(m.costoUnitario).toLocaleString('es-AR')}` : '—'}</td>
+              <td>{m.stockActual ?? "—"}</td>
+              <td>{m.stockMinimo ?? "—"}</td>
+              <td>
+                {m.costoUnitario != null
+                  ? `$${Number(m.costoUnitario).toLocaleString("es-AR")}`
+                  : "—"}
+              </td>
             </tr>
           ))}
         </tbody>
@@ -733,12 +867,16 @@ export default function MaterialesPage() {
 ### `app/(dashboard)/produccion/bom/page.tsx`
 
 ```tsx
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useLocal } from '@/contexts/LocalContext';
-import { useBOMs, useCrearBOM, useMaterialesProduccion } from '@/hooks/useProduccion';
-import type { BomItemDto } from '@/lib/types/produccion';
+import { useState } from "react";
+import { useLocal } from "@/contexts/LocalContext";
+import {
+  useBOMs,
+  useCrearBOM,
+  useMaterialesProduccion,
+} from "@/hooks/useProduccion";
+import type { BomItemDto } from "@/lib/types/produccion";
 
 export default function BomPage() {
   const { selectedLocal } = useLocal();
@@ -746,10 +884,14 @@ export default function BomPage() {
   const { data: materialesData } = useMaterialesProduccion();
   const crear = useCrearBOM();
 
-  const [items, setItems] = useState<BomItemDto[]>([{ materialId: '', cantidad: 1 }]);
+  const [items, setItems] = useState<BomItemDto[]>([
+    { materialId: "", cantidad: 1 },
+  ]);
 
-  const agregarItem = () => setItems(prev => [...prev, { materialId: '', cantidad: 1 }]);
-  const quitarItem = (i: number) => setItems(prev => prev.filter((_, idx) => idx !== i));
+  const agregarItem = () =>
+    setItems((prev) => [...prev, { materialId: "", cantidad: 1 }]);
+  const quitarItem = (i: number) =>
+    setItems((prev) => prev.filter((_, idx) => idx !== i));
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -757,12 +899,12 @@ export default function BomPage() {
     const fd = new FormData(e.currentTarget);
     await crear.mutateAsync({
       dto: {
-        code: fd.get('code') as string,
-        productoId: fd.get('productoId') as string,
-        cantidad: Number(fd.get('cantidad')),
-        unidad: fd.get('unidad') as string,
-        version: Number(fd.get('version')) || 1,
-        items: items.filter(i => i.materialId),
+        code: fd.get("code") as string,
+        productoId: fd.get("productoId") as string,
+        cantidad: Number(fd.get("cantidad")),
+        unidad: fd.get("unidad") as string,
+        version: Number(fd.get("version")) || 1,
+        items: items.filter((i) => i.materialId),
       },
       localId: selectedLocal.id,
     });
@@ -779,71 +921,145 @@ export default function BomPage() {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="label">Código BOM *</label>
-            <input name="code" className="input w-full" placeholder="BOM-SILLA-001" required />
+            <input
+              name="code"
+              className="input w-full"
+              placeholder="BOM-SILLA-001"
+              required
+            />
           </div>
           <div>
             <label className="label">ID Producto terminado *</label>
-            <input name="productoId" className="input w-full" placeholder="UUID del producto" required />
+            <input
+              name="productoId"
+              className="input w-full"
+              placeholder="UUID del producto"
+              required
+            />
           </div>
           <div>
             <label className="label">Cantidad por lote *</label>
-            <input type="number" name="cantidad" min="0.001" step="0.001" className="input w-full" defaultValue={1} required />
+            <input
+              type="number"
+              name="cantidad"
+              min="0.001"
+              step="0.001"
+              className="input w-full"
+              defaultValue={1}
+              required
+            />
           </div>
           <div>
             <label className="label">Unidad del producto *</label>
-            <input name="unidad" className="input w-full" placeholder="UNI, kg..." required />
+            <input
+              name="unidad"
+              className="input w-full"
+              placeholder="UNI, kg..."
+              required
+            />
           </div>
         </div>
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <label className="label">Materiales requeridos</label>
-            <button type="button" onClick={agregarItem} className="btn btn-sm btn-secondary">
+            <button
+              type="button"
+              onClick={agregarItem}
+              className="btn btn-sm btn-secondary"
+            >
               + Agregar material
             </button>
           </div>
           {items.map((item, i) => (
             <div key={i} className="flex gap-2 items-center">
-              <select className="input flex-1"
+              <select
+                className="input flex-1"
                 value={item.materialId}
-                onChange={e => setItems(prev => prev.map((it, idx) => idx === i ? { ...it, materialId: e.target.value } : it))}>
+                onChange={(e) =>
+                  setItems((prev) =>
+                    prev.map((it, idx) =>
+                      idx === i ? { ...it, materialId: e.target.value } : it,
+                    ),
+                  )
+                }
+              >
                 <option value="">Seleccionar material...</option>
-                {materialesData?.data.map(m => (
-                  <option key={m.id} value={m.id}>{m.nombre} ({m.code})</option>
+                {materialesData?.data.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.nombre} ({m.code})
+                  </option>
                 ))}
               </select>
-              <input type="number" min="0.0001" step="0.0001" className="input w-24"
+              <input
+                type="number"
+                min="0.0001"
+                step="0.0001"
+                className="input w-24"
                 placeholder="Cant."
                 value={item.cantidad}
-                onChange={e => setItems(prev => prev.map((it, idx) => idx === i ? { ...it, cantidad: +e.target.value } : it))} />
-              <input className="input w-20" placeholder="Unidad"
-                value={item.unidad ?? ''}
-                onChange={e => setItems(prev => prev.map((it, idx) => idx === i ? { ...it, unidad: e.target.value } : it))} />
+                onChange={(e) =>
+                  setItems((prev) =>
+                    prev.map((it, idx) =>
+                      idx === i ? { ...it, cantidad: +e.target.value } : it,
+                    ),
+                  )
+                }
+              />
+              <input
+                className="input w-20"
+                placeholder="Unidad"
+                value={item.unidad ?? ""}
+                onChange={(e) =>
+                  setItems((prev) =>
+                    prev.map((it, idx) =>
+                      idx === i ? { ...it, unidad: e.target.value } : it,
+                    ),
+                  )
+                }
+              />
               {items.length > 1 && (
-                <button type="button" onClick={() => quitarItem(i)} className="text-red-500">✕</button>
+                <button
+                  type="button"
+                  onClick={() => quitarItem(i)}
+                  className="text-red-500"
+                >
+                  ✕
+                </button>
               )}
             </div>
           ))}
         </div>
 
-        <button type="submit" className="btn btn-primary" disabled={crear.isPending || !selectedLocal?.id}>
-          {crear.isPending ? 'Creando...' : 'Crear BOM'}
+        <button
+          type="submit"
+          className="btn btn-primary"
+          disabled={crear.isPending || !selectedLocal?.id}
+        >
+          {crear.isPending ? "Creando..." : "Crear BOM"}
         </button>
       </form>
 
       <table className="w-full text-sm">
         <thead>
-          <tr><th>Código</th><th>Producto</th><th>Cantidad lote</th><th>Unidad</th><th>Versión</th><th>Estado</th></tr>
+          <tr>
+            <th>Código</th>
+            <th>Producto</th>
+            <th>Cantidad lote</th>
+            <th>Unidad</th>
+            <th>Versión</th>
+            <th>Estado</th>
+          </tr>
         </thead>
         <tbody>
-          {bomsData?.data.map(b => (
+          {bomsData?.data.map((b) => (
             <tr key={b.id}>
               <td>{b.code}</td>
               <td>{b.producto?.name ?? b.productoId}</td>
               <td>{b.cantidad}</td>
               <td>{b.unidad}</td>
               <td>{b.version ?? 1}</td>
-              <td>{b.activo ? 'Activo' : 'Inactivo'}</td>
+              <td>{b.activo ? "Activo" : "Inactivo"}</td>
             </tr>
           ))}
         </tbody>
@@ -860,22 +1076,22 @@ export default function BomPage() {
 Listar y gestionar el ciclo de vida de órdenes:
 
 ```tsx
-'use client';
+"use client";
 
-import { useLocal } from '@/contexts/LocalContext';
+import { useLocal } from "@/contexts/LocalContext";
 import {
   useOrdenesProduccion,
   useIniciarOrden,
   useFinalizarOrden,
   useCancelarOrden,
-} from '@/hooks/useProduccion';
-import Link from 'next/link';
+} from "@/hooks/useProduccion";
+import Link from "next/link";
 
 const BADGE: Record<string, string> = {
-  PLANIFICADA: 'bg-yellow-100 text-yellow-800',
-  EN_PROCESO: 'bg-blue-100 text-blue-800',
-  COMPLETADA: 'bg-green-100 text-green-800',
-  CANCELADA: 'bg-gray-100 text-gray-600',
+  PLANIFICADA: "bg-yellow-100 text-yellow-800",
+  EN_PROCESO: "bg-blue-100 text-blue-800",
+  COMPLETADA: "bg-green-100 text-green-800",
+  CANCELADA: "bg-gray-100 text-gray-600",
 };
 
 export default function OrdenesPage() {
@@ -898,49 +1114,75 @@ export default function OrdenesPage() {
       <table className="w-full text-sm">
         <thead>
           <tr>
-            <th>#</th><th>Producto</th><th>Cant. Plan.</th><th>Cant. Real.</th>
-            <th>Fecha Fin Plan.</th><th>Estado</th><th>Operador</th><th>Acciones</th>
+            <th>#</th>
+            <th>Producto</th>
+            <th>Cant. Plan.</th>
+            <th>Cant. Real.</th>
+            <th>Fecha Fin Plan.</th>
+            <th>Estado</th>
+            <th>Operador</th>
+            <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
-          {data?.data.map(o => (
+          {data?.data.map((o) => (
             <tr key={o.id}>
               <td>{o.numero}</td>
               <td>{o.bom?.producto.name ?? o.bomId}</td>
               <td>{o.cantidadPlanificada}</td>
-              <td>{o.cantidadRealizada ?? '—'}</td>
-              <td>{new Date(o.fechaFinPlanificada).toLocaleDateString('es-AR')}</td>
+              <td>{o.cantidadRealizada ?? "—"}</td>
               <td>
-                <span className={`px-2 py-1 rounded text-xs font-medium ${BADGE[o.estado]}`}>
+                {new Date(o.fechaFinPlanificada).toLocaleDateString("es-AR")}
+              </td>
+              <td>
+                <span
+                  className={`px-2 py-1 rounded text-xs font-medium ${BADGE[o.estado]}`}
+                >
                   {o.estado}
                 </span>
               </td>
-              <td>{o.operador ?? '—'}</td>
+              <td>{o.operador ?? "—"}</td>
               <td className="flex gap-1">
-                {o.estado === 'PLANIFICADA' && (
-                  <button className="btn btn-sm btn-primary"
+                {o.estado === "PLANIFICADA" && (
+                  <button
+                    className="btn btn-sm btn-primary"
                     onClick={() => iniciar.mutate(o.id)}
-                    disabled={iniciar.isPending}>
+                    disabled={iniciar.isPending}
+                  >
                     Iniciar
                   </button>
                 )}
-                {o.estado === 'EN_PROCESO' && (
-                  <button className="btn btn-sm btn-success"
+                {o.estado === "EN_PROCESO" && (
+                  <button
+                    className="btn btn-sm btn-success"
                     onClick={() => {
-                      const cant = Number(prompt('Cantidad realizada:', String(o.cantidadPlanificada)));
-                      if (cant > 0) finalizar.mutate({ id: o.id, dto: { cantidadRealizada: cant } });
+                      const cant = Number(
+                        prompt(
+                          "Cantidad realizada:",
+                          String(o.cantidadPlanificada),
+                        ),
+                      );
+                      if (cant > 0)
+                        finalizar.mutate({
+                          id: o.id,
+                          dto: { cantidadRealizada: cant },
+                        });
                     }}
-                    disabled={finalizar.isPending}>
+                    disabled={finalizar.isPending}
+                  >
                     Finalizar
                   </button>
                 )}
-                {(o.estado === 'PLANIFICADA' || o.estado === 'EN_PROCESO') && (
-                  <button className="btn btn-sm btn-danger"
+                {(o.estado === "PLANIFICADA" || o.estado === "EN_PROCESO") && (
+                  <button
+                    className="btn btn-sm btn-danger"
                     onClick={() => {
-                      const motivo = prompt('Motivo de cancelación:');
-                      if (motivo) cancelar.mutate({ id: o.id, dto: { motivo } });
+                      const motivo = prompt("Motivo de cancelación:");
+                      if (motivo)
+                        cancelar.mutate({ id: o.id, dto: { motivo } });
                     }}
-                    disabled={cancelar.isPending}>
+                    disabled={cancelar.isPending}
+                  >
                     Cancelar
                   </button>
                 )}
@@ -959,24 +1201,27 @@ export default function OrdenesPage() {
 ### `app/(dashboard)/produccion/planificacion/page.tsx`
 
 ```tsx
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useCalendarioProduccion, useVerificarMateriales } from '@/hooks/useProduccion';
+import { useState } from "react";
+import {
+  useCalendarioProduccion,
+  useVerificarMateriales,
+} from "@/hooks/useProduccion";
 
 export default function PlanificacionPage() {
   const hoy = new Date();
   const [desde, setDesde] = useState(
-    `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-01`
+    `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, "0")}-01`,
   );
   const [hasta, setHasta] = useState(
-    `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).getDate()}`
+    `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, "0")}-${new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).getDate()}`,
   );
 
   const { data: calendario } = useCalendarioProduccion(desde, hasta);
   const { data: alertas } = useVerificarMateriales();
 
-  const conDeficit = alertas?.data.filter(a => !a.suficiente) ?? [];
+  const conDeficit = alertas?.data.filter((a) => !a.suficiente) ?? [];
 
   return (
     <div className="space-y-6">
@@ -988,24 +1233,42 @@ export default function PlanificacionPage() {
         <div className="flex gap-4 mb-4">
           <div>
             <label className="label">Desde</label>
-            <input type="date" className="input" value={desde} onChange={e => setDesde(e.target.value)} />
+            <input
+              type="date"
+              className="input"
+              value={desde}
+              onChange={(e) => setDesde(e.target.value)}
+            />
           </div>
           <div>
             <label className="label">Hasta</label>
-            <input type="date" className="input" value={hasta} onChange={e => setHasta(e.target.value)} />
+            <input
+              type="date"
+              className="input"
+              value={hasta}
+              onChange={(e) => setHasta(e.target.value)}
+            />
           </div>
         </div>
         <table className="w-full text-sm">
           <thead>
-            <tr><th>#</th><th>Producto</th><th>Cantidad</th><th>Fecha fin plan.</th><th>Estado</th></tr>
+            <tr>
+              <th>#</th>
+              <th>Producto</th>
+              <th>Cantidad</th>
+              <th>Fecha fin plan.</th>
+              <th>Estado</th>
+            </tr>
           </thead>
           <tbody>
-            {calendario?.data.map(o => (
+            {calendario?.data.map((o) => (
               <tr key={o.id}>
                 <td>{o.numero}</td>
                 <td>{o.bom.producto.name}</td>
                 <td>{o.cantidadPlanificada}</td>
-                <td>{new Date(o.fechaFinPlanificada).toLocaleDateString('es-AR')}</td>
+                <td>
+                  {new Date(o.fechaFinPlanificada).toLocaleDateString("es-AR")}
+                </td>
                 <td>{o.estado}</td>
               </tr>
             ))}
@@ -1025,19 +1288,37 @@ export default function PlanificacionPage() {
         </h3>
         <table className="w-full text-sm">
           <thead>
-            <tr><th>Material</th><th>Unidad</th><th>Stock actual</th><th>Demanda planificada</th><th>Déficit</th><th>Estado</th></tr>
+            <tr>
+              <th>Material</th>
+              <th>Unidad</th>
+              <th>Stock actual</th>
+              <th>Demanda planificada</th>
+              <th>Déficit</th>
+              <th>Estado</th>
+            </tr>
           </thead>
           <tbody>
-            {alertas?.data.map(a => (
-              <tr key={a.material.id} className={!a.suficiente ? 'bg-red-50' : ''}>
-                <td>{a.material.nombre} ({a.material.code})</td>
+            {alertas?.data.map((a) => (
+              <tr
+                key={a.material.id}
+                className={!a.suficiente ? "bg-red-50" : ""}
+              >
+                <td>
+                  {a.material.nombre} ({a.material.code})
+                </td>
                 <td>{a.material.unidad}</td>
                 <td>{a.stockActual}</td>
                 <td>{a.demandaPlanificada}</td>
-                <td className={!a.suficiente ? 'text-red-600 font-semibold' : 'text-green-600'}>
-                  {!a.suficiente ? `-${a.deficit}` : 'OK'}
+                <td
+                  className={
+                    !a.suficiente
+                      ? "text-red-600 font-semibold"
+                      : "text-green-600"
+                  }
+                >
+                  {!a.suficiente ? `-${a.deficit}` : "OK"}
                 </td>
-                <td>{a.suficiente ? '✓ Suficiente' : '⚠ Insuficiente'}</td>
+                <td>{a.suficiente ? "✓ Suficiente" : "⚠ Insuficiente"}</td>
               </tr>
             ))}
           </tbody>
@@ -1052,22 +1333,22 @@ export default function PlanificacionPage() {
 
 ## 6. Referencia de endpoints
 
-| Método  | Endpoint                                           | Descripción                                    | Rol   |
-| ------- | -------------------------------------------------- | ---------------------------------------------- | ----- |
-| `GET`   | `/api/v1/materiales-produccion`                    | Listar materiales                              | Todos |
-| `POST`  | `/api/v1/materiales-produccion?localId=UUID`       | Crear material                                 | Admin |
-| `PATCH` | `/api/v1/materiales-produccion/:id`                | Actualizar material                            | Admin |
-| `GET`   | `/api/v1/bom`                                      | Listar BOMs                                    | Todos |
-| `GET`   | `/api/v1/bom/:id`                                  | BOM con items y costo estimado                 | Todos |
-| `POST`  | `/api/v1/bom?localId=UUID`                         | Crear BOM                                      | Admin |
-| `GET`   | `/api/v1/ordenes-produccion`                       | Listar órdenes                                 | Todos |
-| `GET`   | `/api/v1/ordenes-produccion/:id`                   | Orden con materiales requeridos                | Todos |
-| `POST`  | `/api/v1/ordenes-produccion?localId=UUID`          | Crear orden (estado: PLANIFICADA)              | Admin |
-| `PATCH` | `/api/v1/ordenes-produccion/:id/iniciar`           | Iniciar → descuenta materiales del stock       | Admin |
-| `PATCH` | `/api/v1/ordenes-produccion/:id/finalizar`         | Finalizar → ingresa producto terminado         | Admin |
-| `PATCH` | `/api/v1/ordenes-produccion/:id/cancelar`          | Cancelar → reintegra materiales si EN_PROCESO  | Admin |
-| `GET`   | `/api/v1/planificacion?desde=&hasta=`              | Calendario de órdenes por período              | Todos |
-| `GET`   | `/api/v1/planificacion/materiales`                 | Stock vs demanda planificada                   | Todos |
+| Método  | Endpoint                                     | Descripción                                   | Rol   |
+| ------- | -------------------------------------------- | --------------------------------------------- | ----- |
+| `GET`   | `/api/v1/materiales-produccion`              | Listar materiales                             | Todos |
+| `POST`  | `/api/v1/materiales-produccion?localId=UUID` | Crear material                                | Admin |
+| `PATCH` | `/api/v1/materiales-produccion/:id`          | Actualizar material                           | Admin |
+| `GET`   | `/api/v1/bom`                                | Listar BOMs                                   | Todos |
+| `GET`   | `/api/v1/bom/:id`                            | BOM con items y costo estimado                | Todos |
+| `POST`  | `/api/v1/bom?localId=UUID`                   | Crear BOM                                     | Admin |
+| `GET`   | `/api/v1/ordenes-produccion`                 | Listar órdenes                                | Todos |
+| `GET`   | `/api/v1/ordenes-produccion/:id`             | Orden con materiales requeridos               | Todos |
+| `POST`  | `/api/v1/ordenes-produccion?localId=UUID`    | Crear orden (estado: PLANIFICADA)             | Admin |
+| `PATCH` | `/api/v1/ordenes-produccion/:id/iniciar`     | Iniciar → descuenta materiales del stock      | Admin |
+| `PATCH` | `/api/v1/ordenes-produccion/:id/finalizar`   | Finalizar → ingresa producto terminado        | Admin |
+| `PATCH` | `/api/v1/ordenes-produccion/:id/cancelar`    | Cancelar → reintegra materiales si EN_PROCESO | Admin |
+| `GET`   | `/api/v1/planificacion?desde=&hasta=`        | Calendario de órdenes por período             | Todos |
+| `GET`   | `/api/v1/planificacion/materiales`           | Stock vs demanda planificada                  | Todos |
 
 ---
 
@@ -1087,12 +1368,12 @@ PLANIFICADA ──[iniciar]──► EN_PROCESO ──[finalizar]──► COMPL
 
 ## 8. Discrepancias: docs vs código real
 
-| Docs decían                        | Código real                          |
-| ---------------------------------- | ------------------------------------ |
-| `productoTerminadoId` (BOM)        | `productoId`                         |
-| `version: string` ("BOM-SILLA-V1") | `code: string` + `version?: number`  |
-| `depositoId` en CreateOrdenDto     | **no existe**                        |
-| `maquinaId` en CreateOrdenDto      | **no existe**                        |
-| `observaciones` en CreateOrdenDto  | `notas`                              |
-| módulo `maquinas/`                 | módulo `materiales-produccion/`      |
-| endpoint `/maquinas`               | endpoint `/materiales-produccion`    |
+| Docs decían                        | Código real                         |
+| ---------------------------------- | ----------------------------------- |
+| `productoTerminadoId` (BOM)        | `productoId`                        |
+| `version: string` ("BOM-SILLA-V1") | `code: string` + `version?: number` |
+| `depositoId` en CreateOrdenDto     | **no existe**                       |
+| `maquinaId` en CreateOrdenDto      | **no existe**                       |
+| `observaciones` en CreateOrdenDto  | `notas`                             |
+| módulo `maquinas/`                 | módulo `materiales-produccion/`     |
+| endpoint `/maquinas`               | endpoint `/materiales-produccion`   |

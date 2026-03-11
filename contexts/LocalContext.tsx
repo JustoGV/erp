@@ -1,54 +1,60 @@
-'use client';
+"use client";
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { mockLocales, type Local } from '@/lib/mock-data';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { localesService } from "@/lib/services/config.service";
+import type { Local } from "@/lib/api-types";
 
 interface LocalContextType {
   selectedLocal: Local | null;
   setSelectedLocal: (local: Local | null) => void;
   locales: Local[];
   isAllLocales: boolean;
+  isLoading: boolean;
 }
 
 const LocalContext = createContext<LocalContextType | undefined>(undefined);
 
 export function LocalProvider({ children }: { children: React.ReactNode }) {
   const [selectedLocal, setSelectedLocalState] = useState<Local | null>(null);
-  const [locales] = useState<Local[]>(mockLocales);
 
-  // Cargar el local guardado en localStorage al iniciar
+  const { data, isLoading } = useQuery({
+    queryKey: ["locales", "all"],
+    queryFn: () => localesService.getAll({ limit: 100 }),
+  });
+
+  const locales = data?.data ?? [];
+
+  // Restaurar local seleccionado del localStorage cuando carguen los locales
   useEffect(() => {
-    const savedLocalId = localStorage.getItem('selectedLocalId');
-    if (savedLocalId === 'all') {
+    if (locales.length === 0) return;
+
+    const savedId = localStorage.getItem("selectedLocalId");
+    if (savedId === "all") {
       setSelectedLocalState(null);
-    } else if (savedLocalId) {
-      const local = locales.find(l => l.id === savedLocalId);
-      if (local) {
-        setSelectedLocalState(local);
-      } else {
-        // Si no existe, seleccionar el primer local
-        setSelectedLocalState(locales[0] || null);
-      }
+    } else if (savedId) {
+      const found = locales.find((l) => l.id === savedId);
+      setSelectedLocalState(found ?? locales[0] ?? null);
     } else {
-      // Por defecto, seleccionar el primer local
-      setSelectedLocalState(locales[0] || null);
+      setSelectedLocalState(locales[0] ?? null);
     }
   }, [locales]);
 
   const setSelectedLocal = (local: Local | null) => {
     setSelectedLocalState(local);
-    // Guardar en localStorage
-    if (local) {
-      localStorage.setItem('selectedLocalId', local.id);
-    } else {
-      localStorage.setItem('selectedLocalId', 'all');
-    }
+    localStorage.setItem("selectedLocalId", local ? local.id : "all");
   };
 
-  const isAllLocales = selectedLocal === null;
-
   return (
-    <LocalContext.Provider value={{ selectedLocal, setSelectedLocal, locales, isAllLocales }}>
+    <LocalContext.Provider
+      value={{
+        selectedLocal,
+        setSelectedLocal,
+        locales,
+        isAllLocales: selectedLocal === null,
+        isLoading,
+      }}
+    >
       {children}
     </LocalContext.Provider>
   );
@@ -56,8 +62,7 @@ export function LocalProvider({ children }: { children: React.ReactNode }) {
 
 export function useLocal() {
   const context = useContext(LocalContext);
-  if (context === undefined) {
-    throw new Error('useLocal debe ser usado dentro de un LocalProvider');
-  }
+  if (!context)
+    throw new Error("useLocal debe ser usado dentro de un LocalProvider");
   return context;
 }

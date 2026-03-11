@@ -320,3 +320,253 @@ export interface MovimientoStock {
   producto?: Pick<Producto, "id" | "code" | "name" | "unit">;
   local?: { id: string; name: string };
 }
+
+// ── Ventas ────────────────────────────────────────────────────
+
+export type EstadoPresupuesto =
+  | "BORRADOR"
+  | "ENVIADO"
+  | "APROBADO"
+  | "RECHAZADO"
+  | "VENCIDO";
+
+export type EstadoPedido =
+  | "PENDIENTE"
+  | "CONFIRMADO"
+  | "EN_PREPARACION"
+  | "LISTO"
+  | "ENVIADO"
+  | "ENTREGADO"
+  | "CANCELADO";
+
+export type EstadoFactura =
+  | "PENDIENTE"
+  | "PARCIAL"
+  | "PAGADA"
+  | "VENCIDA"
+  | "ANULADA";
+
+// ---------- Cliente ----------
+
+export interface Cliente {
+  id: string;
+  empresaId: string;
+  localId: string;
+  code: string;
+  name: string;
+  taxId?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  creditLimit: number;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateClienteDto {
+  code: string;
+  name: string;
+  localId: string;
+  taxId?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  email?: string;
+  phone?: string;
+  creditLimit?: number;
+}
+
+export interface UpdateClienteDto extends Partial<
+  Omit<CreateClienteDto, "code">
+> {
+  active?: boolean;
+}
+
+export interface FilterClienteDto {
+  page?: number;
+  limit?: number;
+  localId?: string;
+  search?: string;
+  active?: boolean;
+}
+
+// ---------- Presupuesto ----------
+
+export interface ItemPresupuesto {
+  id: string;
+  presupuestoId: string;
+  productoId: string;
+  productoNombre: string;
+  cantidad: number;
+  precioUnitario: number;
+  descuento: number;
+  subtotal: number;
+  producto?: { id: string; code: string; name: string; unit: string };
+}
+
+export interface Presupuesto {
+  id: string;
+  empresaId: string;
+  localId: string;
+  numero: string;
+  clienteId: string;
+  fecha: string;
+  fechaVencimiento: string;
+  subtotal: number;
+  descuento: number;
+  impuestos: number;
+  total: number;
+  estado: EstadoPresupuesto;
+  notas?: string;
+  vendedor: string;
+  createdAt: string;
+  updatedAt: string;
+  cliente?: { id: string; code: string; name: string };
+  items?: ItemPresupuesto[];
+  _count?: { items: number };
+}
+
+export interface ItemPresupuestoDto {
+  productoId: string;
+  cantidad: number;
+  precioUnitario: number;
+  descuento?: number;
+}
+
+export interface CreatePresupuestoDto {
+  clienteId: string;
+  fechaVencimiento?: string;
+  notas?: string;
+  items: ItemPresupuestoDto[];
+}
+
+// ---------- Pedido ----------
+
+export interface ItemPedido {
+  id: string;
+  pedidoId: string;
+  productoId: string;
+  productoNombre: string;
+  cantidad: number;
+  cantidadEntregada: number;
+  precioUnitario: number;
+  descuento: number;
+  subtotal: number;
+  producto?: { id: string; code: string; name: string; unit: string };
+}
+
+export interface PedidoVenta {
+  id: string;
+  empresaId: string;
+  localId: string;
+  numero: string;
+  presupuestoId?: string;
+  clienteId: string;
+  fecha: string;
+  fechaEntregaEstimada: string;
+  fechaEntregaReal?: string;
+  subtotal: number;
+  descuento: number;
+  impuestos: number;
+  total: number;
+  estado: EstadoPedido;
+  notas?: string;
+  vendedor: string;
+  createdAt: string;
+  updatedAt: string;
+  cliente?: { id: string; code: string; name: string };
+  presupuesto?: { id: string; numero: string };
+  factura?: { id: string; numero: string; estado: EstadoFactura };
+  items?: ItemPedido[];
+}
+
+// ---------- Factura ----------
+
+export interface ItemFactura {
+  id: string;
+  facturaId: string;
+  productoId: string;
+  productoNombre: string;
+  cantidad: number;
+  precioUnitario: number;
+  descuento: number;
+  subtotal: number;
+  producto?: { code: string; name: string; unit: string };
+}
+
+export interface Factura {
+  id: string;
+  empresaId: string;
+  localId: string;
+  numero: string;
+  pedidoId?: string;
+  clienteId: string;
+  fecha: string;
+  fechaVencimiento: string;
+  subtotal: number;
+  descuento: number;
+  impuestos: number;
+  total: number;
+  estado: EstadoFactura;
+  notas?: string;
+  createdAt: string;
+  updatedAt: string;
+  cliente?: { id: string; code: string; name: string };
+  pedido?: { id: string; numero: string };
+  items?: ItemFactura[];
+  cobranzas?: Cobranza[];
+  totalCobrado?: number;
+  saldoPendiente?: number;
+}
+
+export interface CreateFacturaDto {
+  pedidoId: string;
+  fechaVencimiento?: string;
+  notas?: string;
+}
+
+// ---------- Cobranza ----------
+
+export interface Cobranza {
+  id: string;
+  empresaId: string;
+  localId: string;
+  facturaId: string;
+  fecha: string;
+  monto: number;
+  metodoPago: string;
+  referencia?: string;
+  notas?: string;
+  creadoPor: string;
+  createdAt: string;
+}
+
+export interface CreateCobranzaDto {
+  facturaId: string;
+  monto: number;
+  metodoPago: string;
+  fecha?: string;
+  referencia?: string;
+  notas?: string;
+}
+
+// ---------- Saldos cliente ----------
+
+export interface SaldoFactura {
+  facturaId: string;
+  numero: string;
+  fecha: string;
+  vencimiento: string;
+  total: number;
+  cobrado: number;
+  saldoPendiente: number;
+  vencida: boolean;
+}
+
+export interface SaldosCliente {
+  saldos: SaldoFactura[];
+  totalPendiente: number;
+}

@@ -1,105 +1,61 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { FileText, ArrowLeft, Package } from 'lucide-react'
-import { useLocal } from '@/contexts/LocalContext'
-import { mockBOMs, type BOM } from '@/lib/mock-data'
+import { Layers } from "lucide-react";
+import { useBOMs } from "@/hooks/useProduccion";
 
 export default function BOMPage() {
-  const { selectedLocal } = useLocal()
-  const [boms, setBoms] = useState<BOM[]>(mockBOMs)
-
-  useEffect(() => {
-    if (!selectedLocal) {
-      setBoms(mockBOMs)
-    } else {
-      setBoms(mockBOMs.filter(b => b.localId === selectedLocal.id))
-    }
-  }, [selectedLocal])
+  const { data, isLoading } = useBOMs();
+  const boms = data?.data ?? [];
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Link href="/produccion" className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
-          <ArrowLeft size={24} className="text-slate-600" />
-        </Link>
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl">
-              <FileText className="text-white" size={28} />
-            </div>
-            Lista de Materiales (BOM)
-          </h1>
-          <p className="text-slate-600 mt-1">Configuración de recetas de producción</p>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+          <Layers size={24} /> Lista de Materiales (BOM)
+        </h1>
+        <p className="text-slate-500">{boms.length} BOMs registrados</p>
       </div>
 
-      {/* Lista de BOMs */}
-      <div className="grid grid-cols-1 gap-6">
-        {boms.map(bom => (
-          <div key={bom.id} className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-            {/* Header del BOM */}
-            <div className="bg-gradient-to-r from-blue-50 to-blue-100 border-b border-blue-200 p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-xl font-bold text-slate-900">{bom.productoTerminadoNombre}</h3>
-                  <p className="text-sm text-slate-600 mt-1">
-                    Código: {bom.code} | Versión: {bom.version} | 
-                    Produce: {bom.cantidad} {bom.unidad}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-slate-600">Costo Total</p>
-                  <p className="text-2xl font-bold text-blue-600">
-                    ${bom.costoTotal.toLocaleString('es-AR')}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Materiales del BOM */}
-            <div className="p-6">
-              <h4 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-                <Package size={20} className="text-blue-600" />
-                Materiales Requeridos
-              </h4>
-              <div className="space-y-3">
-                {bom.materiales.map(material => (
-                  <div key={material.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <Package size={20} className="text-blue-600" />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-slate-900">{material.materialNombre}</p>
-                        <p className="text-sm text-slate-600">Código: {material.materialCode}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-slate-900">
-                        {material.cantidad} {material.unidad}
-                      </p>
-                      <p className="text-sm text-slate-600">
-                        ${material.costoUnitario.toLocaleString('es-AR')} × {material.cantidad} = 
-                        <span className="font-medium text-blue-600"> ${material.costoTotal.toLocaleString('es-AR')}</span>
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {boms.length === 0 && (
-        <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
-          <FileText size={48} className="mx-auto text-slate-300 mb-4" />
-          <p className="text-slate-600">No hay BOMs configurados para este local</p>
+      <div className="card">
+        <div className="table-container">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Producto Terminado</th>
+                <th>Cantidad</th>
+                <th>Unidad</th>
+                <th>Costo Estimado</th>
+                <th>Materiales</th>
+                <th>Activo</th>
+              </tr>
+            </thead>
+            <tbody>
+              {isLoading ? (
+                <tr><td colSpan={7} className="text-center py-10">Cargando...</td></tr>
+              ) : boms.length === 0 ? (
+                <tr><td colSpan={7} className="text-center py-10 text-slate-400">No se encontraron BOMs.</td></tr>
+              ) : (
+                boms.map((b) => (
+                  <tr key={b.id} className="table-row-hover">
+                    <td className="font-mono text-xs">{b.code}</td>
+                    <td className="font-medium">{b.producto?.name ?? "—"}</td>
+                    <td className="text-right">{b.cantidad}</td>
+                    <td>{b.unidad}</td>
+                    <td className="text-right">${b.costoEstimado?.toLocaleString() ?? "—"}</td>
+                    <td className="text-center">{b.materiales?.length ?? 0}</td>
+                    <td>
+                      <span className={`badge ${b.activo ? "badge-success" : "badge-secondary"}`}>
+                        {b.activo ? "Sí" : "No"}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
-      )}
+      </div>
     </div>
-  )
+  );
 }

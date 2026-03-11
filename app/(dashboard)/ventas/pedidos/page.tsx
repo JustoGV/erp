@@ -1,360 +1,129 @@
-'use client';
+"use client";
 
-import { useEffect, useMemo, useState } from 'react';
-import { ClipboardList, Plus, Pencil, Trash2 } from 'lucide-react';
-import { mockPedidosVenta, PedidoVenta, EstadoPedido } from '@/lib/mock-data';
-import { usePermissions } from '@/hooks/usePermissions';
-import Modal from '@/components/Modal';
-import Pagination from '@/components/Pagination';
+import { useState } from "react";
+import { ClipboardList, Search } from "lucide-react";
+import { useLocal } from "@/contexts/LocalContext";
+import { usePedidos } from "@/hooks/useVentas";
+import Pagination from "@/components/Pagination";
 
-const estadosPedido: EstadoPedido[] = [
-  'PENDIENTE',
-  'CONFIRMADO',
-  'EN_PREPARACION',
-  'LISTO',
-  'ENVIADO',
-  'ENTREGADO',
-  'CANCELADO'
-];
+const ESTADO_CONFIG: Record<string, { class: string; label: string }> = {
+  PENDIENTE: { class: "badge-warning", label: "Pendiente" },
+  CONFIRMADO: { class: "badge-info", label: "Confirmado" },
+  EN_PREPARACION: { class: "badge-info", label: "En preparación" },
+  LISTO: { class: "badge-success", label: "Listo" },
+  ENVIADO: { class: "badge-info", label: "Enviado" },
+  ENTREGADO: { class: "badge-success", label: "Entregado" },
+  CANCELADO: { class: "badge-danger", label: "Cancelado" },
+};
 
 export default function PedidosPage() {
-  const permissions = usePermissions();
-  const canCreate = permissions.canCreate('ventas');
-  const canEdit = permissions.canEdit('ventas');
-  const canDelete = permissions.canDelete('ventas');
-
-  const [pedidos, setPedidos] = useState<PedidoVenta[]>(mockPedidosVenta);
-  const [formOpen, setFormOpen] = useState(false);
-  const [editing, setEditing] = useState<PedidoVenta | null>(null);
+  const { selectedLocal, isAllLocales } = useLocal();
+  const localId = isAllLocales ? undefined : selectedLocal?.id;
   const [page, setPage] = useState(1);
-  const pageSize = 5;
-  const [pendingEstados, setPendingEstados] = useState<Record<string, EstadoPedido>>({});
-  const [formState, setFormState] = useState({
-    numero: '',
-    clienteNombre: '',
-    fecha: '',
-    fechaEntregaEstimada: '',
-    total: 0,
-    estado: 'PENDIENTE' as EstadoPedido,
-    notas: ''
+  const [search, setSearch] = useState("");
+
+  const { data, isLoading } = usePedidos({
+    localId,
+    page,
+    limit: 20,
   });
-
-  const totalPedidos = useMemo(() => pedidos.length, [pedidos]);
-  const totalPages = useMemo(
-    () => Math.max(1, Math.ceil(pedidos.length / pageSize)),
-    [pedidos.length]
-  );
-  const pagedPedidos = useMemo(() => {
-    const start = (page - 1) * pageSize;
-    return pedidos.slice(start, start + pageSize);
-  }, [page, pedidos]);
-
-  useEffect(() => {
-    if (page > totalPages) {
-      setPage(totalPages);
-    }
-  }, [page, totalPages]);
-
-  const openCreate = () => {
-    setEditing(null);
-    setFormState({
-      numero: '',
-      clienteNombre: '',
-      fecha: '',
-      fechaEntregaEstimada: '',
-      total: 0,
-      estado: 'PENDIENTE',
-      notas: ''
-    });
-    setFormOpen(true);
-  };
-
-  const openEdit = (pedido: PedidoVenta) => {
-    setEditing(pedido);
-    setFormState({
-      numero: pedido.numero,
-      clienteNombre: pedido.clienteNombre,
-      fecha: pedido.fecha,
-      fechaEntregaEstimada: pedido.fechaEntregaEstimada,
-      total: pedido.total,
-      estado: pedido.estado,
-      notas: pedido.notas || ''
-    });
-    setFormOpen(true);
-  };
-
-  const handleDelete = (pedidoId: string) => {
-    if (!confirm('¿Eliminar el pedido seleccionado?')) return;
-    setPedidos(prev => prev.filter(pedido => pedido.id !== pedidoId));
-  };
-
-  const handleStatusChange = (pedidoId: string, estado: EstadoPedido) => {
-    setPendingEstados(prev => ({
-      ...prev,
-      [pedidoId]: estado
-    }));
-  };
-
-  const confirmStatusChange = (pedidoId: string) => {
-    const nextEstado = pendingEstados[pedidoId];
-    if (!nextEstado) return;
-
-    setPedidos(prev => prev.map(pedido => (
-      pedido.id === pedidoId ? { ...pedido, estado: nextEstado } : pedido
-    )));
-    setPendingEstados(prev => {
-      const updated = { ...prev };
-      delete updated[pedidoId];
-      return updated;
-    });
-  };
-
-  const formatCurrency = (value: number) => (
-    value.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-  );
-
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    if (editing) {
-      setPedidos(prev => prev.map(pedido => {
-        if (pedido.id !== editing.id) return pedido;
-        return {
-          ...pedido,
-          numero: formState.numero,
-          clienteNombre: formState.clienteNombre,
-          fecha: formState.fecha,
-          fechaEntregaEstimada: formState.fechaEntregaEstimada,
-          total: Number(formState.total),
-          estado: formState.estado,
-          notas: formState.notas
-        };
-      }));
-    } else {
-      const newPedido: PedidoVenta = {
-        id: Date.now().toString(),
-        numero: formState.numero,
-        clienteId: 'demo',
-        clienteNombre: formState.clienteNombre,
-        fecha: formState.fecha,
-        fechaEntregaEstimada: formState.fechaEntregaEstimada,
-        items: [],
-        subtotal: Number(formState.total),
-        descuento: 0,
-        impuestos: 0,
-        total: Number(formState.total),
-        estado: formState.estado,
-        notas: formState.notas,
-        vendedor: 'Demo',
-        localId: '1'
-      };
-      setPedidos(prev => [newPedido, ...prev]);
-      setPage(1);
-    }
-
-    setFormOpen(false);
-  };
+  const pedidos = data?.data ?? [];
+  const total = data?.meta?.total ?? 0;
+  const totalPages = data?.meta?.totalPages ?? 1;
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900">Pedidos de Venta</h1>
-          <p className="text-slate-600 mt-1">{totalPedidos} pedidos registrados</p>
+      <div>
+        <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+          <ClipboardList size={24} /> Pedidos de Venta
+        </h1>
+        <p className="text-slate-500">{total} pedidos registrados</p>
+      </div>
+
+      <div className="card">
+        <div className="p-4 border-b border-slate-200">
+          <div className="relative">
+            <Search
+              size={18}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+            />
+            <input
+              type="text"
+              placeholder="Buscar pedidos..."
+              aria-label="Buscar pedidos"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              className="input pl-10"
+            />
+          </div>
         </div>
-        {canCreate && (
-          <button
-            onClick={openCreate}
-            className="btn btn-primary"
-          >
-            <Plus className="h-4 w-4" />
-            Nuevo pedido
-          </button>
+
+        <div className="table-container">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Número</th>
+                <th>Cliente</th>
+                <th>Fecha</th>
+                <th>Total</th>
+                <th>Vendedor</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              {isLoading ? (
+                <tr>
+                  <td colSpan={6} className="text-center py-10">
+                    Cargando...
+                  </td>
+                </tr>
+              ) : pedidos.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="text-center py-10 text-slate-400">
+                    No se encontraron pedidos.
+                  </td>
+                </tr>
+              ) : (
+                pedidos.map((p) => {
+                  const est = ESTADO_CONFIG[p.estado] ?? {
+                    class: "badge-secondary",
+                    label: p.estado,
+                  };
+                  return (
+                    <tr key={p.id} className="table-row-hover">
+                      <td className="font-mono text-xs">{p.numero}</td>
+                      <td className="font-medium">{p.cliente?.name ?? "—"}</td>
+                      <td>{new Date(p.fecha).toLocaleDateString()}</td>
+                      <td className="text-right font-semibold">
+                        ${p.total?.toLocaleString()}
+                      </td>
+                      <td>{p.vendedor ?? "—"}</td>
+                      <td>
+                        <span className={`badge ${est.class}`}>
+                          {est.label}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {totalPages > 1 && (
+          <div className="p-4 border-t border-slate-200">
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={setPage}
+            />
+          </div>
         )}
       </div>
-
-      <div className="table-container">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Número</th>
-              <th>Cliente</th>
-              <th>Fecha</th>
-              <th>Entrega</th>
-              <th>Estado</th>
-              <th className="text-right">Total</th>
-              <th className="text-right">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {pagedPedidos.map((pedido) => (
-              <tr key={pedido.id} className="table-row-hover">
-                <td className="font-medium">{pedido.numero}</td>
-                <td>{pedido.clienteNombre}</td>
-                <td>{pedido.fecha}</td>
-                <td>{pedido.fechaEntregaEstimada}</td>
-                <td>{pedido.estado.replace(/_/g, ' ')}</td>
-                <td className="text-right font-semibold">${formatCurrency(pedido.total)}</td>
-                <td className="text-right">
-                  <div className="inline-flex items-center gap-2">
-                    {canEdit && (
-                      <select
-                        value={pendingEstados[pedido.id] ?? pedido.estado}
-                        onChange={(event) => handleStatusChange(pedido.id, event.target.value as EstadoPedido)}
-                        className="input w-40 py-1.5 px-2 text-xs"
-                        aria-label="Cambiar estado"
-                      >
-                        {estadosPedido.map(estado => (
-                          <option key={estado} value={estado}>
-                            {estado.replace(/_/g, ' ')}
-                          </option>
-                        ))}
-                      </select>
-                    )}
-                    {canEdit && (
-                      <button
-                        type="button"
-                        onClick={() => confirmStatusChange(pedido.id)}
-                        disabled={!pendingEstados[pedido.id] || pendingEstados[pedido.id] === pedido.estado}
-                        className="btn btn-secondary px-3 py-1.5 text-xs"
-                      >
-                        Confirmar
-                      </button>
-                    )}
-                    {canEdit && (
-                      <button
-                        onClick={() => openEdit(pedido)}
-                        className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-                        title="Editar"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </button>
-                    )}
-                    {canDelete && (
-                      <button
-                        onClick={() => handleDelete(pedido.id)}
-                        className="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                        title="Eliminar"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
-
-      <Modal
-        open={formOpen}
-        title={editing ? 'Editar pedido' : 'Crear pedido'}
-        onClose={() => setFormOpen(false)}
-      >
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="label">Número</label>
-            <input
-              value={formState.numero}
-              onChange={(event) => setFormState(prev => ({ ...prev, numero: event.target.value }))}
-              className="input"
-              required
-            />
-          </div>
-          <div>
-            <label className="label">Cliente</label>
-            <input
-              value={formState.clienteNombre}
-              onChange={(event) => setFormState(prev => ({ ...prev, clienteNombre: event.target.value }))}
-              className="input"
-              required
-            />
-          </div>
-          <div>
-            <label className="label">Fecha</label>
-            <input
-              type="date"
-              value={formState.fecha}
-              onChange={(event) => setFormState(prev => ({ ...prev, fecha: event.target.value }))}
-              className="input"
-              required
-            />
-          </div>
-          <div>
-            <label className="label">Entrega estimada</label>
-            <input
-              type="date"
-              value={formState.fechaEntregaEstimada}
-              onChange={(event) => setFormState(prev => ({ ...prev, fechaEntregaEstimada: event.target.value }))}
-              className="input"
-              required
-            />
-          </div>
-          <div>
-            <label className="label">Estado</label>
-            <select
-              value={formState.estado}
-              onChange={(event) => setFormState(prev => ({ ...prev, estado: event.target.value as EstadoPedido }))}
-              className="input"
-            >
-              {estadosPedido.map(estado => (
-                <option key={estado} value={estado}>{estado.replace(/_/g, ' ')}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="label">Total</label>
-            <input
-              type="number"
-              value={formState.total}
-              onChange={(event) => setFormState(prev => ({ ...prev, total: Number(event.target.value) }))}
-              className="input"
-              required
-            />
-          </div>
-          <div className="md:col-span-2">
-            <label className="label">Notas</label>
-            <textarea
-              value={formState.notas}
-              onChange={(event) => setFormState(prev => ({ ...prev, notas: event.target.value }))}
-              className="input"
-              rows={3}
-            />
-          </div>
-          <div className="md:col-span-2 flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => setFormOpen(false)}
-              className="btn btn-secondary"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="btn btn-primary"
-            >
-              {editing ? 'Guardar cambios' : 'Crear pedido'}
-            </button>
-          </div>
-        </form>
-      </Modal>
-
-      {!formOpen && (
-        <div className="card">
-          <div className="flex items-start gap-3">
-            <ClipboardList className="h-5 w-5 text-blue-600 mt-0.5" />
-            <div>
-              <h3 className="text-sm font-semibold text-slate-900">Acciones de demo</h3>
-              <p className="text-sm text-slate-600">
-                Usa los botones para crear, editar o eliminar pedidos. Los cambios quedan solo en pantalla.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

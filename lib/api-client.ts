@@ -126,9 +126,14 @@ apiClient.interceptors.response.use(
 
       const refreshToken = localStorage.getItem("erp_refresh_token");
 
-      if (!refreshToken) {
+      if (
+        !refreshToken ||
+        refreshToken === "null" ||
+        refreshToken === "undefined"
+      ) {
         isRefreshing = false;
-        // No hay refresh token → redirigir a login
+        localStorage.removeItem("erp_refresh_token");
+        // No hay refresh token válido → redirigir a login
         window.location.href = "/login";
         return Promise.reject(error);
       }

@@ -105,13 +105,31 @@ async function flushLogs() {
   }
 }
 
+/**
+ * Acepta dos formas:
+ *   log("error", "msg", "ctx", data)          — forma clásica
+ *   log("error", "msg", { requestId, ... })    — forma objeto
+ */
 function log(
   level: LogLevel,
   message: string,
-  context?: string,
+  ctxOrData?: string | Record<string, unknown>,
   data?: unknown,
 ) {
-  const entry = buildEntry(level, message, context, data);
+  let context: string | undefined;
+  let extra: unknown;
+
+  if (typeof ctxOrData === "string") {
+    context = ctxOrData;
+    extra = data;
+  } else if (ctxOrData && typeof ctxOrData === "object") {
+    context = (ctxOrData as Record<string, unknown>).context as
+      | string
+      | undefined;
+    extra = ctxOrData;
+  }
+
+  const entry = buildEntry(level, message, context, extra);
 
   if (IS_DEV) {
     printDev(entry);
@@ -125,12 +143,24 @@ function log(
 }
 
 export const logger = {
-  debug: (msg: string, ctx?: string, data?: unknown) =>
-    log("debug", msg, ctx, data),
-  info: (msg: string, ctx?: string, data?: unknown) =>
-    log("info", msg, ctx, data),
-  warn: (msg: string, ctx?: string, data?: unknown) =>
-    log("warn", msg, ctx, data),
-  error: (msg: string, ctx?: string, data?: unknown) =>
-    log("error", msg, ctx, data),
+  debug: (
+    msg: string,
+    ctxOrData?: string | Record<string, unknown>,
+    data?: unknown,
+  ) => log("debug", msg, ctxOrData, data),
+  info: (
+    msg: string,
+    ctxOrData?: string | Record<string, unknown>,
+    data?: unknown,
+  ) => log("info", msg, ctxOrData, data),
+  warn: (
+    msg: string,
+    ctxOrData?: string | Record<string, unknown>,
+    data?: unknown,
+  ) => log("warn", msg, ctxOrData, data),
+  error: (
+    msg: string,
+    ctxOrData?: string | Record<string, unknown>,
+    data?: unknown,
+  ) => log("error", msg, ctxOrData, data),
 };

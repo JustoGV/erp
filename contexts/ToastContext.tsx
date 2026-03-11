@@ -6,16 +6,29 @@ import React, { createContext, useCallback, useContext, useState } from "react";
 
 type ToastType = "success" | "error" | "warning" | "info";
 
+interface ToastAction {
+  label: string;
+  onClick: () => void;
+}
+
 interface Toast {
   id: number;
   type: ToastType;
   title: string;
   message?: string;
+  action?: ToastAction;
+}
+
+interface AddToastOptions {
+  type: ToastType;
+  title: string;
+  message?: string;
+  action?: ToastAction;
 }
 
 interface ToastContextValue {
   toasts: Toast[];
-  addToast: (type: ToastType, title: string, message?: string) => void;
+  addToast: (opts: AddToastOptions) => void;
   removeToast: (id: number) => void;
 }
 
@@ -33,9 +46,9 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const addToast = useCallback(
-    (type: ToastType, title: string, message?: string) => {
+    ({ type, title, message, action }: AddToastOptions) => {
       const id = nextId++;
-      setToasts((prev) => [...prev, { id, type, title, message }]);
+      setToasts((prev) => [...prev, { id, type, title, message, action }]);
       // Auto-dismiss
       setTimeout(() => removeToast(id), type === "error" ? 8000 : 4000);
     },
@@ -107,6 +120,14 @@ function ToastContainer({
             <p className="font-semibold text-sm">{t.title}</p>
             {t.message && (
               <p className="text-xs mt-0.5 opacity-80">{t.message}</p>
+            )}
+            {t.action && (
+              <button
+                onClick={t.action.onClick}
+                className="mt-1 text-xs font-medium underline underline-offset-2 hover:opacity-80"
+              >
+                {t.action.label}
+              </button>
             )}
           </div>
           <button

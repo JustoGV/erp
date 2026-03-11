@@ -1,5 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { logger } from "@/lib/logger";
+import { parseApiError } from "@/lib/types/api";
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api/v1";
@@ -48,7 +49,14 @@ const processQueue = (error: unknown, token: string | null = null) => {
 };
 
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Propagar X-Request-Id en la respuesta exitosa
+    const requestId = response.headers?.["x-request-id"];
+    if (requestId && response.data && typeof response.data === "object") {
+      response.data._requestId = requestId;
+    }
+    return response;
+  },
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & {
       _retry?: boolean;
@@ -58,30 +66,44 @@ apiClient.interceptors.response.use(
     const url = originalRequest?.url ?? "unknown";
     const method = originalRequest?.method?.toUpperCase() ?? "?";
 
-    // ── Log de errores HTTP según el tipo ──
+    // ── Log estructurado según el tipo de error ──
     if (status && status !== 401) {
-      const body = error.response?.data as Record<string, unknown> | undefined;
-      const msg = (body?.message as string) ?? error.message;
+      const parsed = parseApiError(error);
 
       if (status === 422 || status === 400) {
-        // Error de validación — probablemente un dato mal ingresado
-        logger.warn(`Validación fallida ${method} ${url}: ${msg}`, "api", {
-          status,
-          errors: body?.errors,
+        logger.warn(`Validación fallida ${method} ${url}: ${parsed.message}`, {
+          context: "api",
+          code: parsed.code,
+          requestId: parsed.requestId,
+          field: parsed.field,
+          details: parsed.details,
         });
       } else if (status === 403) {
-        logger.warn(`Acceso denegado ${method} ${url}`, "api", { status });
+        logger.warn(`Acceso denegado ${method} ${url}`, {
+          context: "api",
+          requestId: parsed.requestId,
+        });
       } else if (status === 404) {
-        logger.info(`Recurso no encontrado ${method} ${url}`, "api");
+        logger.info(`Recurso no encontrado ${method} ${url}`, {
+          context: "api",
+          requestId: parsed.requestId,
+        });
+      } else if (status === 429) {
+        logger.warn(`Rate limit ${method} ${url}`, {
+          context: "api",
+          requestId: parsed.requestId,
+        });
       } else if (status >= 500) {
-        logger.error(`Error del servidor ${method} ${url}: ${msg}`, "api", {
-          status,
-          body: JSON.stringify(body).slice(0, 300),
+        logger.error(`Error del servidor ${method} ${url}: ${parsed.message}`, {
+          context: "api",
+          code: parsed.code,
+          requestId: parsed.requestId,
+          statusCode: status,
         });
       }
     } else if (!status) {
-      // Error de red / timeout
-      logger.error(`Error de red ${method} ${url}: ${error.message}`, "api", {
+      logger.error(`Error de red ${method} ${url}: ${error.message}`, {
+        context: "api",
         code: error.code,
       });
     }

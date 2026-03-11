@@ -1,31 +1,41 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { Plus, Search, Edit, Trash2, Filter, Download, Users, ChevronDown, Building2 } from 'lucide-react';
-import { mockClientes, mockLocales } from '@/lib/mock-data';
-import { useLocal } from '@/contexts/LocalContext';
-import { useEffect, useState } from 'react';
+import Link from "next/link";
+import {
+  Plus,
+  Search,
+  Edit,
+  Trash2,
+  Filter,
+  Download,
+  Users,
+  ChevronDown,
+  Building2,
+} from "lucide-react";
+import { mockClientes, mockLocales } from "@/lib/mock-data";
+import { useLocal } from "@/contexts/LocalContext";
+import { useEffect, useState } from "react";
 
 export default function ClientesPage() {
   const { selectedLocal, isAllLocales } = useLocal();
   const [clientes, setClientes] = useState(mockClientes);
-  
+
   // Actualizar clientes cuando cambia el local
   useEffect(() => {
-    const filteredClientes = isAllLocales 
-      ? mockClientes 
-      : mockClientes.filter(c => c.localId === selectedLocal?.id);
+    const filteredClientes = isAllLocales
+      ? mockClientes
+      : mockClientes.filter((c) => c.localId === selectedLocal?.id);
     setClientes(filteredClientes);
   }, [selectedLocal, isAllLocales]);
-  
-  const activeClients = clientes.filter(c => c.active).length;
+
+  const activeClients = clientes.filter((c) => c.active).length;
   const totalClients = clientes.length;
-  
+
   // Obtener nombre del local para cada cliente
   const getLocalName = (localId: string) => {
-    return mockLocales.find(l => l.id === localId)?.name || '';
+    return mockLocales.find((l) => l.id === localId)?.name || "";
   };
-  
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -53,7 +63,10 @@ export default function ClientesPage() {
       <div className="card">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
           <div className="flex-1 relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400" size={18} />
+            <Search
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"
+              size={18}
+            />
             <input
               type="text"
               placeholder="Buscar por nombre, email, teléfono o CUIT..."
@@ -65,7 +78,10 @@ export default function ClientesPage() {
             Filtros
             <ChevronDown size={16} />
           </button>
-          <select className="input min-w-[160px]">
+          <select
+            className="input min-w-[160px]"
+            aria-label="Filtrar por estado"
+          >
             <option value="">Todos los estados</option>
             <option value="active">Activos</option>
             <option value="inactive">Inactivos</option>
@@ -102,8 +118,12 @@ export default function ClientesPage() {
                       {cliente.name.charAt(0)}
                     </div>
                     <div>
-                      <p className="font-semibold text-slate-900">{cliente.name}</p>
-                      <p className="text-xs text-slate-500">{cliente.address}</p>
+                      <p className="font-semibold text-slate-900">
+                        {cliente.name}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        {cliente.address}
+                      </p>
                     </div>
                   </div>
                 </td>
@@ -114,13 +134,17 @@ export default function ClientesPage() {
                   <td>
                     <div className="flex items-center gap-2">
                       <Building2 size={14} className="text-slate-400" />
-                      <span className="text-sm text-slate-700">{getLocalName(cliente.localId)}</span>
+                      <span className="text-sm text-slate-700">
+                        {getLocalName(cliente.localId)}
+                      </span>
                     </div>
                   </td>
                 )}
                 <td>
-                  <span className={`badge ${cliente.active ? 'badge-success' : 'badge-neutral'}`}>
-                    {cliente.active ? 'Activo' : 'Inactivo'}
+                  <span
+                    className={`badge ${cliente.active ? "badge-success" : "badge-neutral"}`}
+                  >
+                    {cliente.active ? "Activo" : "Inactivo"}
                   </span>
                 </td>
                 <td>
@@ -136,8 +160,10 @@ export default function ClientesPage() {
                       className="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                       title="Eliminar"
                       onClick={() => {
-                        if (confirm('¿Estás seguro de eliminar este cliente?')) {
-                          alert('Cliente eliminado (demo)');
+                        if (
+                          confirm("¿Estás seguro de eliminar este cliente?")
+                        ) {
+                          alert("Cliente eliminado (demo)");
                         }
                       }}
                     >
@@ -154,7 +180,9 @@ export default function ClientesPage() {
       {/* Pagination */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <p className="text-sm text-slate-600">
-          Mostrando <span className="font-semibold">1</span> a <span className="font-semibold">{totalClients}</span> de <span className="font-semibold">{totalClients}</span> clientes
+          Mostrando <span className="font-semibold">1</span> a{" "}
+          <span className="font-semibold">{totalClients}</span> de{" "}
+          <span className="font-semibold">{totalClients}</span> clientes
         </p>
         <div className="flex gap-2">
           <button className="btn btn-secondary" disabled>

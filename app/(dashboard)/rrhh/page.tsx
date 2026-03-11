@@ -1,42 +1,59 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { mockEmpleados } from '@/lib/mock-data';
-import { useLocal } from '@/contexts/LocalContext';
-import { useEffect, useState } from 'react';
+import Link from "next/link";
+import { useLocal } from "@/contexts/LocalContext";
+import {
+  useEmpleados,
+  useLiquidaciones,
+  useAsistencias,
+} from "@/hooks/useRRHH";
 
 export default function RRHHPage() {
   const { selectedLocal, isAllLocales } = useLocal();
-  const [stats, setStats] = useState({
-    empleados: 0,
-    empleadosActivos: 0
-  });
+  const localId = isAllLocales ? undefined : selectedLocal?.id;
 
-  useEffect(() => {
-    const empleadosFiltrados = isAllLocales 
-      ? mockEmpleados 
-      : mockEmpleados.filter(e => e.localId === selectedLocal?.id);
-    
-    setStats({
-      empleados: empleadosFiltrados.length,
-      empleadosActivos: empleadosFiltrados.filter(e => e.active).length
-    });
-  }, [selectedLocal, isAllLocales]);
+  const { data: empleadosData } = useEmpleados({ localId, limit: 1 });
+  const { data: empleadosActivosData } = useEmpleados({ localId, limit: 1 });
+  const { data: liquidacionesData } = useLiquidaciones({ localId, limit: 1 });
+  const { data: asistenciasData } = useAsistencias({ localId, limit: 1 });
+
+  const totalEmpleados = empleadosData?.meta?.total ?? "—";
+  const totalActivos = empleadosActivosData?.meta?.total ?? "—";
+  const totalLiquidaciones = liquidacionesData?.meta?.total ?? "—";
+  const totalAusencias = asistenciasData?.meta?.total ?? "—";
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Recursos Humanos</h1>
-          <p className="text-gray-600 mt-1">Gestión de empleados, liquidaciones y asistencias</p>
+          <p className="text-gray-600 mt-1">
+            Gestión de empleados, liquidaciones y asistencias
+          </p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <QuickStatCard title="Empleados" value={stats.empleados.toString()} href="/rrhh/empleados" />
-        <QuickStatCard title="Activos" value={stats.empleadosActivos.toString()} href="/rrhh/empleados" />
-        <QuickStatCard title="Liquidaciones Mes" value="0" href="/rrhh/liquidaciones" />
-        <QuickStatCard title="Ausencias Mes" value="0" href="/rrhh/asistencias" />
+        <QuickStatCard
+          title="Empleados"
+          value={String(totalEmpleados)}
+          href="/rrhh/empleados"
+        />
+        <QuickStatCard
+          title="Activos"
+          value={String(totalActivos)}
+          href="/rrhh/empleados"
+        />
+        <QuickStatCard
+          title="Liquidaciones"
+          value={String(totalLiquidaciones)}
+          href="/rrhh/liquidaciones"
+        />
+        <QuickStatCard
+          title="Asistencias"
+          value={String(totalAusencias)}
+          href="/rrhh/asistencias"
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -81,7 +98,15 @@ export default function RRHHPage() {
   );
 }
 
-function QuickStatCard({ title, value, href }: { title: string; value: string; href: string }) {
+function QuickStatCard({
+  title,
+  value,
+  href,
+}: {
+  title: string;
+  value: string;
+  href: string;
+}) {
   return (
     <Link href={href}>
       <div className="card hover:shadow-lg transition-shadow cursor-pointer">
@@ -92,15 +117,15 @@ function QuickStatCard({ title, value, href }: { title: string; value: string; h
   );
 }
 
-function ModuleCard({ 
-  title, 
-  description, 
-  href, 
-  buttonText 
-}: { 
-  title: string; 
-  description: string; 
-  href: string; 
+function ModuleCard({
+  title,
+  description,
+  href,
+  buttonText,
+}: {
+  title: string;
+  description: string;
+  href: string;
   buttonText: string;
 }) {
   return (

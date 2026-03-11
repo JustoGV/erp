@@ -570,3 +570,260 @@ export interface SaldosCliente {
   saldos: SaldoFactura[];
   totalPendiente: number;
 }
+
+// ── Compras ───────────────────────────────────────────────────
+
+export type EstadoRequerimiento =
+  | "PENDIENTE"
+  | "AUTORIZADO"
+  | "RECHAZADO"
+  | "COMPLETADO"
+  | "CANCELADO";
+
+export type EstadoOrdenCompra =
+  | "BORRADOR"
+  | "ENVIADA"
+  | "CONFIRMADA"
+  | "RECIBIDA_PARCIAL"
+  | "RECIBIDA_COMPLETA"
+  | "CANCELADA";
+
+// ---------- Proveedor ----------
+
+export interface Proveedor {
+  id: string;
+  empresaId: string;
+  localId: string;
+  code: string;
+  name: string;
+  taxId?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  paymentTerms: number;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  _count?: { ordenesCompra: number };
+}
+
+export interface CreateProveedorDto {
+  code: string;
+  name: string;
+  localId: string;
+  taxId?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  paymentTerms?: number;
+}
+
+export interface UpdateProveedorDto extends Partial<CreateProveedorDto> {
+  active?: boolean;
+}
+
+export interface DeudaProveedor {
+  cuentaId: string;
+  ordenId: string;
+  ordenNumero: string;
+  montoTotal: number;
+  montoPagado: number;
+  saldoPendiente: number;
+  estado: string;
+}
+
+export interface DeudaProveedorResponse {
+  saldos: DeudaProveedor[];
+  totalDeuda: number;
+}
+
+// ---------- Requerimiento ----------
+
+export interface ItemRequerimiento {
+  id: string;
+  requerimientoId: string;
+  productoId?: string;
+  descripcion: string;
+  cantidad: number;
+  unidad: string;
+  precioEstimado?: number;
+  observaciones?: string;
+}
+
+export interface Requerimiento {
+  id: string;
+  empresaId: string;
+  localId: string;
+  numero: string;
+  solicitante: string;
+  departamento: string;
+  justificacion: string;
+  fechaNecesidad: string;
+  estado: EstadoRequerimiento;
+  observaciones?: string;
+  autorizadoPor?: string;
+  fechaAutorizacion?: string;
+  createdAt: string;
+  updatedAt: string;
+  items?: ItemRequerimiento[];
+  _count?: { items: number };
+}
+
+export interface ItemRequerimientoDto {
+  productoId?: string;
+  descripcion: string;
+  cantidad: number;
+  unidad: string;
+  precioEstimado?: number;
+  observaciones?: string;
+}
+
+export interface CreateRequerimientoDto {
+  solicitante: string;
+  departamento: string;
+  justificacion: string;
+  fechaNecesidad: string;
+  observaciones?: string;
+  items: ItemRequerimientoDto[];
+}
+
+// ---------- Orden de Compra ----------
+
+export interface ItemOrdenCompra {
+  id: string;
+  ordenCompraId: string;
+  productoId?: string;
+  descripcion: string;
+  cantidad: number;
+  unidad: string;
+  precioUnitario: number;
+  descuento: number;
+  subtotal: number;
+  cantidadRecibida: number;
+  producto?: { id: string; code: string; name: string; unit: string };
+}
+
+export interface OrdenCompra {
+  id: string;
+  empresaId: string;
+  localId: string;
+  numero: string;
+  proveedorId: string;
+  requerimientoId?: string;
+  fechaEntregaEstimada?: string;
+  condicionesPago?: string;
+  subtotal: number;
+  descuento: number;
+  impuestos: number;
+  total: number;
+  estado: EstadoOrdenCompra;
+  observaciones?: string;
+  creadoPor: string;
+  createdAt: string;
+  updatedAt: string;
+  proveedor?: { id: string; code: string; name: string };
+  requerimiento?: { id: string; numero: string };
+  items?: ItemOrdenCompra[];
+  recepciones?: RecepcionCompra[];
+  pagos?: PagoProveedor[];
+  totalPagado?: number;
+  saldoPendiente?: number;
+  _count?: { items: number; recepciones: number; pagos: number };
+}
+
+export interface ItemOrdenCompraDto {
+  productoId?: string;
+  descripcion: string;
+  cantidad: number;
+  unidad: string;
+  precioUnitario: number;
+  descuento?: number;
+}
+
+export interface CreateOrdenCompraDto {
+  proveedorId: string;
+  requerimientoId?: string;
+  fechaEntregaEstimada?: string;
+  condicionesPago?: string;
+  observaciones?: string;
+  items: ItemOrdenCompraDto[];
+}
+
+// ---------- Recepción ----------
+
+export interface ItemRecepcion {
+  id: string;
+  recepcionId: string;
+  itemOrdenCompraId: string;
+  cantidadRecibida: number;
+  cantidadRechazada: number;
+  motivoRechazo?: string;
+  observaciones?: string;
+}
+
+export interface RecepcionCompra {
+  id: string;
+  empresaId: string;
+  localId: string;
+  ordenCompraId: string;
+  nroRemito?: string;
+  fecha: string;
+  observaciones?: string;
+  creadoPor: string;
+  createdAt: string;
+  items?: ItemRecepcion[];
+  ordenCompra?: {
+    id: string;
+    numero: string;
+    proveedor?: { id: string; name: string };
+  };
+}
+
+export interface ItemRecepcionDto {
+  itemOrdenCompraId: string;
+  cantidadRecibida: number;
+  cantidadRechazada?: number;
+  motivoRechazo?: string;
+  observaciones?: string;
+}
+
+export interface CreateRecepcionDto {
+  ordenCompraId: string;
+  nroRemito?: string;
+  observaciones?: string;
+  items: ItemRecepcionDto[];
+}
+
+// ---------- Pago a Proveedor ----------
+
+export interface PagoProveedor {
+  id: string;
+  empresaId: string;
+  localId: string;
+  proveedorId: string;
+  fecha: string;
+  monto: number;
+  metodoPago: string;
+  referencia?: string;
+  notas?: string;
+  creadoPor: string;
+  createdAt: string;
+  ordenCompra?: {
+    id: string;
+    numero: string;
+    proveedor?: { id: string; name: string };
+  };
+}
+
+export interface CreatePagoProveedorDto {
+  proveedorId: string;
+  monto: number;
+  metodoPago: string;
+  fecha?: string;
+  referencia?: string;
+  notas?: string;
+}

@@ -1,38 +1,37 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { useAuth } from '@/contexts/AuthContext'
-import { Building2, Lock, Mail, AlertCircle } from 'lucide-react'
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+import { Building2, Lock, Mail, AlertCircle } from "lucide-react";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
-  const { login, user } = useAuth()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const { login, user } = useAuth();
 
   useEffect(() => {
     if (user) {
-      router.push('/dashboard')
+      router.push("/dashboard");
     }
-  }, [user, router])
+  }, [user, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setIsLoading(true)
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
 
-    const success = await login(email, password)
-
-    if (success) {
-      router.push('/dashboard')
-    } else {
-      setError('Email o contraseña incorrectos')
-      setIsLoading(false)
+    try {
+      await login(email, password);
+      router.push("/dashboard");
+    } catch {
+      setError("Email o contraseña incorrectos");
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 flex items-center justify-center p-4">
@@ -51,7 +50,10 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Email
               </label>
               <div className="relative">
@@ -70,7 +72,10 @@ export default function LoginPage() {
 
             {/* Password */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Contraseña
               </label>
               <div className="relative">
@@ -101,33 +106,47 @@ export default function LoginPage() {
               disabled={isLoading}
               className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 rounded-lg font-medium hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+              {isLoading ? "Iniciando sesión..." : "Iniciar Sesión"}
             </button>
           </form>
 
           {/* Usuarios de prueba */}
           <div className="mt-6 pt-6 border-t border-gray-200">
-            <p className="text-xs text-gray-500 mb-3 font-medium">Usuarios de prueba:</p>
+            <p className="text-xs text-gray-500 mb-3 font-medium">
+              Usuarios de prueba:
+            </p>
             <div className="space-y-2 text-xs text-gray-600">
               <div className="bg-blue-50 p-3 rounded border border-blue-200">
                 <strong className="text-blue-900">Administrador:</strong>
-                <div className="mt-1 text-blue-700">admin@empresa.com / admin123</div>
-                <div className="mt-1 text-xs text-blue-600">✓ Acceso total al sistema</div>
+                <div className="mt-1 text-blue-700">
+                  admin@empresa.com / admin123
+                </div>
+                <div className="mt-1 text-xs text-blue-600">
+                  ✓ Acceso total al sistema
+                </div>
               </div>
               <div className="bg-emerald-50 p-3 rounded border border-emerald-200">
                 <strong className="text-emerald-900">Vendedor:</strong>
-                <div className="mt-1 text-emerald-700">vendedor@empresa.com / vendedor123</div>
-                <div className="mt-1 text-xs text-emerald-600">✓ Ventas, clientes, inventario</div>
+                <div className="mt-1 text-emerald-700">
+                  vendedor@empresa.com / vendedor123
+                </div>
+                <div className="mt-1 text-xs text-emerald-600">
+                  ✓ Ventas, clientes, inventario
+                </div>
               </div>
               <div className="bg-cyan-50 p-3 rounded border border-cyan-200">
                 <strong className="text-cyan-900">Contable:</strong>
-                <div className="mt-1 text-cyan-700">contable@empresa.com / contable123</div>
-                <div className="mt-1 text-xs text-cyan-600">✓ Finanzas, contabilidad, reportes</div>
+                <div className="mt-1 text-cyan-700">
+                  contable@empresa.com / contable123
+                </div>
+                <div className="mt-1 text-xs text-cyan-600">
+                  ✓ Finanzas, contabilidad, reportes
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

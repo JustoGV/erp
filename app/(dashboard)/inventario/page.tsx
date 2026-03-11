@@ -71,7 +71,10 @@ export default function InventarioResumenPage() {
       icon: AlertTriangle,
       title: "Alertas",
       description: "Stock bajo y punto de pedido",
-      color: typeof totalAlertas === "number" && totalAlertas > 0 ? "bg-red-500" : "bg-gray-400",
+      color:
+        typeof totalAlertas === "number" && totalAlertas > 0
+          ? "bg-red-500"
+          : "bg-gray-400",
       stats: `${totalAlertas} alertas activas`,
     },
     {

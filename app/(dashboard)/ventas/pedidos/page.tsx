@@ -26,6 +26,7 @@ export default function PedidosPage() {
     localId,
     page,
     limit: 20,
+    search: search || undefined,
   });
   const pedidos = data?.data ?? [];
   const total = data?.meta?.total ?? 0;

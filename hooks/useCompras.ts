@@ -71,6 +71,7 @@ export function useRequerimientos(params?: {
   page?: number;
   limit?: number;
   localId?: string;
+  search?: string;
 }) {
   return useQuery({
     queryKey: ["requerimientos", params],
@@ -117,6 +118,7 @@ export function useOrdenesCompra(params?: {
   page?: number;
   limit?: number;
   localId?: string;
+  search?: string;
 }) {
   return useQuery({
     queryKey: ["ordenesCompra", params],
@@ -166,6 +168,7 @@ export function useRecepciones(params?: {
   page?: number;
   limit?: number;
   localId?: string;
+  search?: string;
 }) {
   return useQuery({
     queryKey: ["recepciones", params],
@@ -191,6 +194,7 @@ export function usePagosProveedor(params?: {
   page?: number;
   limit?: number;
   localId?: string;
+  search?: string;
 }) {
   return useQuery({
     queryKey: ["pagosProveedor", params],

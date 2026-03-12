@@ -53,7 +53,12 @@ export const proveedoresService = {
 // ── Requerimientos ────────────────────────────────────────────
 
 export const requerimientosService = {
-  getAll: (params?: { page?: number; limit?: number; localId?: string }) =>
+  getAll: (params?: {
+    page?: number;
+    limit?: number;
+    localId?: string;
+    search?: string;
+  }) =>
     apiClient
       .get<PaginatedResponse<Requerimiento>>("/requerimientos", { params })
       .then((r) => r.data),
@@ -79,7 +84,12 @@ export const requerimientosService = {
 // ── Órdenes de Compra ─────────────────────────────────────────
 
 export const ordenesCompraService = {
-  getAll: (params?: { page?: number; limit?: number; localId?: string }) =>
+  getAll: (params?: {
+    page?: number;
+    limit?: number;
+    localId?: string;
+    search?: string;
+  }) =>
     apiClient
       .get<PaginatedResponse<OrdenCompra>>("/ordenes-compra", { params })
       .then((r) => r.data),
@@ -105,7 +115,12 @@ export const ordenesCompraService = {
 // ── Recepciones ───────────────────────────────────────────────
 
 export const recepcionesService = {
-  getAll: (params?: { page?: number; limit?: number; localId?: string }) =>
+  getAll: (params?: {
+    page?: number;
+    limit?: number;
+    localId?: string;
+    search?: string;
+  }) =>
     apiClient
       .get<PaginatedResponse<RecepcionCompra>>("/recepciones", { params })
       .then((r) => r.data),
@@ -121,7 +136,12 @@ export const recepcionesService = {
 // ── Pagos a Proveedores ───────────────────────────────────────
 
 export const pagosProveedorService = {
-  getAll: (params?: { page?: number; limit?: number; localId?: string }) =>
+  getAll: (params?: {
+    page?: number;
+    limit?: number;
+    localId?: string;
+    search?: string;
+  }) =>
     apiClient
       .get<PaginatedResponse<PagoProveedor>>("/pagos-proveedor", { params })
       .then((r) => r.data),

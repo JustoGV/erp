@@ -144,7 +144,7 @@ export const cajaService = {
 
   registrarMovimiento: (localId: string, dto: MovimientoCajaDto) =>
     apiClient.post<ApiResponse<MovimientoCaja>>(
-      `/caja/${localId}/movimientos`,
+      `/caja/${localId}/movimiento`,
       dto,
     ),
 };

@@ -67,6 +67,7 @@ export function usePresupuestos(params?: {
   page?: number;
   limit?: number;
   localId?: string;
+  search?: string;
 }) {
   return useQuery({
     queryKey: ["presupuestos", params],
@@ -125,6 +126,7 @@ export function usePedidos(params?: {
   page?: number;
   limit?: number;
   localId?: string;
+  search?: string;
 }) {
   return useQuery({
     queryKey: ["pedidos", params],
@@ -157,6 +159,7 @@ export function useFacturas(params?: {
   page?: number;
   limit?: number;
   localId?: string;
+  search?: string;
 }) {
   return useQuery({
     queryKey: ["facturas", params],
@@ -203,6 +206,7 @@ export function useCobranzas(params?: {
   page?: number;
   limit?: number;
   localId?: string;
+  search?: string;
 }) {
   return useQuery({
     queryKey: ["cobranzas", params],

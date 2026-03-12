@@ -25,6 +25,7 @@ export default function PresupuestosPage() {
     localId,
     page,
     limit: 20,
+    search: search || undefined,
   });
   const presupuestos = data?.data ?? [];
   const total = data?.meta?.total ?? 0;

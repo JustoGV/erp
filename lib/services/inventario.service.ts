@@ -137,6 +137,7 @@ export const movimientosService = {
     limit?: number;
     localId?: string;
     tipo?: string;
+    search?: string;
   }) =>
     apiClient
       .get<PaginatedResponse<MovimientoStock>>("/movimientos-stock", { params })

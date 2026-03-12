@@ -9,35 +9,45 @@ import type {
   ReporteResultados,
 } from "@/lib/types/reportes";
 
+/** Remove keys whose value is empty string, null or undefined so they don't reach the backend as `&key=` */
+function cleanParams<T extends Record<string, unknown>>(p?: T): Partial<T> | undefined {
+  if (!p) return undefined;
+  const out = {} as Partial<T>;
+  for (const [k, v] of Object.entries(p)) {
+    if (v !== "" && v != null) (out as Record<string, unknown>)[k] = v;
+  }
+  return Object.keys(out).length ? out : undefined;
+}
+
 export const reportesService = {
   getDashboard: () =>
     apiClient.get<{ data: DashboardKPIs }>("/reportes/dashboard"),
 
   getVentas: (filtros?: Omit<ReporteFiltros, "proveedorId" | "empleadoId">) =>
     apiClient.get<{ data: ReporteVentas }>("/reportes/ventas", {
-      params: filtros,
+      params: cleanParams(filtros),
     }),
 
   getCompras: (
     filtros?: Omit<ReporteFiltros, "clienteId" | "empleadoId" | "localId">,
   ) =>
     apiClient.get<{ data: ReporteCompras }>("/reportes/compras", {
-      params: filtros,
+      params: cleanParams(filtros),
     }),
 
   getInventario: (filtros?: Pick<ReporteFiltros, "localId" | "formato">) =>
     apiClient.get<{ data: ReporteInventario }>("/reportes/inventario", {
-      params: filtros,
+      params: cleanParams(filtros),
     }),
 
   getRRHH: (
     filtros?: Omit<ReporteFiltros, "clienteId" | "proveedorId" | "localId">,
   ) =>
-    apiClient.get<{ data: ReporteRRHH }>("/reportes/rrhh", { params: filtros }),
+    apiClient.get<{ data: ReporteRRHH }>("/reportes/rrhh", { params: cleanParams(filtros) }),
 
   getResultados: (filtros?: Pick<ReporteFiltros, "desde" | "hasta">) =>
     apiClient.get<{ data: ReporteResultados }>("/reportes/resultados", {
-      params: filtros,
+      params: cleanParams(filtros),
     }),
 };
 

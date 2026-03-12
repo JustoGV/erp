@@ -176,6 +176,7 @@ export function useMovimientosStock(params?: {
   limit?: number;
   localId?: string;
   tipo?: string;
+  search?: string;
 }) {
   return useQuery({
     queryKey: [...MOVIMIENTOS_KEY, params],

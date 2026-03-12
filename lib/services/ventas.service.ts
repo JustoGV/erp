@@ -45,7 +45,12 @@ export const clientesService = {
 // ── Presupuestos ──────────────────────────────────────────────
 
 export const presupuestosService = {
-  getAll: (params?: { page?: number; limit?: number; localId?: string }) =>
+  getAll: (params?: {
+    page?: number;
+    limit?: number;
+    localId?: string;
+    search?: string;
+  }) =>
     apiClient
       .get<PaginatedResponse<Presupuesto>>("/presupuestos", { params })
       .then((r) => r.data),
@@ -78,7 +83,12 @@ export const presupuestosService = {
 // ── Pedidos ───────────────────────────────────────────────────
 
 export const pedidosService = {
-  getAll: (params?: { page?: number; limit?: number; localId?: string }) =>
+  getAll: (params?: {
+    page?: number;
+    limit?: number;
+    localId?: string;
+    search?: string;
+  }) =>
     apiClient
       .get<PaginatedResponse<PedidoVenta>>("/pedidos", { params })
       .then((r) => r.data),
@@ -97,7 +107,12 @@ export const pedidosService = {
 // ── Facturas ──────────────────────────────────────────────────
 
 export const facturasService = {
-  getAll: (params?: { page?: number; limit?: number; localId?: string }) =>
+  getAll: (params?: {
+    page?: number;
+    limit?: number;
+    localId?: string;
+    search?: string;
+  }) =>
     apiClient
       .get<PaginatedResponse<Factura>>("/facturas", { params })
       .then((r) => r.data),
@@ -121,7 +136,12 @@ export const facturasService = {
 // ── Cobranzas ─────────────────────────────────────────────────
 
 export const cobranzasService = {
-  getAll: (params?: { page?: number; limit?: number; localId?: string }) =>
+  getAll: (params?: {
+    page?: number;
+    limit?: number;
+    localId?: string;
+    search?: string;
+  }) =>
     apiClient
       .get<PaginatedResponse<Cobranza>>("/cobranzas", { params })
       .then((r) => r.data),

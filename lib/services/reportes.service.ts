@@ -10,7 +10,9 @@ import type {
 } from "@/lib/types/reportes";
 
 /** Remove keys whose value is empty string, null or undefined so they don't reach the backend as `&key=` */
-function cleanParams<T extends Record<string, unknown>>(p?: T): Partial<T> | undefined {
+function cleanParams<T extends Record<string, unknown>>(
+  p?: T,
+): Partial<T> | undefined {
   if (!p) return undefined;
   const out = {} as Partial<T>;
   for (const [k, v] of Object.entries(p)) {
@@ -43,7 +45,9 @@ export const reportesService = {
   getRRHH: (
     filtros?: Omit<ReporteFiltros, "clienteId" | "proveedorId" | "localId">,
   ) =>
-    apiClient.get<{ data: ReporteRRHH }>("/reportes/rrhh", { params: cleanParams(filtros) }),
+    apiClient.get<{ data: ReporteRRHH }>("/reportes/rrhh", {
+      params: cleanParams(filtros),
+    }),
 
   getResultados: (filtros?: Pick<ReporteFiltros, "desde" | "hasta">) =>
     apiClient.get<{ data: ReporteResultados }>("/reportes/resultados", {

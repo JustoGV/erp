@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { ArrowLeft, Save, Factory, Calendar, Box } from 'lucide-react';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft, Save, Factory, Calendar, Box } from "lucide-react";
 
 export default function NuevaOrdenProduccionPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    code: '',
-    product: '',
+    code: "",
+    product: "",
     quantity: 0,
-    startDate: '',
-    endDate: '',
-    status: 'Planificada',
+    startDate: "",
+    endDate: "",
+    status: "Planificada",
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -22,18 +22,20 @@ export default function NuevaOrdenProduccionPage() {
     setLoading(true);
 
     setTimeout(() => {
-      console.log('Orden de producción guardada:', formData);
-      alert('✅ Orden de producción creada');
+      console.log("Orden de producción guardada:", formData);
+      alert("✅ Orden de producción creada");
       setLoading(false);
-      router.push('/produccion/ordenes');
+      router.push("/produccion/ordenes");
     }, 500);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value, type } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'number' ? parseFloat(value) : value,
+      [name]: type === "number" ? parseFloat(value) : value,
     }));
   };
 
@@ -47,8 +49,12 @@ export default function NuevaOrdenProduccionPage() {
           <ArrowLeft size={24} />
         </Link>
         <div className="flex-1">
-          <h1 className="text-3xl font-bold text-slate-900">Nueva Orden de Producción</h1>
-          <p className="text-slate-600 mt-1">Configura los datos de producción</p>
+          <h1 className="text-3xl font-bold text-slate-900">
+            Nueva Orden de Producción
+          </h1>
+          <p className="text-slate-600 mt-1">
+            Configura los datos de producción
+          </p>
         </div>
       </div>
 
@@ -93,7 +99,9 @@ export default function NuevaOrdenProduccionPage() {
             </div>
 
             <div>
-              <label htmlFor="quantity" className="label">Cantidad</label>
+              <label htmlFor="quantity" className="label">
+                Cantidad
+              </label>
               <input
                 id="quantity"
                 type="number"
@@ -122,7 +130,9 @@ export default function NuevaOrdenProduccionPage() {
             </div>
 
             <div>
-              <label htmlFor="endDate" className="label">Fecha Fin</label>
+              <label htmlFor="endDate" className="label">
+                Fecha Fin
+              </label>
               <input
                 id="endDate"
                 type="date"
@@ -134,8 +144,16 @@ export default function NuevaOrdenProduccionPage() {
             </div>
 
             <div>
-              <label htmlFor="status" className="label">Estado</label>
-              <select id="status" name="status" value={formData.status} onChange={handleChange} className="input">
+              <label htmlFor="status" className="label">
+                Estado
+              </label>
+              <select
+                id="status"
+                name="status"
+                value={formData.status}
+                onChange={handleChange}
+                className="input"
+              >
                 <option>Planificada</option>
                 <option>En curso</option>
                 <option>Pausada</option>
@@ -148,7 +166,7 @@ export default function NuevaOrdenProduccionPage() {
         <div className="flex items-center gap-4">
           <button type="submit" disabled={loading} className="btn btn-primary">
             <Save size={18} />
-            {loading ? 'Guardando...' : 'Guardar Orden'}
+            {loading ? "Guardando..." : "Guardar Orden"}
           </button>
           <Link href="/produccion/ordenes" className="btn btn-secondary">
             Cancelar

@@ -1,20 +1,27 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { ArrowLeft, Save, FileText, Calendar, DollarSign, User } from 'lucide-react';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import {
+  ArrowLeft,
+  Save,
+  FileText,
+  Calendar,
+  DollarSign,
+  User,
+} from "lucide-react";
 
 export default function NuevaFacturaPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    number: '',
-    customer: '',
-    date: '',
-    dueDate: '',
+    number: "",
+    customer: "",
+    date: "",
+    dueDate: "",
     total: 0,
-    status: 'Pendiente',
+    status: "Pendiente",
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -22,18 +29,20 @@ export default function NuevaFacturaPage() {
     setLoading(true);
 
     setTimeout(() => {
-      console.log('Factura guardada:', formData);
-      alert('✅ Factura creada exitosamente');
+      console.log("Factura guardada:", formData);
+      alert("✅ Factura creada exitosamente");
       setLoading(false);
-      router.push('/ventas/facturas');
+      router.push("/ventas/facturas");
     }, 500);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value, type } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'number' ? parseFloat(value) : value,
+      [name]: type === "number" ? parseFloat(value) : value,
     }));
   };
 
@@ -48,7 +57,9 @@ export default function NuevaFacturaPage() {
         </Link>
         <div className="flex-1">
           <h1 className="text-3xl font-bold text-slate-900">Nueva Factura</h1>
-          <p className="text-slate-600 mt-1">Carga la información principal de la factura</p>
+          <p className="text-slate-600 mt-1">
+            Carga la información principal de la factura
+          </p>
         </div>
       </div>
 
@@ -108,7 +119,9 @@ export default function NuevaFacturaPage() {
             </div>
 
             <div>
-              <label htmlFor="dueDate" className="label">Fecha de Vencimiento</label>
+              <label htmlFor="dueDate" className="label">
+                Fecha de Vencimiento
+              </label>
               <input
                 id="dueDate"
                 type="date"
@@ -137,8 +150,16 @@ export default function NuevaFacturaPage() {
             </div>
 
             <div>
-              <label htmlFor="status" className="label">Estado</label>
-              <select id="status" name="status" value={formData.status} onChange={handleChange} className="input">
+              <label htmlFor="status" className="label">
+                Estado
+              </label>
+              <select
+                id="status"
+                name="status"
+                value={formData.status}
+                onChange={handleChange}
+                className="input"
+              >
                 <option>Pendiente</option>
                 <option>Pagada</option>
                 <option>Anulada</option>
@@ -150,7 +171,7 @@ export default function NuevaFacturaPage() {
         <div className="flex items-center gap-4">
           <button type="submit" disabled={loading} className="btn btn-primary">
             <Save size={18} />
-            {loading ? 'Guardando...' : 'Guardar Factura'}
+            {loading ? "Guardando..." : "Guardar Factura"}
           </button>
           <Link href="/ventas/facturas" className="btn btn-secondary">
             Cancelar

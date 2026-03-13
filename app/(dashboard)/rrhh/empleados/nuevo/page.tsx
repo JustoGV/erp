@@ -151,11 +151,12 @@ export default function NuevoEmpleadoPage() {
             </div>
 
             <div>
-              <label className="label">
+              <label htmlFor="startDate" className="label">
                 <Calendar size={16} className="inline mr-1" />
                 Fecha de Ingreso
               </label>
               <input
+                id="startDate"
                 type="date"
                 name="startDate"
                 value={formData.startDate}
@@ -165,8 +166,8 @@ export default function NuevoEmpleadoPage() {
             </div>
 
             <div>
-              <label className="label">Estado</label>
-              <select name="status" value={formData.status} onChange={handleChange} className="input">
+              <label htmlFor="status" className="label">Estado</label>
+              <select id="status" name="status" value={formData.status} onChange={handleChange} className="input">
                 <option>Activo</option>
                 <option>En licencia</option>
                 <option>Inactivo</option>

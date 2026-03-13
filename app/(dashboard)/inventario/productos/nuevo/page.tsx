@@ -106,11 +106,11 @@ export default function NuevoProductoPage() {
             </div>
 
             <div>
-              <label className="label">
+              <label htmlFor="unit" className="label">
                 <Ruler size={16} className="inline mr-1" />
                 Unidad de Medida
               </label>
-              <select name="unit" value={formData.unit} onChange={handleChange} className="input">
+              <select id="unit" name="unit" value={formData.unit} onChange={handleChange} className="input">
                 <option>Unidad</option>
                 <option>Caja</option>
                 <option>Kg</option>

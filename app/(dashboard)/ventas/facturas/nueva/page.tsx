@@ -93,11 +93,12 @@ export default function NuevaFacturaPage() {
             </div>
 
             <div>
-              <label className="label">
+              <label htmlFor="date" className="label">
                 <Calendar size={16} className="inline mr-1" />
                 Fecha
               </label>
               <input
+                id="date"
                 type="date"
                 name="date"
                 value={formData.date}
@@ -107,8 +108,9 @@ export default function NuevaFacturaPage() {
             </div>
 
             <div>
-              <label className="label">Fecha de Vencimiento</label>
+              <label htmlFor="dueDate" className="label">Fecha de Vencimiento</label>
               <input
+                id="dueDate"
                 type="date"
                 name="dueDate"
                 value={formData.dueDate}
@@ -135,8 +137,8 @@ export default function NuevaFacturaPage() {
             </div>
 
             <div>
-              <label className="label">Estado</label>
-              <select name="status" value={formData.status} onChange={handleChange} className="input">
+              <label htmlFor="status" className="label">Estado</label>
+              <select id="status" name="status" value={formData.status} onChange={handleChange} className="input">
                 <option>Pendiente</option>
                 <option>Pagada</option>
                 <option>Anulada</option>

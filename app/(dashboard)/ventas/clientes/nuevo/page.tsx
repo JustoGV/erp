@@ -254,15 +254,17 @@ export default function NuevoClientePage() {
             </div>
 
             <div>
-              <label className="label">
+              <label htmlFor="country" className="label">
                 País
               </label>
               <input
+                id="country"
                 type="text"
                 name="country"
                 value={formData.country}
                 onChange={handleChange}
                 className="input"
+                placeholder="Argentina"
               />
             </div>
           </div>

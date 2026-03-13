@@ -93,23 +93,26 @@ export default function NuevaOrdenProduccionPage() {
             </div>
 
             <div>
-              <label className="label">Cantidad</label>
+              <label htmlFor="quantity" className="label">Cantidad</label>
               <input
+                id="quantity"
                 type="number"
                 name="quantity"
                 value={formData.quantity}
                 onChange={handleChange}
                 className="input"
                 min="0"
+                placeholder="0"
               />
             </div>
 
             <div>
-              <label className="label">
+              <label htmlFor="startDate" className="label">
                 <Calendar size={16} className="inline mr-1" />
                 Fecha Inicio
               </label>
               <input
+                id="startDate"
                 type="date"
                 name="startDate"
                 value={formData.startDate}
@@ -119,8 +122,9 @@ export default function NuevaOrdenProduccionPage() {
             </div>
 
             <div>
-              <label className="label">Fecha Fin</label>
+              <label htmlFor="endDate" className="label">Fecha Fin</label>
               <input
+                id="endDate"
                 type="date"
                 name="endDate"
                 value={formData.endDate}
@@ -130,8 +134,8 @@ export default function NuevaOrdenProduccionPage() {
             </div>
 
             <div>
-              <label className="label">Estado</label>
-              <select name="status" value={formData.status} onChange={handleChange} className="input">
+              <label htmlFor="status" className="label">Estado</label>
+              <select id="status" name="status" value={formData.status} onChange={handleChange} className="input">
                 <option>Planificada</option>
                 <option>En curso</option>
                 <option>Pausada</option>

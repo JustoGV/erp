@@ -109,42 +109,6 @@ export default function LoginPage() {
               {isLoading ? "Iniciando sesión..." : "Iniciar Sesión"}
             </button>
           </form>
-
-          {/* Usuarios de prueba */}
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <p className="text-xs text-gray-500 mb-3 font-medium">
-              Usuarios de prueba:
-            </p>
-            <div className="space-y-2 text-xs text-gray-600">
-              <div className="bg-blue-50 p-3 rounded border border-blue-200">
-                <strong className="text-blue-900">Administrador:</strong>
-                <div className="mt-1 text-blue-700">
-                  admin@empresa.com / admin123
-                </div>
-                <div className="mt-1 text-xs text-blue-600">
-                  ✓ Acceso total al sistema
-                </div>
-              </div>
-              <div className="bg-emerald-50 p-3 rounded border border-emerald-200">
-                <strong className="text-emerald-900">Vendedor:</strong>
-                <div className="mt-1 text-emerald-700">
-                  vendedor@empresa.com / vendedor123
-                </div>
-                <div className="mt-1 text-xs text-emerald-600">
-                  ✓ Ventas, clientes, inventario
-                </div>
-              </div>
-              <div className="bg-cyan-50 p-3 rounded border border-cyan-200">
-                <strong className="text-cyan-900">Contable:</strong>
-                <div className="mt-1 text-cyan-700">
-                  contable@empresa.com / contable123
-                </div>
-                <div className="mt-1 text-xs text-cyan-600">
-                  ✓ Finanzas, contabilidad, reportes
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>

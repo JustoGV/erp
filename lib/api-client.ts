@@ -1,4 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
+import { logger } from "@/lib/logger";
+import { parseApiError } from "@/lib/types/api";
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api/v1";
@@ -47,14 +49,66 @@ const processQueue = (error: unknown, token: string | null = null) => {
 };
 
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Propagar X-Request-Id en la respuesta exitosa
+    const requestId = response.headers?.["x-request-id"];
+    if (requestId && response.data && typeof response.data === "object") {
+      response.data._requestId = requestId;
+    }
+    return response;
+  },
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & {
       _retry?: boolean;
     };
 
+    const status = error.response?.status;
+    const url = originalRequest?.url ?? "unknown";
+    const method = originalRequest?.method?.toUpperCase() ?? "?";
+
+    // ── Log estructurado según el tipo de error ──
+    if (status && status !== 401) {
+      const parsed = parseApiError(error);
+
+      if (status === 422 || status === 400) {
+        logger.warn(`Validación fallida ${method} ${url}: ${parsed.message}`, {
+          context: "api",
+          code: parsed.code,
+          requestId: parsed.requestId,
+          field: parsed.field,
+          details: parsed.details,
+        });
+      } else if (status === 403) {
+        logger.warn(`Acceso denegado ${method} ${url}`, {
+          context: "api",
+          requestId: parsed.requestId,
+        });
+      } else if (status === 404) {
+        logger.info(`Recurso no encontrado ${method} ${url}`, {
+          context: "api",
+          requestId: parsed.requestId,
+        });
+      } else if (status === 429) {
+        logger.warn(`Rate limit ${method} ${url}`, {
+          context: "api",
+          requestId: parsed.requestId,
+        });
+      } else if (status >= 500) {
+        logger.error(`Error del servidor ${method} ${url}: ${parsed.message}`, {
+          context: "api",
+          code: parsed.code,
+          requestId: parsed.requestId,
+          statusCode: status,
+        });
+      }
+    } else if (!status) {
+      logger.error(`Error de red ${method} ${url}: ${error.message}`, {
+        context: "api",
+        code: error.code,
+      });
+    }
     // Si el error es 401 y no hemos reintentado ya
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (status === 401 && !originalRequest._retry) {
       // Si ya hay un refresh en curso, encolar la petición
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
@@ -72,9 +126,14 @@ apiClient.interceptors.response.use(
 
       const refreshToken = localStorage.getItem("erp_refresh_token");
 
-      if (!refreshToken) {
+      if (
+        !refreshToken ||
+        refreshToken === "null" ||
+        refreshToken === "undefined"
+      ) {
         isRefreshing = false;
-        // No hay refresh token → redirigir a login
+        localStorage.removeItem("erp_refresh_token");
+        // No hay refresh token válido → redirigir a login
         window.location.href = "/login";
         return Promise.reject(error);
       }

@@ -1,77 +1,110 @@
-import { useAuth, UserRole } from '@/contexts/AuthContext'
+import { useAuth } from "@/contexts/AuthContext";
+import type { UserRole } from "@/lib/api-types";
 
 export interface Permission {
-  canView: boolean
-  canCreate: boolean
-  canEdit: boolean
-  canDelete: boolean
+  canView: boolean;
+  canCreate: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
 }
 
+const FULL: Permission = {
+  canView: true,
+  canCreate: true,
+  canEdit: true,
+  canDelete: true,
+};
+const READ: Permission = {
+  canView: true,
+  canCreate: false,
+  canEdit: false,
+  canDelete: false,
+};
+const NONE: Permission = {
+  canView: false,
+  canCreate: false,
+  canEdit: false,
+  canDelete: false,
+};
+
+const ROLE_PERMISSIONS: Record<UserRole, Record<string, Permission>> = {
+  Administrador: { default: FULL },
+  Gerente: {
+    default: { ...FULL, canDelete: false },
+    reportes: READ,
+  },
+  Vendedor: {
+    default: NONE,
+    dashboard: FULL,
+    ventas: FULL,
+    inventario: READ,
+    reportes: READ,
+  },
+  Comprador: {
+    default: NONE,
+    dashboard: READ,
+    compras: FULL,
+    inventario: READ,
+    reportes: READ,
+  },
+  Contador: {
+    default: NONE,
+    dashboard: READ,
+    finanzas: FULL,
+    compras: READ,
+    reportes: READ,
+  },
+  RRHH: {
+    default: NONE,
+    dashboard: READ,
+    rrhh: FULL,
+    reportes: READ,
+  },
+  Produccion: {
+    default: NONE,
+    dashboard: READ,
+    produccion: FULL,
+    inventario: READ,
+    reportes: READ,
+  },
+  Viewer: {
+    default: READ,
+  },
+};
+
 export const usePermissions = () => {
-  const { user } = useAuth()
+  const { user } = useAuth();
 
   const getModulePermissions = (module: string): Permission => {
-    if (!user) {
-      return { canView: false, canCreate: false, canEdit: false, canDelete: false }
-    }
+    if (!user) return NONE;
 
-    const role = user.rol
+    const roleMap = ROLE_PERMISSIONS[user.rol];
+    if (!roleMap) return NONE;
 
-    // Administrador tiene acceso completo a todo
-    if (role === 'Administrador') {
-      return { canView: true, canCreate: true, canEdit: true, canDelete: true }
-    }
+    if (user.rol === "Administrador") return FULL;
 
-    // Vendedor: acceso a ventas, clientes, inventario (solo lectura)
-    if (role === 'Vendedor') {
-      const fullAccessModules = ['dashboard', 'ventas']
-      const readOnlyModules = ['inventario', 'reportes']
-      
-      if (fullAccessModules.includes(module)) {
-        return { canView: true, canCreate: true, canEdit: true, canDelete: false }
-      }
-      if (readOnlyModules.includes(module)) {
-        return { canView: true, canCreate: false, canEdit: false, canDelete: false }
-      }
-      return { canView: false, canCreate: false, canEdit: false, canDelete: false }
-    }
-
-    // Contable: acceso a finanzas, compras, reportes financieros
-    if (role === 'Contable') {
-      const fullAccessModules = ['dashboard', 'finanzas']
-      const readOnlyModules = ['compras', 'reportes']
-      
-      if (fullAccessModules.includes(module)) {
-        return { canView: true, canCreate: true, canEdit: true, canDelete: false }
-      }
-      if (readOnlyModules.includes(module)) {
-        return { canView: true, canCreate: false, canEdit: false, canDelete: false }
-      }
-      return { canView: false, canCreate: false, canEdit: false, canDelete: false }
-    }
-
-    return { canView: false, canCreate: false, canEdit: false, canDelete: false }
-  }
+    return roleMap[module] ?? roleMap["default"] ?? NONE;
+  };
 
   const hasAccess = (module: string): boolean => {
-    const permissions = getModulePermissions(module)
-    return permissions.canView
-  }
+    const permissions = getModulePermissions(module);
+    return permissions.canView;
+  };
 
   const canCreate = (module: string): boolean => {
-    const permissions = getModulePermissions(module)
-    return permissions.canCreate
-  }
+    const permissions = getModulePermissions(module);
+    return permissions.canCreate;
+  };
 
   const canEdit = (module: string): boolean => {
-    const permissions = getModulePermissions(module)
-    return permissions.canEdit
-  }
+    const permissions = getModulePermissions(module);
+    return permissions.canEdit;
+  };
 
   const canDelete = (module: string): boolean => {
-    const permissions = getModulePermissions(module)
-    return permissions.canDelete
-  }
+    const permissions = getModulePermissions(module);
+    return permissions.canDelete;
+  };
 
   return {
     user,
@@ -80,8 +113,6 @@ export const usePermissions = () => {
     canEdit,
     canDelete,
     getModulePermissions,
-    isAdmin: user?.rol === 'Administrador',
-    isVendedor: user?.rol === 'Vendedor',
-    isContable: user?.rol === 'Contable'
-  }
-}
+    isAdmin: user?.rol === "Administrador",
+  };
+};

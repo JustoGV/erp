@@ -1,65 +1,102 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { ShoppingBag, Users, UserCheck, FileText, ClipboardList, Receipt, DollarSign } from 'lucide-react';
+import Link from "next/link";
+import {
+  ShoppingBag,
+  Users,
+  UserCheck,
+  FileText,
+  ClipboardList,
+  Receipt,
+  DollarSign,
+} from "lucide-react";
+import {
+  useClientes,
+  usePresupuestos,
+  usePedidos,
+  useFacturas,
+  useCobranzas,
+} from "@/hooks/useVentas";
+import { useLocal } from "@/contexts/LocalContext";
 
 export default function VentasResumenPage() {
+  const { selectedLocal } = useLocal();
+  const localId = selectedLocal?.id;
+
+  const { data: clientesData } = useClientes({
+    localId,
+    active: true,
+    limit: 1,
+  });
+  const { data: presupuestosData } = usePresupuestos({ localId, limit: 1 });
+  const { data: pedidosData } = usePedidos({ localId, limit: 1 });
+  const { data: facturasData } = useFacturas({ localId, limit: 1 });
+  const { data: cobranzasData } = useCobranzas({ localId, limit: 1 });
+
+  const totalClientes = clientesData?.meta?.total ?? "—";
+  const totalPresupuestos = presupuestosData?.meta?.total ?? "—";
+  const pedidosPendientes = pedidosData?.meta?.total ?? "—";
+  const totalFacturas = facturasData?.meta?.total ?? "—";
+  const totalCobranzas = cobranzasData?.meta?.total ?? "—";
+
   const menuItems = [
     {
-      href: '/ventas/clientes',
+      href: "/ventas/clientes",
       icon: Users,
-      title: 'Clientes',
-      description: 'Gestión de clientes y cuentas',
-      color: 'bg-blue-500',
-      stats: '125 clientes activos'
+      title: "Clientes",
+      description: "Gestión de clientes y cuentas",
+      color: "bg-blue-500",
+      stats: `${totalClientes} clientes activos`,
     },
     {
-      href: '/ventas/seguimiento',
+      href: "/ventas/seguimiento",
       icon: UserCheck,
-      title: 'Seguimiento',
-      description: 'Seguimiento de clientes e interacciones',
-      color: 'bg-cyan-500',
-      stats: '18 interacciones'
+      title: "Seguimiento",
+      description: "Seguimiento de clientes e interacciones",
+      color: "bg-cyan-500",
+      stats: "—",
     },
     {
-      href: '/ventas/presupuestos',
+      href: "/ventas/presupuestos",
       icon: FileText,
-      title: 'Presupuestos',
-      description: 'Cotizaciones y presupuestos',
-      color: 'bg-purple-500',
-      stats: '4 presupuestos activos'
+      title: "Presupuestos",
+      description: "Cotizaciones y presupuestos",
+      color: "bg-purple-500",
+      stats: `${totalPresupuestos} presupuestos`,
     },
     {
-      href: '/ventas/pedidos',
+      href: "/ventas/pedidos",
       icon: ClipboardList,
-      title: 'Pedidos',
-      description: 'Órdenes de venta y pedidos',
-      color: 'bg-indigo-500',
-      stats: '3 pedidos pendientes'
+      title: "Pedidos",
+      description: "Órdenes de venta y pedidos",
+      color: "bg-indigo-500",
+      stats: `${pedidosPendientes} pedidos`,
     },
     {
-      href: '/ventas/facturas',
+      href: "/ventas/facturas",
       icon: Receipt,
-      title: 'Facturas',
-      description: 'Facturación y comprobantes',
-      color: 'bg-green-500',
-      stats: '45 facturas este mes'
+      title: "Facturas",
+      description: "Facturación y comprobantes",
+      color: "bg-green-500",
+      stats: `${totalFacturas} facturas`,
     },
     {
-      href: '/ventas/cobranzas',
+      href: "/ventas/cobranzas",
       icon: DollarSign,
-      title: 'Cobranzas',
-      description: 'Gestión de cobros y pagos',
-      color: 'bg-emerald-500',
-      stats: '$125,000 por cobrar'
-    }
+      title: "Cobranzas",
+      description: "Gestión de cobros y pagos",
+      color: "bg-emerald-500",
+      stats: `${totalCobranzas} cobranzas`,
+    },
   ];
 
   return (
     <div className="p-6 space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Módulo de Ventas</h1>
-        <p className="text-gray-600 mt-1">Gestión completa del área de comercialización</p>
+        <p className="text-gray-600 mt-1">
+          Gestión completa del área de comercialización
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -76,9 +113,15 @@ export default function VentasResumenPage() {
                   <Icon className="h-6 w-6" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-1">{item.title}</h3>
-                  <p className="text-sm text-gray-600 mb-2">{item.description}</p>
-                  <p className="text-xs text-gray-500 font-medium">{item.stats}</p>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                    {item.title}
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-2">
+                    {item.description}
+                  </p>
+                  <p className="text-xs text-gray-500 font-medium">
+                    {item.stats}
+                  </p>
                 </div>
               </div>
             </Link>
@@ -90,9 +133,12 @@ export default function VentasResumenPage() {
         <div className="flex items-start gap-3">
           <ShoppingBag className="h-6 w-6 text-blue-600 mt-1" />
           <div>
-            <h3 className="text-lg font-semibold text-blue-900 mb-2">Flujo de Ventas</h3>
+            <h3 className="text-lg font-semibold text-blue-900 mb-2">
+              Flujo de Ventas
+            </h3>
             <p className="text-sm text-blue-700">
-              El módulo de ventas administra el ciclo completo de comercialización.
+              El módulo de ventas administra el ciclo completo de
+              comercialización.
             </p>
             <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-blue-800">
               <span className="font-medium">Flujo:</span>

@@ -1,146 +1,163 @@
-'use client';
+"use client";
 
-import { Download, TrendingUp, DollarSign, ShoppingCart, Users, Building2 } from 'lucide-react';
-import { mockFacturas, mockClientes, mockLocales, mockStatsByLocal, mockStats } from '@/lib/mock-data';
-import { useLocal } from '@/contexts/LocalContext';
-import { useEffect, useState } from 'react';
+import { useState } from "react";
+import { useReporteVentas } from "@/hooks/useReportes";
+import { downloadReporteXLSX } from "@/lib/services/reportes.service";
 
-export default function ReportesVentasPage() {
-  const { selectedLocal, isAllLocales } = useLocal();
-  const [stats, setStats] = useState(mockStats);
+export default function ReporteVentasPage() {
+  const hoy = new Date();
+  const primerDia = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, "0")}-01`;
+  const [filtros, setFiltros] = useState({ desde: primerDia, hasta: "" });
+  const [aplicados, setAplicados] = useState(filtros);
 
-  useEffect(() => {
-    const newStats = isAllLocales ? mockStats : mockStatsByLocal[selectedLocal?.id || '1'];
-    setStats(newStats);
-  }, [selectedLocal, isAllLocales]);
+  const { data, isLoading } = useReporteVentas(aplicados);
+  const r = data?.data;
+
+  const fmt = (n?: number) =>
+    n != null
+      ? `$${Number(n).toLocaleString("es-AR", { minimumFractionDigits: 0 })}`
+      : "—";
+
+  const handleDescargar = () =>
+    downloadReporteXLSX("ventas", aplicados, `ventas-${aplicados.desde}.xlsx`);
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Reporte de Ventas</h1>
+        <button onClick={handleDescargar} className="btn btn-secondary">
+          Exportar Excel
+        </button>
+      </div>
+
+      {/* Filtros */}
+      <div className="card flex flex-wrap gap-4 items-end">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Reportes de Ventas</h1>
-          <p className="text-slate-600 mt-1 flex items-center gap-2">
-            <TrendingUp size={16} />
-            Análisis de ventas {isAllLocales ? 'consolidadas' : `- ${selectedLocal?.name}`}
-          </p>
+          <label htmlFor="ventas-desde" className="label">
+            Desde
+          </label>
+          <input
+            id="ventas-desde"
+            type="date"
+            className="input"
+            value={filtros.desde}
+            onChange={(e) =>
+              setFiltros((f) => ({ ...f, desde: e.target.value }))
+            }
+          />
         </div>
-        <div className="flex items-center gap-3">
-          <button className="btn btn-secondary">
-            <Download size={18} />
-            Exportar PDF
-          </button>
+        <div>
+          <label htmlFor="ventas-hasta" className="label">
+            Hasta
+          </label>
+          <input
+            id="ventas-hasta"
+            type="date"
+            className="input"
+            value={filtros.hasta}
+            onChange={(e) =>
+              setFiltros((f) => ({ ...f, hasta: e.target.value }))
+            }
+          />
         </div>
+        <button
+          className="btn btn-primary"
+          onClick={() => setAplicados(filtros)}
+        >
+          Aplicar filtros
+        </button>
       </div>
 
-      {/* Stats principales */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="card">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-xl shadow-lg">
-              <DollarSign size={24} />
+      {isLoading ? (
+        <div>Cargando...</div>
+      ) : (
+        <>
+          {/* Resumen */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="card">
+              <p className="text-sm text-gray-600">Total Facturado</p>
+              <p className="text-3xl font-bold text-green-700 mt-1">
+                {fmt(r?.resumen.totalFacturado)}
+              </p>
             </div>
-            <div>
-              <p className="text-sm text-slate-600 font-medium">Ventas del Mes</p>
-              <p className="text-2xl font-bold text-slate-900">
-                ${stats.ventasMes.toLocaleString()}
+            <div className="card">
+              <p className="text-sm text-gray-600">Cantidad de Facturas</p>
+              <p className="text-3xl font-bold text-gray-900 mt-1">
+                {r?.resumen.cantidadFacturas ?? "—"}
               </p>
             </div>
           </div>
-        </div>
 
-        <div className="card">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl shadow-lg">
-              <ShoppingCart size={24} />
-            </div>
-            <div>
-              <p className="text-sm text-slate-600 font-medium">Facturas Emitidas</p>
-              <p className="text-2xl font-bold text-slate-900">
-                {mockFacturas.filter(f => !isAllLocales ? f.localId === selectedLocal?.id : true).length}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="card">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-xl shadow-lg">
-              <Users size={24} />
-            </div>
-            <div>
-              <p className="text-sm text-slate-600 font-medium">Clientes Activos</p>
-              <p className="text-2xl font-bold text-slate-900">{stats.clientesActivos}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="card">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-gradient-to-br from-amber-500 to-amber-600 text-white rounded-xl shadow-lg">
-              <TrendingUp size={24} />
-            </div>
-            <div>
-              <p className="text-sm text-slate-600 font-medium">Ticket Promedio</p>
-              <p className="text-2xl font-bold text-slate-900">
-                ${Math.round(stats.ventasMes / mockFacturas.length).toLocaleString()}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Ventas por local (solo si está en modo consolidado) */}
-      {isAllLocales && (
-        <div className="card">
-          <div className="card-header">
-            <h2 className="card-title">Ventas por Local</h2>
-          </div>
-          <div className="p-6">
-            <div className="space-y-4">
-              {mockLocales.map((local) => {
-                const localStats = mockStatsByLocal[local.id];
-                const percentage = (localStats.ventasMes / mockStats.ventasMes) * 100;
-                return (
-                  <div key={local.id} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Building2 size={16} className="text-slate-400" />
-                        <span className="font-medium text-slate-900">{local.name}</span>
-                      </div>
-                      <span className="text-lg font-bold text-slate-900">
-                        ${localStats.ventasMes.toLocaleString()}
+          {/* Tabla de facturas */}
+          <div className="card overflow-x-auto">
+            <h3 className="font-semibold mb-4">
+              Facturas ({r?.facturas.length ?? 0})
+            </h3>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left border-b text-gray-500">
+                  <th className="pb-2 pr-4">Número</th>
+                  <th className="pb-2 pr-4">Fecha</th>
+                  <th className="pb-2 pr-4">Cliente</th>
+                  <th className="pb-2 pr-4 text-right">Total</th>
+                  <th className="pb-2">Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {r?.facturas.map((f) => (
+                  <tr key={f.numero} className="border-b last:border-0">
+                    <td className="py-2 pr-4 font-mono text-xs">{f.numero}</td>
+                    <td className="py-2 pr-4">{f.fecha?.slice(0, 10)}</td>
+                    <td className="py-2 pr-4">{f.cliente}</td>
+                    <td className="py-2 pr-4 text-right font-semibold">
+                      {fmt(f.total)}
+                    </td>
+                    <td className="py-2">
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100">
+                        {f.estado}
                       </span>
-                    </div>
-                    <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-full transition-all"
-                        style={{ width: `${percentage}%` }}
-                      />
-                    </div>
-                    <div className="flex justify-between text-xs text-slate-600">
-                      <span>{percentage.toFixed(1)}% del total</span>
-                      <span>{localStats.clientesActivos} clientes activos</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                    </td>
+                  </tr>
+                ))}
+                {!r?.facturas.length && (
+                  <tr>
+                    <td colSpan={5} className="py-6 text-center text-gray-400">
+                      Sin resultados para el período seleccionado
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
-        </div>
-      )}
 
-      {/* Gráfico de tendencia */}
-      <div className="card">
-        <div className="card-header">
-          <h2 className="card-title">Evolución de Ventas</h2>
-        </div>
-        <div className="p-6">
-          <div className="h-64 flex items-center justify-center bg-slate-50 rounded-xl">
-            <p className="text-slate-500">Gráfico de ventas mensuales</p>
-          </div>
-        </div>
-      </div>
+          {/* Por cliente */}
+          {r?.porCliente && r.porCliente.length > 0 && (
+            <div className="card">
+              <h3 className="font-semibold mb-4">Ventas por cliente</h3>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left border-b text-gray-500">
+                    <th className="pb-2 pr-4">Cliente</th>
+                    <th className="pb-2 pr-4 text-right">Total</th>
+                    <th className="pb-2 text-right">Facturas</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {r.porCliente.map((c) => (
+                    <tr key={c.nombre} className="border-b last:border-0">
+                      <td className="py-2 pr-4">{c.nombre}</td>
+                      <td className="py-2 pr-4 text-right font-semibold">
+                        {fmt(c.total)}
+                      </td>
+                      <td className="py-2 text-right">{c.cantidad}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }

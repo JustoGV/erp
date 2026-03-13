@@ -1,174 +1,82 @@
-'use client';
+"use client";
 
-import { useEffect, useMemo, useState } from 'react';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
-import Modal from '@/components/Modal';
-import Pagination from '@/components/Pagination';
-
-interface Asistencia {
-  id: string;
-  empleado: string;
-  fecha: string;
-  estado: 'PRESENTE' | 'AUSENTE' | 'TARDE';
-}
-
-const mockAsistencias: Asistencia[] = [
-  { id: '1', empleado: 'Laura Gómez', fecha: '2026-02-10', estado: 'PRESENTE' },
-  { id: '2', empleado: 'Carlos Ruiz', fecha: '2026-02-10', estado: 'TARDE' }
-];
+import { useState } from "react";
+import { CalendarCheck } from "lucide-react";
+import { useLocal } from "@/contexts/LocalContext";
+import { useAsistencias } from "@/hooks/useRRHH";
+import Pagination from "@/components/Pagination";
 
 export default function AsistenciasPage() {
-  const [asistencias, setAsistencias] = useState<Asistencia[]>(mockAsistencias);
-  const [formOpen, setFormOpen] = useState(false);
-  const [editing, setEditing] = useState<Asistencia | null>(null);
+  const { selectedLocal, isAllLocales } = useLocal();
+  const localId = isAllLocales ? undefined : selectedLocal?.id;
   const [page, setPage] = useState(1);
-  const pageSize = 6;
-  const [formState, setFormState] = useState({ empleado: '', fecha: '', estado: 'PRESENTE' as Asistencia['estado'] });
-  const totalPages = useMemo(
-    () => Math.max(1, Math.ceil(asistencias.length / pageSize)),
-    [asistencias.length]
-  );
-  const pagedAsistencias = useMemo(() => {
-    const start = (page - 1) * pageSize;
-    return asistencias.slice(start, start + pageSize);
-  }, [asistencias, page]);
 
-  useEffect(() => {
-    if (page > totalPages) {
-      setPage(totalPages);
-    }
-  }, [page, totalPages]);
-
-  const openCreate = () => {
-    setEditing(null);
-    setFormState({ empleado: '', fecha: '', estado: 'PRESENTE' });
-    setFormOpen(true);
-  };
-
-  const openEdit = (item: Asistencia) => {
-    setEditing(item);
-    setFormState({ empleado: item.empleado, fecha: item.fecha, estado: item.estado });
-    setFormOpen(true);
-  };
-
-  const handleDelete = (id: string) => {
-    if (!confirm('¿Eliminar asistencia?')) return;
-    setAsistencias(prev => prev.filter(item => item.id !== id));
-  };
-
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (editing) {
-      setAsistencias(prev => prev.map(item => (item.id === editing.id ? { ...item, ...formState } : item)));
-    } else {
-      setAsistencias(prev => [{ id: Date.now().toString(), ...formState }, ...prev]);
-      setPage(1);
-    }
-    setFormOpen(false);
-  };
+  const { data, isLoading } = useAsistencias({ localId, page, limit: 20 });
+  const items = data?.data ?? [];
+  const total = data?.meta?.total ?? 0;
+  const totalPages = data?.meta?.totalPages ?? 1;
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900">Asistencias</h1>
-          <p className="text-slate-600 mt-1">Control de presentismo</p>
-        </div>
-        <button onClick={openCreate} className="btn btn-primary">
-          <Plus className="h-4 w-4" />
-          Nueva asistencia
-        </button>
+      <div>
+        <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+          <CalendarCheck size={24} /> Asistencias
+        </h1>
+        <p className="text-slate-500">{total} registros</p>
       </div>
 
-      <div className="table-container">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Empleado</th>
-              <th>Fecha</th>
-              <th>Estado</th>
-              <th className="text-right">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {pagedAsistencias.map(item => (
-              <tr key={item.id} className="table-row-hover">
-                <td className="font-medium">{item.empleado}</td>
-                <td>{item.fecha}</td>
-                <td>{item.estado}</td>
-                <td className="text-right">
-                  <div className="inline-flex items-center gap-2">
-                    <button
-                      onClick={() => openEdit(item)}
-                      className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-                      title="Editar"
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(item.id)}
-                      className="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                      title="Eliminar"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                </td>
+      <div className="card">
+        <div className="table-container">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Empleado ID</th>
+                <th>Entrada</th>
+                <th>Salida</th>
+                <th>Ausente</th>
+                <th>Justificado</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {isLoading ? (
+                <tr><td colSpan={6} className="text-center py-10">Cargando...</td></tr>
+              ) : items.length === 0 ? (
+                <tr><td colSpan={6} className="text-center py-10 text-slate-400">No se encontraron registros.</td></tr>
+              ) : (
+                items.map((a) => (
+                  <tr key={a.id} className="table-row-hover">
+                    <td>{new Date(a.fecha).toLocaleDateString()}</td>
+                    <td className="font-mono text-xs">{a.empleadoId}</td>
+                    <td>{a.entrada ?? "—"}</td>
+                    <td>{a.salida ?? "—"}</td>
+                    <td>
+                      {a.ausente ? (
+                        <span className="badge badge-danger">Sí</span>
+                      ) : (
+                        <span className="badge badge-success">No</span>
+                      )}
+                    </td>
+                    <td>
+                      {a.justificado ? (
+                        <span className="badge badge-info">Sí</span>
+                      ) : (
+                        <span className="badge badge-secondary">No</span>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {totalPages > 1 && (
+          <div className="p-4 border-t border-slate-200">
+            <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+          </div>
+        )}
       </div>
-
-      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
-
-      <Modal
-        open={formOpen}
-        title={editing ? 'Editar asistencia' : 'Crear asistencia'}
-        onClose={() => setFormOpen(false)}
-      >
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="label">Empleado</label>
-            <input
-              value={formState.empleado}
-              onChange={(event) => setFormState(prev => ({ ...prev, empleado: event.target.value }))}
-              className="input"
-              required
-            />
-          </div>
-          <div>
-            <label className="label">Fecha</label>
-            <input
-              type="date"
-              value={formState.fecha}
-              onChange={(event) => setFormState(prev => ({ ...prev, fecha: event.target.value }))}
-              className="input"
-              required
-            />
-          </div>
-          <div>
-            <label className="label">Estado</label>
-            <select
-              value={formState.estado}
-              onChange={(event) => setFormState(prev => ({ ...prev, estado: event.target.value as Asistencia['estado'] }))}
-              className="input"
-            >
-              <option value="PRESENTE">PRESENTE</option>
-              <option value="AUSENTE">AUSENTE</option>
-              <option value="TARDE">TARDE</option>
-            </select>
-          </div>
-          <div className="md:col-span-2 flex justify-end gap-2">
-            <button type="button" onClick={() => setFormOpen(false)} className="btn btn-secondary">
-              Cancelar
-            </button>
-            <button type="submit" className="btn btn-primary">
-              {editing ? 'Guardar cambios' : 'Crear asistencia'}
-            </button>
-          </div>
-        </form>
-      </Modal>
     </div>
   );
 }

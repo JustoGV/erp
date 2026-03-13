@@ -31,7 +31,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const storedUser = localStorage.getItem("erp_user");
     const storedRefresh = localStorage.getItem("erp_refresh_token");
 
-    if (storedUser && storedRefresh) {
+    if (
+      storedUser &&
+      storedRefresh &&
+      storedRefresh !== "null" &&
+      storedRefresh !== "undefined"
+    ) {
       const savedUser: AuthUser = JSON.parse(storedUser);
       setUser(savedUser);
 

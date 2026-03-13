@@ -1,56 +1,72 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { Factory, FileText, Package, Wrench, ClipboardCheck, TrendingUp } from 'lucide-react';
+import Link from "next/link";
+import {
+  Factory,
+  FileText,
+  Package,
+  ClipboardCheck,
+  TrendingUp,
+} from "lucide-react";
+import {
+  useOrdenesProduccion,
+  useMaterialesProduccion,
+  useBOMs,
+} from "@/hooks/useProduccion";
 
 export default function ProduccionResumenPage() {
+  const { data: ordenesData } = useOrdenesProduccion();
+  const { data: materialesData } = useMaterialesProduccion();
+  const { data: bomsData } = useBOMs();
+
+  const ordenesActivas =
+    ordenesData?.data?.filter(
+      (o) => o.estado === "PLANIFICADA" || o.estado === "EN_PROCESO",
+    ).length ?? "—";
+  const totalMateriales = materialesData?.data?.length ?? "—";
+  const totalBOMs = bomsData?.data?.length ?? "—";
+
   const menuItems = [
     {
-      href: '/produccion/ordenes',
+      href: "/produccion/ordenes",
       icon: FileText,
-      title: 'Órdenes de Producción',
-      description: 'Gestión de órdenes de manufactura',
-      color: 'bg-blue-500',
-      stats: '8 órdenes activas'
+      title: "Órdenes de Producción",
+      description: "Gestión de órdenes de manufactura",
+      color: "bg-blue-500",
+      stats: `${ordenesActivas} órdenes activas`,
     },
     {
-      href: '/produccion/bom',
+      href: "/produccion/bom",
       icon: ClipboardCheck,
-      title: 'Lista de Materiales (BOM)',
-      description: 'Estructuras y fórmulas de productos',
-      color: 'bg-green-500',
-      stats: '15 BOMs definidas'
+      title: "Lista de Materiales (BOM)",
+      description: "Estructuras y fórmulas de productos",
+      color: "bg-green-500",
+      stats: `${totalBOMs} BOMs definidas`,
     },
     {
-      href: '/produccion/materiales',
+      href: "/produccion/materiales",
       icon: Package,
-      title: 'Materiales',
-      description: 'Insumos y materias primas',
-      color: 'bg-purple-500',
-      stats: '125 materiales'
+      title: "Materiales",
+      description: "Insumos y materias primas",
+      color: "bg-purple-500",
+      stats: `${totalMateriales} materiales`,
     },
     {
-      href: '/produccion/maquinas',
-      icon: Wrench,
-      title: 'Máquinas y Equipos',
-      description: 'Recursos de producción',
-      color: 'bg-orange-500',
-      stats: '12 máquinas'
-    },
-    {
-      href: '/produccion/planificacion',
+      href: "/produccion/planificacion",
       icon: TrendingUp,
-      title: 'Planificación',
-      description: 'Plan de producción y capacidad',
-      color: 'bg-indigo-500',
-      stats: 'Ver plan'
-    }
+      title: "Planificación",
+      description: "Plan de producción y capacidad",
+      color: "bg-indigo-500",
+      stats: "Ver plan",
+    },
   ];
 
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Módulo de Producción</h1>
+        <h1 className="text-2xl font-bold text-gray-900">
+          Módulo de Producción
+        </h1>
         <p className="text-gray-600 mt-1">Gestión de manufactura y procesos</p>
       </div>
 
@@ -68,9 +84,15 @@ export default function ProduccionResumenPage() {
                   <Icon className="h-6 w-6" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-1">{item.title}</h3>
-                  <p className="text-sm text-gray-600 mb-2">{item.description}</p>
-                  <p className="text-xs text-gray-500 font-medium">{item.stats}</p>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                    {item.title}
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-2">
+                    {item.description}
+                  </p>
+                  <p className="text-xs text-gray-500 font-medium">
+                    {item.stats}
+                  </p>
                 </div>
               </div>
             </Link>
@@ -82,10 +104,13 @@ export default function ProduccionResumenPage() {
         <div className="flex items-start gap-3">
           <Factory className="h-6 w-6 text-blue-600 mt-1" />
           <div>
-            <h3 className="text-lg font-semibold text-blue-900 mb-2">Control de Manufactura</h3>
+            <h3 className="text-lg font-semibold text-blue-900 mb-2">
+              Control de Manufactura
+            </h3>
             <p className="text-sm text-blue-700">
-              El módulo de producción permite planificar, ejecutar y controlar órdenes de manufactura, 
-              consumo de materiales y tiempos de producción.
+              El módulo de producción permite planificar, ejecutar y controlar
+              órdenes de manufactura, consumo de materiales y tiempos de
+              producción.
             </p>
           </div>
         </div>

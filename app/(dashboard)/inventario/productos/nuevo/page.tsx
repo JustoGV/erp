@@ -1,18 +1,25 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { ArrowLeft, Save, Package, Tags, DollarSign, Ruler } from 'lucide-react';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import {
+  ArrowLeft,
+  Save,
+  Package,
+  Tags,
+  DollarSign,
+  Ruler,
+} from "lucide-react";
 
 export default function NuevoProductoPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    sku: '',
-    name: '',
-    category: '',
-    unit: 'Unidad',
+    sku: "",
+    name: "",
+    category: "",
+    unit: "Unidad",
     price: 0,
     stockMin: 0,
   });
@@ -22,18 +29,20 @@ export default function NuevoProductoPage() {
     setLoading(true);
 
     setTimeout(() => {
-      console.log('Producto guardado:', formData);
-      alert('✅ Producto creado exitosamente');
+      console.log("Producto guardado:", formData);
+      alert("✅ Producto creado exitosamente");
       setLoading(false);
-      router.push('/inventario/productos');
+      router.push("/inventario/productos");
     }, 500);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value, type } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'number' ? parseFloat(value) : value,
+      [name]: type === "number" ? parseFloat(value) : value,
     }));
   };
 
@@ -48,7 +57,9 @@ export default function NuevoProductoPage() {
         </Link>
         <div className="flex-1">
           <h1 className="text-3xl font-bold text-slate-900">Nuevo Producto</h1>
-          <p className="text-slate-600 mt-1">Define los datos principales del producto</p>
+          <p className="text-slate-600 mt-1">
+            Define los datos principales del producto
+          </p>
         </div>
       </div>
 
@@ -106,11 +117,17 @@ export default function NuevoProductoPage() {
             </div>
 
             <div>
-              <label className="label">
+              <label htmlFor="unit" className="label">
                 <Ruler size={16} className="inline mr-1" />
                 Unidad de Medida
               </label>
-              <select name="unit" value={formData.unit} onChange={handleChange} className="input">
+              <select
+                id="unit"
+                name="unit"
+                value={formData.unit}
+                onChange={handleChange}
+                className="input"
+              >
                 <option>Unidad</option>
                 <option>Caja</option>
                 <option>Kg</option>
@@ -154,7 +171,7 @@ export default function NuevoProductoPage() {
         <div className="flex items-center gap-4">
           <button type="submit" disabled={loading} className="btn btn-primary">
             <Save size={18} />
-            {loading ? 'Guardando...' : 'Guardar Producto'}
+            {loading ? "Guardando..." : "Guardar Producto"}
           </button>
           <Link href="/inventario/productos" className="btn btn-secondary">
             Cancelar

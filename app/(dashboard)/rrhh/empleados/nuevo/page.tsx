@@ -1,22 +1,30 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { ArrowLeft, Save, User, Mail, Phone, Briefcase, Calendar } from 'lucide-react';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import {
+  ArrowLeft,
+  Save,
+  User,
+  Mail,
+  Phone,
+  Briefcase,
+  Calendar,
+} from "lucide-react";
 
 export default function NuevoEmpleadoPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    legajo: '',
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    role: '',
-    startDate: '',
-    status: 'Activo',
+    legajo: "",
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    role: "",
+    startDate: "",
+    status: "Activo",
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -24,16 +32,18 @@ export default function NuevoEmpleadoPage() {
     setLoading(true);
 
     setTimeout(() => {
-      console.log('Empleado guardado:', formData);
-      alert('✅ Empleado creado exitosamente');
+      console.log("Empleado guardado:", formData);
+      alert("✅ Empleado creado exitosamente");
       setLoading(false);
-      router.push('/rrhh/empleados');
+      router.push("/rrhh/empleados");
     }, 500);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
@@ -151,11 +161,12 @@ export default function NuevoEmpleadoPage() {
             </div>
 
             <div>
-              <label className="label">
+              <label htmlFor="startDate" className="label">
                 <Calendar size={16} className="inline mr-1" />
                 Fecha de Ingreso
               </label>
               <input
+                id="startDate"
                 type="date"
                 name="startDate"
                 value={formData.startDate}
@@ -165,8 +176,16 @@ export default function NuevoEmpleadoPage() {
             </div>
 
             <div>
-              <label className="label">Estado</label>
-              <select name="status" value={formData.status} onChange={handleChange} className="input">
+              <label htmlFor="status" className="label">
+                Estado
+              </label>
+              <select
+                id="status"
+                name="status"
+                value={formData.status}
+                onChange={handleChange}
+                className="input"
+              >
                 <option>Activo</option>
                 <option>En licencia</option>
                 <option>Inactivo</option>
@@ -178,7 +197,7 @@ export default function NuevoEmpleadoPage() {
         <div className="flex items-center gap-4">
           <button type="submit" disabled={loading} className="btn btn-primary">
             <Save size={18} />
-            {loading ? 'Guardando...' : 'Guardar Empleado'}
+            {loading ? "Guardando..." : "Guardar Empleado"}
           </button>
           <Link href="/rrhh/empleados" className="btn btn-secondary">
             Cancelar

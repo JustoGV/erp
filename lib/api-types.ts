@@ -367,7 +367,6 @@ export interface Cliente {
 }
 
 export interface CreateClienteDto {
-  code: string;
   name: string;
   localId: string;
   taxId?: string;
@@ -377,11 +376,18 @@ export interface CreateClienteDto {
   email?: string;
   phone?: string;
   creditLimit?: number;
+  active?: boolean;
 }
 
-export interface UpdateClienteDto extends Partial<
-  Omit<CreateClienteDto, "code">
-> {
+export interface UpdateClienteDto {
+  name?: string;
+  taxId?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  email?: string;
+  phone?: string;
+  creditLimit?: number;
   active?: boolean;
 }
 

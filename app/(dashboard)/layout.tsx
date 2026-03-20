@@ -35,7 +35,7 @@ export default function DashboardLayout({
 
   return (
     <LocalProvider>
-      <div className="flex h-screen bg-slate-50">
+        <div suppressHydrationWarning className="flex h-screen bg-slate-50">
         <Sidebar />
         <div className="flex-1 flex flex-col overflow-hidden">
           <Header />

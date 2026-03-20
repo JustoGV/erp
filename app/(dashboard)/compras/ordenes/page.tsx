@@ -1,18 +1,37 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { ShoppingCart, Plus, Package, Truck, CheckCircle, XCircle, FileText } from 'lucide-react';
-import { mockOrdenesCompra, EstadoOrdenCompra } from '@/lib/mock-data';
-import { usePermissions } from '@/hooks/usePermissions';
+import { useMemo, useState } from "react";
+import { Plus } from "lucide-react";
+import { usePermissions } from "@/hooks/usePermissions";
+import { useOrdenesCompra } from "@/hooks/useCompras";
+import { useLocal } from "@/contexts/LocalContext";
+import { useApiToast } from "@/hooks/useApiToast";
+import type { EstadoOrdenCompra } from "@/lib/api-types";
 
 export default function OrdenesCompraPage() {
-  const [filtroEstado, setFiltroEstado] = useState<EstadoOrdenCompra | 'TODOS'>('TODOS');
+  const [filtroEstado, setFiltroEstado] = useState<EstadoOrdenCompra | "TODOS">(
+    "TODOS",
+  );
+  const { selectedLocal, isAllLocales } = useLocal();
+  const { handleError } = useApiToast();
   const permissions = usePermissions();
   const canCreateCompras = permissions.canCreate('compras');
 
-  const ordenesFiltradas = filtroEstado === 'TODOS' 
-    ? mockOrdenesCompra 
-    : mockOrdenesCompra.filter(oc => oc.estado === filtroEstado);
+  const ordenesQuery = useOrdenesCompra({
+    limit: 100,
+    localId: isAllLocales ? undefined : selectedLocal?.id,
+  });
+
+  if (ordenesQuery.isError) handleError(ordenesQuery.error);
+
+  const ordenes = ordenesQuery.data?.data ?? [];
+  const ordenesFiltradas = useMemo(
+    () =>
+      filtroEstado === "TODOS"
+        ? ordenes
+        : ordenes.filter((oc) => oc.estado === filtroEstado),
+    [ordenes, filtroEstado],
+  );
 
   const getEstadoBadge = (estado: EstadoOrdenCompra) => {
     const badges = {
@@ -23,7 +42,7 @@ export default function OrdenesCompraPage() {
       RECIBIDA_COMPLETA: 'bg-green-100 text-green-800',
       CANCELADA: 'bg-red-100 text-red-800'
     };
-    return badges[estado] || 'bg-gray-100 text-gray-800';
+    return badges[estado] || "bg-gray-100 text-gray-800";
   };
 
   const formatMonto = (monto: number) => {
@@ -50,7 +69,9 @@ export default function OrdenesCompraPage() {
 
       <div className="bg-white rounded-lg shadow p-4">
         <div className="flex gap-2 overflow-x-auto">
-          {(['TODOS', 'ENVIADA', 'RECIBIDA_PARCIAL', 'RECIBIDA_COMPLETA'] as const).map((estado) => (
+          {(
+            ["TODOS", "ENVIADA", "RECIBIDA_PARCIAL", "RECIBIDA_COMPLETA"] as const
+          ).map((estado) => (
             <button
               key={estado}
               onClick={() => setFiltroEstado(estado)}
@@ -62,8 +83,8 @@ export default function OrdenesCompraPage() {
             >
               {estado === 'TODOS' ? 'Todas' : estado.replace(/_/g, ' ')} ({
                 estado === 'TODOS' 
-                  ? mockOrdenesCompra.length 
-                  : mockOrdenesCompra.filter(o => o.estado === estado).length
+                  ? ordenes.length 
+                  : ordenes.filter((o) => o.estado === estado).length
               })
             </button>
           ))}
@@ -85,24 +106,54 @@ export default function OrdenesCompraPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {ordenesFiltradas.map((orden) => (
-                <tr key={orden.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{orden.numero}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{orden.proveedorNombre}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{orden.fecha}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{orden.fechaEntregaEstimada}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-right text-gray-900">{formatMonto(orden.total)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${getEstadoBadge(orden.estado)}`}>
-                      {orden.estado.replace(/_/g, ' ')}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                    <button className="text-blue-600 hover:text-blue-900 mr-2">Ver</button>
-                    <button className="text-gray-600 hover:text-gray-900">PDF</button>
+              {ordenesQuery.isLoading ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-8 text-center text-slate-500">
+                    Cargando órdenes...
                   </td>
                 </tr>
-              ))}
+              ) : ordenesFiltradas.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-8 text-center text-slate-400">
+                    No hay órdenes de compra.
+                  </td>
+                </tr>
+              ) : (
+                ordenesFiltradas.map((orden) => (
+                  <tr key={orden.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {orden.numero}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {orden.proveedor?.name ?? "-"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {orden.createdAt?.slice(0, 10) ?? "-"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {orden.fechaEntregaEstimada ?? "-"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-right text-gray-900">
+                      {formatMonto(orden.total)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${getEstadoBadge(orden.estado)}`}
+                      >
+                        {orden.estado.replace(/_/g, " ")}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                      <button className="text-blue-600 hover:text-blue-900 mr-2">
+                        Ver
+                      </button>
+                      <button className="text-gray-600 hover:text-gray-900">
+                        PDF
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

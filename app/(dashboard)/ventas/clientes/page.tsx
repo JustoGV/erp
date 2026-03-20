@@ -1,37 +1,41 @@
 "use client";
 
 import Link from "next/link";
-import {
-  Plus,
-  Search,
-  Edit,
-  Filter,
-  Download,
-  Users,
-  ChevronDown,
-} from "lucide-react";
+import { Plus, Edit, Download, Users } from "lucide-react";
 import { useLocal } from "@/contexts/LocalContext";
 import { useState } from "react";
 import { useClientes } from "@/hooks/useVentas";
 import { useApiToast } from "@/hooks/useApiToast";
+import EntitySearchBar from "@/components/EntitySearchBar";
 
 export default function ClientesPage() {
   const { selectedLocal, isAllLocales } = useLocal();
-  const [search, setSearch] = useState("");
-  const [activeFilter, setActiveFilter] = useState<"" | "true" | "false">("");
+  const [textFilter, setTextFilter] = useState({ key: "nombre", value: "" });
+  const [activeFilter, setActiveFilter] = useState("");
   const { handleError } = useApiToast();
 
   const { data, isLoading, isError, error } = useClientes({
     localId: isAllLocales ? undefined : selectedLocal?.id,
-    search: search || undefined,
     active: activeFilter === "" ? undefined : activeFilter === "true",
-    limit: 50,
+    limit: 100,
   });
 
   if (isError) handleError(error);
 
-  const clientes = data?.data ?? [];
-  const total = data?.meta?.total ?? clientes.length;
+  const allClientes = data?.data ?? [];
+  const clientes = textFilter.value
+    ? allClientes.filter((c) => {
+        const q = textFilter.value.toLowerCase();
+        switch (textFilter.key) {
+          case "codigo":   return c.code?.toLowerCase().includes(q);
+          case "taxId":    return c.taxId?.toLowerCase().includes(q);
+          case "email":    return c.email?.toLowerCase().includes(q);
+          case "telefono": return c.phone?.toLowerCase().includes(q);
+          default:         return c.name?.toLowerCase().includes(q);
+        }
+      })
+    : allClientes;
+  const total = allClientes.length;
   const activeClients = clientes.filter((c) => c.active).length;
 
   return (
@@ -58,40 +62,21 @@ export default function ClientesPage() {
       </div>
 
       {/* Filters */}
-      <div className="card">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-          <div className="flex-1 relative">
-            <Search
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"
-              size={18}
-            />
-            <input
-              type="text"
-              placeholder="Buscar por nombre, email, teléfono o CUIT..."
-              aria-label="Buscar clientes"
-              className="input pl-11"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          <button className="btn btn-secondary">
-            <Filter size={18} />
-            Filtros
-            <ChevronDown size={16} />
-          </button>
-          <select
-            className="input min-w-[160px]"
-            aria-label="Filtrar por estado"
-            value={activeFilter}
-            onChange={(e) =>
-              setActiveFilter(e.target.value as "" | "true" | "false")
-            }
-          >
-            <option value="">Todos los estados</option>
-            <option value="true">Activos</option>
-            <option value="false">Inactivos</option>
-          </select>
-        </div>
+      <div className="card p-4">
+        <EntitySearchBar
+          fields={[
+            { key: "codigo",   label: "Código",    type: "text" },
+            { key: "nombre",   label: "Nombre",    type: "text" },
+            { key: "taxId",    label: "CUIT/DNI",  type: "text" },
+            { key: "email",    label: "Email",     type: "text" },
+            { key: "telefono", label: "Teléfono",  type: "text" },
+            { key: "active",   label: "Estado",    type: "boolean" },
+          ]}
+          onSearch={(key, value) => {
+            if (key === "active") { setActiveFilter(value); setTextFilter({ key: "nombre", value: "" }); }
+            else { setTextFilter({ key, value }); setActiveFilter(""); }
+          }}
+        />
       </div>
 
       {/* Table */}

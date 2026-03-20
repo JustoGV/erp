@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Package, Plus, Search } from "lucide-react";
+import { Package, Plus } from "lucide-react";
+import EntitySearchBar from "@/components/EntitySearchBar";
 import Link from "next/link";
 import { useLocal } from "@/contexts/LocalContext";
 import { useProductos, useCategorias } from "@/hooks/useInventario";
@@ -11,19 +12,34 @@ export default function ProductosPage() {
   const { selectedLocal, isAllLocales } = useLocal();
   const localId = isAllLocales ? undefined : selectedLocal?.id;
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
+  const [textFilter, setTextFilter] = useState({ key: "nombre", value: "" });
+  const [categoriaFilter, setCategoriaFilter] = useState("");
 
   const { data, isLoading } = useProductos({
     localId,
-    page,
-    limit: 20,
-    search: search || undefined,
+    limit: 100,
+    categoriaId: categoriaFilter || undefined,
   });
   const { data: categorias } = useCategorias();
 
-  const productos = data?.data ?? [];
-  const total = data?.meta?.total ?? 0;
-  const totalPages = data?.meta?.totalPages ?? 1;
+  const allProductos = data?.data ?? [];
+  const filtered = textFilter.value
+    ? allProductos.filter((p) => {
+        const q = textFilter.value.toLowerCase();
+        switch (textFilter.key) {
+          case "codigo":  return p.code?.toLowerCase().includes(q);
+          case "precio":  return String(p.price ?? "").includes(q);
+          case "costo":   return String(p.cost ?? "").includes(q);
+          case "stock":   return String(p.stockTotal ?? "").includes(q);
+          case "estado":  return q === "true" ? p.active : q === "false" ? !p.active : true;
+          default:        return p.name?.toLowerCase().includes(q);
+        }
+      })
+    : allProductos;
+  const PAGE_SIZE = 20;
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const productos = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const total = filtered.length;
 
   return (
     <div className="space-y-6">
@@ -39,23 +55,31 @@ export default function ProductosPage() {
 
       <div className="card">
         <div className="p-4 border-b border-slate-200">
-          <div className="relative">
-            <Search
-              size={18}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-            />
-            <input
-              type="text"
-              placeholder="Buscar productos..."
-              aria-label="Buscar productos"
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-              className="input pl-10"
-            />
-          </div>
+          <EntitySearchBar
+            fields={[
+              { key: "codigo",  label: "Código",    type: "text" },
+              { key: "nombre",  label: "Nombre",    type: "text" },
+              {
+                key: "categoriaId",
+                label: "Categoría",
+                type: "select",
+                options: (categorias?.data ?? []).map((c) => ({
+                  value: c.id,
+                  label: c.name,
+                })),
+              },
+              { key: "precio",  label: "Precio",    type: "number" },
+              { key: "costo",   label: "Costo",     type: "number" },
+              { key: "stock",   label: "Stock",     type: "number" },
+              { key: "estado",  label: "Estado",    type: "boolean" },
+            ]}
+            onSearch={(key, value) => {
+              if (key === "categoriaId") { setCategoriaFilter(value); setTextFilter({ key: "nombre", value: "" }); }
+              else if (key === "estado") { setCategoriaFilter(""); setTextFilter({ key, value }); }
+              else { setTextFilter({ key, value }); setCategoriaFilter(""); }
+              setPage(1);
+            }}
+          />
         </div>
 
         <div className="table-container">

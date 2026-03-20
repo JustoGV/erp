@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { useCrearCliente } from "@/hooks/useVentas";
+import { useCliente, useActualizarCliente } from "@/hooks/useVentas";
 import { useApiToast } from "@/hooks/useApiToast";
-import { useLocal } from "@/contexts/LocalContext";
 import {
   ArrowLeft,
   Save,
@@ -14,15 +13,16 @@ import {
   Phone,
   MapPin,
   CreditCard,
-  Building2,
 } from "lucide-react";
 
-export default function NuevoClientePage() {
+export default function EditarClientePage() {
+  const params = useParams();
+  const id = params.id as string;
   const router = useRouter();
-  const { selectedLocal, isAllLocales } = useLocal();
   const { handleError, handleSuccess } = useApiToast();
-  const crearCliente = useCrearCliente();
-  const [loading, setLoading] = useState(false);
+  const { data, isLoading, isError, error } = useCliente(id);
+  const actualizarCliente = useActualizarCliente();
+
   const [formData, setFormData] = useState({
     name: "",
     taxId: "",
@@ -31,52 +31,29 @@ export default function NuevoClientePage() {
     address: "",
     city: "",
     state: "",
-    postalCode: "",
-    country: "Argentina",
     creditLimit: 0,
     active: true,
-    localId: "",
   });
 
-  // Sincronizar el localId del form con el local seleccionado en el header
   useEffect(() => {
-    console.log("[Local seleccionado]", selectedLocal);
-    if (selectedLocal?.id) {
-      console.log("[localId que se enviará]", selectedLocal.id);
-      setFormData((prev) => ({ ...prev, localId: selectedLocal.id }));
-    }
-  }, [selectedLocal?.id]);
+    if (isError) handleError(error);
+  }, [isError, error, handleError]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!formData.localId) {
-      handleError(new Error("Selecciona un local antes de crear un cliente."));
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      await crearCliente.mutateAsync({
-        name: formData.name,
-        taxId: formData.taxId || undefined,
-        email: formData.email || undefined,
-        phone: formData.phone || undefined,
-        address: formData.address || undefined,
-        city: formData.city || undefined,
-        state: formData.state || undefined,
-        creditLimit: Number(formData.creditLimit) || 0,
-        localId: formData.localId,
-      });
-      handleSuccess("Cliente creado", "El cliente fue guardado correctamente.");
-      router.push("/ventas/clientes");
-    } catch (err) {
-      handleError(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    const cliente = data?.data;
+    if (!cliente) return;
+    setFormData({
+      name: cliente.name,
+      taxId: cliente.taxId ?? "",
+      email: cliente.email ?? "",
+      phone: cliente.phone ?? "",
+      address: cliente.address ?? "",
+      city: cliente.city ?? "",
+      state: cliente.state ?? "",
+      creditLimit: cliente.creditLimit ?? 0,
+      active: cliente.active,
+    });
+  }, [data]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -84,9 +61,46 @@ export default function NuevoClientePage() {
     const { name, value, type } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "number" ? parseFloat(value) : value,
+      [name]:
+        type === "number"
+          ? parseFloat(value)
+          : type === "checkbox"
+            ? (e.target as HTMLInputElement).checked
+            : value,
     }));
   };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await actualizarCliente.mutateAsync({
+        id,
+        dto: {
+          name: formData.name,
+          taxId: formData.taxId || undefined,
+          email: formData.email || undefined,
+          phone: formData.phone || undefined,
+          address: formData.address || undefined,
+          city: formData.city || undefined,
+          state: formData.state || undefined,
+          creditLimit: Number(formData.creditLimit) || 0,
+          active: formData.active,
+        },
+      });
+      handleSuccess("Cliente actualizado", "Los cambios fueron guardados.");
+      router.push("/ventas/clientes");
+    } catch (err) {
+      handleError(err);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20 text-slate-500">
+        Cargando cliente...
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -99,25 +113,17 @@ export default function NuevoClientePage() {
           <ArrowLeft size={24} />
         </Link>
         <div className="flex-1">
-          <h1 className="text-3xl font-bold text-slate-900">Nuevo Cliente</h1>
-          <p className="text-slate-600 mt-1">
-            Completa los datos del nuevo cliente
-          </p>
+          <h1 className="text-3xl font-bold text-slate-900">Editar Cliente</h1>
+          {data?.data.code && (
+            <p className="text-slate-500 mt-1 text-sm">
+              Código: <span className="font-mono font-semibold text-slate-700">{data.data.code}</span>
+              <span className="ml-2 text-xs text-slate-400">(generado automáticamente)</span>
+            </p>
+          )}
         </div>
       </div>
 
-      {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Aviso de local */}
-        {isAllLocales ? (
-          <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-            ⚠ Tenés seleccionado <strong>Todos los locales</strong> en el encabezado. Seleccioná un local específico para poder crear un cliente.
-          </div>
-        ) : selectedLocal ? (
-          <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
-            Local asignado: <strong>{selectedLocal.name}</strong>
-          </div>
-        ) : null}
         {/* Información Básica */}
         <div className="card">
           <div className="card-header">
@@ -131,6 +137,16 @@ export default function NuevoClientePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
+              <label className="label">Código (solo lectura)</label>
+              <input
+                type="text"
+                value={data?.data.code ?? ""}
+                readOnly
+                className="input bg-slate-50 text-slate-500 cursor-not-allowed font-mono"
+              />
+            </div>
+
+            <div>
               <label className="label">Nombre / Razón Social *</label>
               <input
                 type="text"
@@ -139,7 +155,6 @@ export default function NuevoClientePage() {
                 onChange={handleChange}
                 required
                 className="input"
-                placeholder="Empresa ABC S.A."
               />
             </div>
 
@@ -156,11 +171,14 @@ export default function NuevoClientePage() {
             </div>
 
             <div>
-              <label className="label">Límite de Crédito</label>
+              <label className="label">
+                <CreditCard size={16} className="inline mr-1" />
+                Límite de Crédito
+              </label>
               <div className="relative">
-                <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-500">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">
                   $
-                </div>
+                </span>
                 <input
                   type="number"
                   name="creditLimit"
@@ -169,21 +187,34 @@ export default function NuevoClientePage() {
                   className="input pl-8"
                   step="0.01"
                   min="0"
-                  placeholder="0.00"
                 />
               </div>
+            </div>
+
+            <div className="flex items-center gap-3 pt-6">
+              <input
+                type="checkbox"
+                id="active"
+                name="active"
+                checked={formData.active}
+                onChange={handleChange}
+                className="w-4 h-4 accent-blue-600"
+              />
+              <label htmlFor="active" className="label mb-0 cursor-pointer">
+                Cliente activo
+              </label>
             </div>
           </div>
         </div>
 
-        {/* Información de Contacto */}
+        {/* Contacto */}
         <div className="card">
           <div className="card-header">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg">
                 <Mail size={20} />
               </div>
-              <h3 className="card-title">Información de Contacto</h3>
+              <h3 className="card-title">Contacto</h3>
             </div>
           </div>
 
@@ -209,12 +240,12 @@ export default function NuevoClientePage() {
                 Teléfono
               </label>
               <input
-                type="text"
+                type="tel"
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
                 className="input"
-                placeholder="11-4444-5555"
+                placeholder="+54 11 1234-5678"
               />
             </div>
           </div>
@@ -231,8 +262,8 @@ export default function NuevoClientePage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="md:col-span-2">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="md:col-span-3">
               <label className="label">Dirección</label>
               <input
                 type="text"
@@ -264,44 +295,20 @@ export default function NuevoClientePage() {
                 value={formData.state}
                 onChange={handleChange}
                 className="input"
-                placeholder="Buenos Aires"
-              />
-            </div>
-
-            <div>
-              <label className="label">Código Postal</label>
-              <input
-                type="text"
-                name="postalCode"
-                value={formData.postalCode}
-                onChange={handleChange}
-                className="input"
-                placeholder="1000"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="country" className="label">
-                País
-              </label>
-              <input
-                id="country"
-                type="text"
-                name="country"
-                value={formData.country}
-                onChange={handleChange}
-                className="input"
-                placeholder="Argentina"
+                placeholder="CABA"
               />
             </div>
           </div>
         </div>
 
-        {/* Actions */}
         <div className="flex items-center gap-4">
-          <button type="submit" disabled={loading} className="btn btn-primary">
+          <button
+            type="submit"
+            disabled={actualizarCliente.isPending}
+            className="btn btn-primary"
+          >
             <Save size={18} />
-            {loading ? "Guardando..." : "Guardar Cliente"}
+            {actualizarCliente.isPending ? "Guardando..." : "Guardar Cambios"}
           </button>
           <Link href="/ventas/clientes" className="btn btn-secondary">
             Cancelar

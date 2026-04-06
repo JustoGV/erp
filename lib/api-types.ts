@@ -18,6 +18,7 @@ export interface PaginatedResponse<T> {
 
 // Roles del backend (deben coincidir exactamente con el enum del backend)
 export type UserRole =
+  | "Super"
   | "Administrador"
   | "Gerente"
   | "Vendedor"
@@ -107,6 +108,7 @@ export interface CreateLocalDto {
   phone?: string;
   email?: string;
   manager?: string;
+  empresaId?: string;
 }
 
 export interface UpdateLocalDto extends Partial<CreateLocalDto> {
@@ -132,6 +134,7 @@ export interface CreateUsuarioDto {
   password: string;
   rol: UserRole;
   localId?: string;
+  empresaId?: string;
 }
 
 export interface UpdateUsuarioDto {

@@ -28,6 +28,7 @@ const NONE: Permission = {
 };
 
 const ROLE_PERMISSIONS: Record<UserRole, Record<string, Permission>> = {
+  Super: { default: FULL },
   Administrador: { default: FULL },
   Gerente: {
     default: { ...FULL, canDelete: false },
@@ -113,6 +114,7 @@ export const usePermissions = () => {
     canEdit,
     canDelete,
     getModulePermissions,
-    isAdmin: user?.rol === "Administrador",
+    isAdmin: user?.rol === "Administrador" || user?.rol === "Super",
+    isSuper: user?.rol === "Super",
   };
 };

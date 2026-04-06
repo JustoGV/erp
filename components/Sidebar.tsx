@@ -40,6 +40,7 @@ interface MenuItem {
   label: string;
   color: string;
   module: string;
+  superOnly?: boolean;
   subItems?: SubMenuItem[];
 }
 
@@ -156,16 +157,29 @@ const allMenuItems: MenuItem[] = [
       { href: '/configuracion/empresa', label: 'Empresa' },
     ]
   },
+  {
+    icon: Building2,
+    label: 'Empresas',
+    color: 'text-violet-500',
+    module: 'empresas',
+    superOnly: true,
+    subItems: [
+      { href: '/empresas', label: 'Lista de empresas' },
+    ]
+  },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set());
-  const { hasAccess } = usePermissions();
+  const { hasAccess, isSuper } = usePermissions();
 
   // Filtrar menú según permisos del usuario
-  const menuItems = allMenuItems.filter(item => hasAccess(item.module));
+  const menuItems = allMenuItems.filter(item => {
+    if (item.superOnly) return isSuper;
+    return hasAccess(item.module);
+  });
 
   const toggleMenu = (label: string) => {
     const newExpanded = new Set(expandedMenus);

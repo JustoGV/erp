@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { localesService } from "@/lib/services/config.service";
+import { useAuth } from "@/contexts/AuthContext";
 import type { Local } from "@/lib/api-types";
 
 interface LocalContextType {
@@ -17,10 +18,12 @@ const LocalContext = createContext<LocalContextType | undefined>(undefined);
 
 export function LocalProvider({ children }: { children: React.ReactNode }) {
   const [selectedLocal, setSelectedLocalState] = useState<Local | null>(null);
+  const { user } = useAuth();
 
   const { data, isLoading } = useQuery({
-    queryKey: ["locales", "all"],
-    queryFn: () => localesService.getAll({ limit: 100 }),
+    queryKey: ["locales", "all", user?.empresaId],
+    queryFn: () => localesService.getAll({ limit: 100, empresaId: user?.empresaId }),
+    enabled: !!user,
   });
 
   const locales = data?.data ?? [];

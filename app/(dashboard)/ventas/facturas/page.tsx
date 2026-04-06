@@ -54,7 +54,7 @@ export default function FacturasPage() {
         switch (textFilter.key) {
           case "cliente":     return f.cliente?.name?.toLowerCase().includes(q);
           case "fecha":       return f.fecha?.includes(textFilter.value);
-          case "vencimiento": return f.vencimiento?.includes(textFilter.value);          case "total":       return String(f.total ?? "").includes(q);
+          case "vencimiento": return f.fechaVencimiento?.includes(textFilter.value);          case "total":       return String(f.total ?? "").includes(q);
           case "estado":      return f.estado?.toLowerCase().includes(q);          default:            return f.numero?.toLowerCase().includes(q);
         }
       })

@@ -21,11 +21,11 @@ export type UserRole =
   | "Administrador"
   | "Gerente"
   | "Vendedor"
-  | "Comprador"
+  | "Inventario"
   | "Contador"
   | "RRHH"
   | "Produccion"
-  | "Viewer";
+  | "SoloLectura";
 
 export interface AuthUser {
   id: string;
@@ -171,6 +171,7 @@ export interface Categoria {
   active: boolean;
   empresaId: string;
   createdAt: string;
+  _count?: { productos: number };
 }
 
 export interface CreateCategoriaDto {
@@ -196,6 +197,7 @@ export interface Producto {
   empresaId: string;
   categoriaId?: string | null;
   categoria?: Pick<Categoria, "id" | "name"> | null;
+  stock?: Array<{ cantidad: number; localId: string; depositoId?: string }>;
   stockTotal?: number;
   alertaStockBajo?: boolean;
   createdAt: string;
@@ -238,6 +240,8 @@ export interface Deposito {
   localId: string;
   empresaId: string;
   createdAt: string;
+  local?: { id: string; name: string };
+  _count?: { stock: number };
 }
 
 export interface CreateDepositoDto {
@@ -279,15 +283,28 @@ export interface StockPorProducto {
 }
 
 export interface AlertaStock {
+  id?: string;
   productoId: string;
-  productoCodigo: string;
   productoNombre: string;
+  productoCodigo: string;
   localId: string;
   localNombre: string;
   stockActual: number;
   stockMinimo: number;
-  unidad: string;
   diferencia: number;
+  unidad: string;
+  criticidad: "ADVERTENCIA" | "CRITICO";
+  // legacy fields (por compatibilidad)
+  cantidad?: number;
+  deficit?: number;
+  producto?: {
+    id: string;
+    code: string;
+    name: string;
+    minStock: number;
+    unit: string;
+  };
+  local?: { id: string; name: string };
 }
 
 export interface AjusteStockDto {
@@ -307,13 +324,14 @@ export interface TransferenciaStockDto {
 
 export interface MovimientoStock {
   id: string;
+  fecha?: string;
   tipo: TipoMovimientoStock;
   cantidad: number;
   productoId: string;
   localId: string;
   depositoId?: string | null;
   empresaId: string;
-  usuarioId: string;
+  usuarioId?: string;
   observaciones?: string | null;
   referencia?: string | null;
   createdAt: string;
@@ -765,7 +783,10 @@ export interface ItemRecepcion {
   id: string;
   recepcionId: string;
   itemOrdenCompraId: string;
+  descripcion: string;
+  cantidadOrdenada: number;
   cantidadRecibida: number;
+  cantidadAceptada: number;
   cantidadRechazada: number;
   motivoRechazo?: string;
   observaciones?: string;
@@ -775,17 +796,19 @@ export interface RecepcionCompra {
   id: string;
   empresaId: string;
   localId: string;
+  numero: string;
   ordenCompraId: string;
-  nroRemito?: string;
-  fecha: string;
+  fechaRecepcion: string;
   observaciones?: string;
-  creadoPor: string;
+  recibidoPor: string;
+  conformidad: boolean;
   createdAt: string;
   items?: ItemRecepcion[];
   ordenCompra?: {
     id: string;
     numero: string;
     proveedor?: { id: string; name: string };
+    items?: { id: string; descripcion: string; cantidad: number; cantidadRecibida: number; unidad: string }[];
   };
 }
 

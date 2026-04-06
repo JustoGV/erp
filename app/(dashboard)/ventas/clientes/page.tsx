@@ -1,18 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { Plus, Edit, Download, Users } from "lucide-react";
+import { Plus, Edit, Users, Ban, FileUp } from "lucide-react";
 import { useLocal } from "@/contexts/LocalContext";
-import { useState } from "react";
-import { useClientes } from "@/hooks/useVentas";
+import { useEffect, useState } from "react";
+import { useClientes, useCrearCliente, useActualizarCliente } from "@/hooks/useVentas";
 import { useApiToast } from "@/hooks/useApiToast";
+import { usePermissions } from "@/hooks/usePermissions";
+import Modal from "@/components/Modal";
+import ImportExcelModal from "@/components/ImportExcelModal";
 import EntitySearchBar from "@/components/EntitySearchBar";
 
 export default function ClientesPage() {
   const { selectedLocal, isAllLocales } = useLocal();
   const [textFilter, setTextFilter] = useState({ key: "nombre", value: "" });
-  const [activeFilter, setActiveFilter] = useState("");
-  const { handleError } = useApiToast();
+  const [activeFilter, setActiveFilter] = useState("true");
+  const [confirmBajaItem, setConfirmBajaItem] = useState<{ id: string; name: string } | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
+  const { handleError, handleSuccess } = useApiToast();
+  const { isAdmin } = usePermissions();
+  const actualizarCliente = useActualizarCliente();
+  const crearCliente = useCrearCliente();
 
   const { data, isLoading, isError, error } = useClientes({
     localId: isAllLocales ? undefined : selectedLocal?.id,
@@ -20,7 +28,9 @@ export default function ClientesPage() {
     limit: 100,
   });
 
-  if (isError) handleError(error);
+  useEffect(() => {
+    if (isError) handleError(error);
+  }, [isError, error, handleError]);
 
   const allClientes = data?.data ?? [];
   const clientes = textFilter.value
@@ -50,10 +60,11 @@ export default function ClientesPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="btn btn-secondary">
-            <Download size={18} />
-            Exportar
-          </button>
+          {isAdmin && (
+            <button onClick={() => setImportOpen(true)} className="btn btn-sm flex items-center gap-1.5">
+              <FileUp size={16} /> Importar
+            </button>
+          )}
           <Link href="/ventas/clientes/nuevo" className="btn btn-primary">
             <Plus size={18} />
             Nuevo Cliente
@@ -139,7 +150,7 @@ export default function ClientesPage() {
                       {cliente.active ? "Activo" : "Inactivo"}
                     </span>
                   </td>
-                  <td>
+                    <td>
                     <div className="flex items-center justify-end gap-1">
                       <Link
                         href={`/ventas/clientes/${cliente.id}`}
@@ -148,8 +159,17 @@ export default function ClientesPage() {
                       >
                         <Edit size={16} />
                       </Link>
+                      {isAdmin && cliente.active && (
+                        <button
+                          onClick={() => setConfirmBajaItem({ id: cliente.id, name: cliente.name })}
+                          className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                          title="Dar de baja"
+                        >
+                          <Ban size={16} />
+                        </button>
+                      )}
                     </div>
-                  </td>
+                    </td>
                 </tr>
               ))
             )}
@@ -175,6 +195,61 @@ export default function ClientesPage() {
           </button>
         </div>
       </div>
+
+      {/* Confirm Dar de Baja */}
+      <Modal open={!!confirmBajaItem} title="Dar de baja" onClose={() => setConfirmBajaItem(null)}>
+        <div className="space-y-4">
+          <p className="text-slate-700">
+            ¿Dar de baja al cliente <strong>{confirmBajaItem?.name}</strong>? Dejará de aparecer en los listados.
+          </p>
+          <div className="flex justify-end gap-3">
+            <button type="button" className="btn btn-secondary" onClick={() => setConfirmBajaItem(null)} disabled={actualizarCliente.isPending}>
+              Cancelar
+            </button>
+            <button
+              type="button"
+              className="btn btn-danger"
+              disabled={actualizarCliente.isPending}
+              onClick={() => {
+                if (!confirmBajaItem) return;
+                actualizarCliente.mutate(
+                  { id: confirmBajaItem.id, dto: { active: false } },
+                  {
+                    onSuccess: () => { handleSuccess("Cliente dado de baja correctamente"); setConfirmBajaItem(null); },
+                    onError: () => setConfirmBajaItem(null),
+                  },
+                );
+              }}
+            >
+              {actualizarCliente.isPending ? "Procesando..." : "Dar de baja"}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Import Excel */}
+      <ImportExcelModal
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        entityName="Cliente"
+        templateFileName="plantilla_clientes.xlsx"
+        columns={[
+          { key: "name",        label: "Nombre",      required: true,  type: "string", example: "Empresa SA" },
+          { key: "taxId",       label: "CUIT/DNI",    required: false, type: "string", example: "20-12345678-9" },
+          { key: "email",       label: "Email",       required: false, type: "string", example: "info@empresa.com" },
+          { key: "phone",       label: "Teléfono",    required: false, type: "string", example: "1112345678" },
+          { key: "address",     label: "Dirección",   required: false, type: "string", example: "Av. Corrientes 123" },
+          { key: "creditLimit", label: "Límite Crédito", required: false, type: "number", example: "50000" },
+        ]}
+        onImport={async (rows) => {
+          await new Promise<void>((resolve, reject) => {
+            crearCliente.mutate(
+              { ...rows[0], localId: selectedLocal?.id } as unknown as Parameters<typeof crearCliente.mutate>[0],
+              { onSuccess: () => resolve(), onError: reject },
+            );
+          });
+        }}
+      />
     </div>
   );
 }

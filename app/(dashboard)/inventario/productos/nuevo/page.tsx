@@ -3,47 +3,64 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  Save,
-  Package,
-  Tags,
-  DollarSign,
-  Ruler,
-} from "lucide-react";
+import { ArrowLeft, Save, Package } from "lucide-react";
+import { useCreateProducto, useCategorias } from "@/hooks/useInventario";
+import { useApiToast } from "@/hooks/useApiToast";
+import type { TipoProducto } from "@/lib/api-types";
+
+const TIPOS: { value: TipoProducto; label: string }[] = [
+  { value: "TERMINADO", label: "Producto Terminado" },
+  { value: "SEMI_TERMINADO", label: "Semi Terminado" },
+  { value: "MATERIA_PRIMA", label: "Materia Prima" },
+  { value: "INSUMO", label: "Insumo" },
+];
+
+const UNIDADES = ["UNI", "KG", "LT", "MT", "CM", "M2", "DOC", "CJA", "PKT"];
 
 export default function NuevoProductoPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    sku: "",
+  const { handleError, handleSuccess } = useApiToast();
+  const createProducto = useCreateProducto();
+  const { data: categoriasData } = useCategorias({ limit: 100 });
+  const categorias = categoriasData?.data ?? [];
+
+  const [form, setForm] = useState({
+    code: "",
     name: "",
-    category: "",
-    unit: "Unidad",
-    price: 0,
-    stockMin: 0,
+    description: "",
+    tipo: "TERMINADO" as TipoProducto,
+    unit: "UNI",
+    cost: "",
+    price: "",
+    minStock: "0",
+    categoriaId: "",
   });
+
+  const set = (field: string, value: string) =>
+    setForm((prev) => ({ ...prev, [field]: value }));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-
-    setTimeout(() => {
-      console.log("Producto guardado:", formData);
-      alert("✅ Producto creado exitosamente");
-      setLoading(false);
-      router.push("/inventario/productos");
-    }, 500);
-  };
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  ) => {
-    const { name, value, type } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "number" ? parseFloat(value) : value,
-    }));
+    createProducto.mutate(
+      {
+        code: form.code,
+        name: form.name,
+        description: form.description || undefined,
+        tipo: form.tipo,
+        unit: form.unit,
+        cost: parseFloat(form.cost),
+        price: parseFloat(form.price),
+        minStock: parseInt(form.minStock, 10),
+        categoriaId: form.categoriaId || undefined,
+      },
+      {
+        onSuccess: () => {
+          handleSuccess("Producto creado exitosamente");
+          router.push("/inventario/productos");
+        },
+        onError: handleError,
+      },
+    );
   };
 
   return (
@@ -57,9 +74,7 @@ export default function NuevoProductoPage() {
         </Link>
         <div className="flex-1">
           <h1 className="text-3xl font-bold text-slate-900">Nuevo Producto</h1>
-          <p className="text-slate-600 mt-1">
-            Define los datos principales del producto
-          </p>
+          <p className="text-slate-600 mt-1">Define los datos del producto</p>
         </div>
       </div>
 
@@ -76,15 +91,15 @@ export default function NuevoProductoPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="label">SKU *</label>
+              <label className="label">Código *</label>
               <input
                 type="text"
-                name="sku"
-                value={formData.sku}
-                onChange={handleChange}
+                value={form.code}
+                onChange={(e) => set("code", e.target.value)}
                 required
+                maxLength={30}
                 className="input"
-                placeholder="SKU-001"
+                placeholder="PROD-001"
               />
             </div>
 
@@ -92,86 +107,125 @@ export default function NuevoProductoPage() {
               <label className="label">Nombre *</label>
               <input
                 type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
+                value={form.name}
+                onChange={(e) => set("name", e.target.value)}
+                required
+                maxLength={150}
+                className="input"
+                placeholder="Nombre del producto"
+              />
+            </div>
+
+            <div>
+              <label className="label">Tipo *</label>
+              <select
+                value={form.tipo}
+                onChange={(e) => set("tipo", e.target.value)}
                 required
                 className="input"
-                placeholder="Producto ABC"
-              />
-            </div>
-
-            <div>
-              <label className="label">
-                <Tags size={16} className="inline mr-1" />
-                Categoría
-              </label>
-              <input
-                type="text"
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
-                className="input"
-                placeholder="Insumos"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="unit" className="label">
-                <Ruler size={16} className="inline mr-1" />
-                Unidad de Medida
-              </label>
-              <select
-                id="unit"
-                name="unit"
-                value={formData.unit}
-                onChange={handleChange}
-                className="input"
               >
-                <option>Unidad</option>
-                <option>Caja</option>
-                <option>Kg</option>
-                <option>Litro</option>
+                {TIPOS.map((t) => (
+                  <option key={t.value} value={t.value}>
+                    {t.label}
+                  </option>
+                ))}
               </select>
             </div>
 
             <div>
-              <label className="label">
-                <DollarSign size={16} className="inline mr-1" />
-                Precio de Venta
-              </label>
+              <label className="label">Categoría</label>
+              <select
+                value={form.categoriaId}
+                onChange={(e) => set("categoriaId", e.target.value)}
+                className="input"
+              >
+                <option value="">Sin categoría</option>
+                {categorias.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="label">Unidad de Medida *</label>
+              <select
+                value={form.unit}
+                onChange={(e) => set("unit", e.target.value)}
+                required
+                className="input"
+              >
+                {UNIDADES.map((u) => (
+                  <option key={u} value={u}>
+                    {u}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="label">Stock Mínimo *</label>
               <input
                 type="number"
-                name="price"
-                value={formData.price}
-                onChange={handleChange}
+                value={form.minStock}
+                onChange={(e) => set("minStock", e.target.value)}
+                required
+                min="0"
                 className="input"
+              />
+            </div>
+
+            <div>
+              <label className="label">Costo *</label>
+              <input
+                type="number"
+                value={form.cost}
+                onChange={(e) => set("cost", e.target.value)}
+                required
                 min="0"
                 step="0.01"
+                className="input"
                 placeholder="0.00"
               />
             </div>
 
             <div>
-              <label className="label">Stock Mínimo</label>
+              <label className="label">Precio de Venta *</label>
               <input
                 type="number"
-                name="stockMin"
-                value={formData.stockMin}
-                onChange={handleChange}
-                className="input"
+                value={form.price}
+                onChange={(e) => set("price", e.target.value)}
+                required
                 min="0"
-                step="1"
-                placeholder="0"
+                step="0.01"
+                className="input"
+                placeholder="0.00"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="label">Descripción</label>
+              <textarea
+                value={form.description}
+                onChange={(e) => set("description", e.target.value)}
+                maxLength={500}
+                rows={3}
+                className="input"
+                placeholder="Descripción opcional del producto"
               />
             </div>
           </div>
         </div>
 
         <div className="flex items-center gap-4">
-          <button type="submit" disabled={loading} className="btn btn-primary">
+          <button
+            type="submit"
+            disabled={createProducto.isPending}
+            className="btn btn-primary"
+          >
             <Save size={18} />
-            {loading ? "Guardando..." : "Guardar Producto"}
+            {createProducto.isPending ? "Guardando..." : "Guardar Producto"}
           </button>
           <Link href="/inventario/productos" className="btn btn-secondary">
             Cancelar

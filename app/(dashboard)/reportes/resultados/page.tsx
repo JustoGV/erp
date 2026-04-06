@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Printer } from "lucide-react";
 import { useReporteResultados } from "@/hooks/useReportes";
 
 export default function ReporteResultadosPage() {
@@ -21,9 +22,20 @@ export default function ReporteResultadosPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Estado de Resultados</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Estado de Resultados</h1>
+        <button onClick={() => window.print()} className="no-print btn btn-secondary">
+          <Printer size={16} /> Imprimir PDF
+        </button>
+      </div>
 
-      <div className="card flex gap-4 items-end flex-wrap">
+      {r && (
+        <div className="print-title hidden border-b pb-3 mb-2">
+          <p className="text-xs text-gray-500">Período: {r.periodo.desde} — {r.periodo.hasta}</p>
+        </div>
+      )}
+
+      <div className="no-print card flex gap-4 items-end flex-wrap">
         <div>
           <label htmlFor="resultados-desde" className="label">
             Desde

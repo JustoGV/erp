@@ -13,19 +13,30 @@ import { useLocal } from "@/contexts/LocalContext";
 import { useDashboardKPIs } from "@/hooks/useReportes";
 import { useFacturas } from "@/hooks/useVentas";
 import { useAlertasStock } from "@/hooks/useInventario";
+import { useOrdenesCompra } from "@/hooks/useCompras";
 
 export default function DashboardPage() {
   const { selectedLocal, isAllLocales } = useLocal();
   const localId = isAllLocales ? undefined : selectedLocal?.id;
 
-  const { data: kpisData, isLoading: loadingKpis } = useDashboardKPIs();
+  const { data: kpisData, isLoading: loadingKpis } = useDashboardKPIs(localId);
   const { data: facturasData, isLoading: loadingFacturas } = useFacturas({ localId, limit: 4 });
   const { data: alertas, isLoading: loadingAlertas } = useAlertasStock(localId);
+  const { data: ordenesData } = useOrdenesCompra({ localId, limit: 100 });
 
   const kpis = kpisData?.data;
   const facturas = facturasData?.data ?? [];
   const alertasList = alertas ?? [];
   const isLoading = loadingKpis;
+
+  // Calcular compras del mes actual (mes calendario) desde las órdenes reales
+  const now = new Date();
+  const mesActual = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0");
+  const ordenesMes = (ordenesData?.data ?? []).filter(
+    (o) => (o.createdAt ?? "").startsWith(mesActual) && o.estado !== "CANCELADA"
+  );
+  const comprasMesTotal = ordenesMes.reduce((acc, o) => acc + (parseFloat(String(o.total ?? 0))), 0);
+  const comprasMesCantidad = ordenesMes.length;
 
   const localName = isAllLocales ? "Todos los locales" : selectedLocal?.name || "";
 
@@ -65,8 +76,8 @@ export default function DashboardPage() {
           />
           <StatCard
             title="Compras del Mes"
-            value={`$${(kpis?.comprasMes?.total ?? 0).toLocaleString()}`}
-            subtitle={`${kpis?.comprasMes?.cantidad ?? 0} órdenes`}
+            value={`$${comprasMesTotal.toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+            subtitle={`${comprasMesCantidad} órdenes`}
             icon={<ShoppingCart size={24} />}
             gradient="from-blue-500 to-blue-600"
           />
@@ -103,7 +114,7 @@ export default function DashboardPage() {
                 <tr>
                   <th>Nº</th>
                   <th>Cliente</th>
-                  <th>Monto</th>
+                  <th className="text-right">Monto</th>
                   <th>Estado</th>
                 </tr>
               </thead>
@@ -117,7 +128,7 @@ export default function DashboardPage() {
                     <tr key={f.id} className="table-row-hover">
                       <td className="font-mono text-xs">{f.numero}</td>
                       <td className="font-medium">{f.cliente?.name ?? "—"}</td>
-                      <td className="font-semibold">${f.total?.toLocaleString()}</td>
+                      <td className="text-right font-semibold">${f.total?.toLocaleString()}</td>
                       <td><FacturaEstado estado={f.estado} /></td>
                     </tr>
                   ))
@@ -139,17 +150,27 @@ export default function DashboardPage() {
             ) : alertasList.length === 0 ? (
               <p className="text-center py-10 text-slate-400">Sin alertas de stock.</p>
             ) : (
-              alertasList.slice(0, 5).map((a, i) => (
-                <div key={i} className="flex items-start gap-3 p-4 rounded-xl border bg-amber-50 border-amber-200">
-                  <div className="p-2 rounded-lg bg-amber-100">
-                    <AlertTriangle size={18} className="text-amber-500" />
+              alertasList.slice(0, 5).map((a, i) => {
+                const esCritico = a.criticidad === "CRITICO";
+                return (
+                  <div key={i} className={`flex items-start gap-3 p-4 rounded-xl border ${esCritico ? "bg-red-50 border-red-200" : "bg-amber-50 border-amber-200"}`}>
+                    <div className={`p-2 rounded-lg ${esCritico ? "bg-red-100" : "bg-amber-100"}`}>
+                      <AlertTriangle size={18} className={esCritico ? "text-red-500" : "text-amber-500"} />
+                    </div>
+                    <div className="flex-1">
+                      <p className={`text-sm font-medium ${esCritico ? "text-red-800" : "text-amber-800"}`}>
+                        {a.productoNombre ?? "—"}
+                        <span className={`ml-2 text-xs font-normal px-1.5 py-0.5 rounded ${esCritico ? "bg-red-100 text-red-600" : "bg-amber-100 text-amber-600"}`}>
+                          {a.criticidad}
+                        </span>
+                      </p>
+                      <p className={`text-xs ${esCritico ? "text-red-600" : "text-amber-600"}`}>
+                        {a.localNombre ?? "—"} — Stock: {a.stockActual} {a.unidad} / Mín: {a.stockMinimo}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-amber-800 font-medium">{a.productoNombre}</p>
-                    <p className="text-xs text-amber-600">{a.localNombre} — Stock: {a.stockActual} / Mín: {a.stockMinimo}</p>
-                  </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </div>

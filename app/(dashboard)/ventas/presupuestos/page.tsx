@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { FileSpreadsheet, Plus, ArrowRightCircle, ChevronDown } from "lucide-react";
 import EntitySearchBar from "@/components/EntitySearchBar";
 import Link from "next/link";
@@ -28,6 +29,30 @@ export default function PresupuestosPage() {
   const [page, setPage] = useState(1);
   const [textFilter, setTextFilter] = useState({ key: "numero", value: "" });
   const { handleError, handleSuccess } = useApiToast();
+
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [dropdownPos, setDropdownPos] = useState({ top: 0, right: 0 });
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const handleToggleDropdown = (id: string, btn: HTMLButtonElement) => {
+    if (openDropdown === id) {
+      setOpenDropdown(null);
+      return;
+    }
+    const rect = btn.getBoundingClientRect();
+    setDropdownPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right });
+    setOpenDropdown(id);
+  };
+
+  useEffect(() => {
+    function handleOutsideClick(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setOpenDropdown(null);
+      }
+    }
+    if (openDropdown) document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, [openDropdown]);
 
   const convertir = useConvertirPresupuesto();
   const cambiarEstado = useCambiarEstadoPresupuesto();
@@ -174,43 +199,51 @@ export default function PresupuestosPage() {
                             </button>
                           )}
                           {(p.estado === "BORRADOR" || p.estado === "ENVIADO") && (
-                            <div className="relative group">
+                            <div className="relative">
                               <button
+                                onClick={(e) => handleToggleDropdown(p.id, e.currentTarget)}
                                 className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
                                 title="Cambiar estado"
                               >
                                 <ChevronDown size={14} /> Estado
                               </button>
-                              <div className="absolute right-0 top-full mt-1 w-36 bg-white border border-slate-200 rounded-lg shadow-lg z-10 hidden group-focus-within:block group-hover:block">
-                                {p.estado === "BORRADOR" && (
-                                  <button
-                                    onClick={() => handleCambiarEstado(p.id, "ENVIADO")}
-                                    disabled={isPending}
-                                    className="w-full text-left px-3 py-2 text-xs hover:bg-slate-50 text-slate-700"
-                                  >
-                                    Marcar Enviado
-                                  </button>
-                                )}
-                                {p.estado === "ENVIADO" && (
-                                  <>
-                                    <button
-                                      onClick={() => handleCambiarEstado(p.id, "APROBADO")}
-                                      disabled={isPending}
-                                      className="w-full text-left px-3 py-2 text-xs hover:bg-slate-50 text-emerald-700"
-                                    >
-                                      Aprobar
-                                    </button>
-                                    <button
-                                      onClick={() => handleCambiarEstado(p.id, "RECHAZADO")}
-                                      disabled={isPending}
-                                      className="w-full text-left px-3 py-2 text-xs hover:bg-slate-50 text-red-600"
-                                    >
-                                      Rechazar
-                                    </button>
-                                  </>
-                                )}
-                              </div>
                             </div>
+                          )}
+                          {openDropdown === p.id && typeof window !== "undefined" && createPortal(
+                            <div
+                              ref={dropdownRef}
+                              style={{ position: "fixed", top: dropdownPos.top, right: dropdownPos.right }}
+                              className="w-36 bg-white border border-slate-200 rounded-lg shadow-lg z-[9999]"
+                            >
+                              {p.estado === "BORRADOR" && (
+                                <button
+                                  onClick={() => { handleCambiarEstado(p.id, "ENVIADO"); setOpenDropdown(null); }}
+                                  disabled={isPending}
+                                  className="w-full text-left px-3 py-2 text-xs hover:bg-slate-50 text-slate-700"
+                                >
+                                  Marcar Enviado
+                                </button>
+                              )}
+                              {p.estado === "ENVIADO" && (
+                                <>
+                                  <button
+                                    onClick={() => { handleCambiarEstado(p.id, "APROBADO"); setOpenDropdown(null); }}
+                                    disabled={isPending}
+                                    className="w-full text-left px-3 py-2 text-xs hover:bg-slate-50 text-emerald-700"
+                                  >
+                                    Aprobar
+                                  </button>
+                                  <button
+                                    onClick={() => { handleCambiarEstado(p.id, "RECHAZADO"); setOpenDropdown(null); }}
+                                    disabled={isPending}
+                                    className="w-full text-left px-3 py-2 text-xs hover:bg-slate-50 text-red-600"
+                                  >
+                                    Rechazar
+                                  </button>
+                                </>
+                              )}
+                            </div>,
+                            document.body
                           )}
                         </div>
                       </td>

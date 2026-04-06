@@ -87,10 +87,13 @@ const allMenuItems: MenuItem[] = [
     module: 'inventario',
     subItems: [
       { href: '/inventario', label: 'Resumen' },
-      { href: '/inventario/productos', label: 'Productos' },
+      { href: '/inventario/categorias', label: 'Categorías' },
       { href: '/inventario/depositos', label: 'Depósitos' },
+      { href: '/inventario/productos', label: 'Productos' },
+      { href: '/inventario/ajustes', label: 'Ajustes de Stock' },
       { href: '/inventario/stock', label: 'Control de Stock' },
-      { href: '/inventario/ajustes', label: 'Ajustes' },
+      { href: '/inventario/movimientos', label: 'Movimientos' },
+      { href: '/inventario/alertas', label: 'Alertas de Stock' },
     ]
   },
   { 
@@ -131,9 +134,8 @@ const allMenuItems: MenuItem[] = [
       { href: '/rrhh', label: 'Resumen' },
       { href: '/rrhh/empleados', label: 'Empleados' },
       { href: '/rrhh/liquidaciones', label: 'Liquidaciones' },
-      { href: '/rrhh/asistencias', label: 'Asistencias' },
-      { href: '/rrhh/horas', label: 'Registro de Horas' },
       { href: '/rrhh/vacaciones', label: 'Vacaciones' },
+      { href: '/rrhh/usuarios', label: 'Usuarios' },
     ]
   },
   { 

@@ -1,5 +1,6 @@
 "use client";
 
+import { Printer } from "lucide-react";
 import { useReporteInventario } from "@/hooks/useReportes";
 import { downloadReporteXLSX } from "@/lib/services/reportes.service";
 
@@ -16,12 +17,17 @@ export default function ReporteInventarioPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Reporte de Inventario</h1>
-        <button
-          onClick={() => downloadReporteXLSX("inventario")}
-          className="btn btn-secondary"
-        >
-          Exportar Excel
-        </button>
+        <div className="no-print flex items-center gap-2">
+          <button
+            onClick={() => downloadReporteXLSX("inventario")}
+            className="btn btn-secondary"
+          >
+            Exportar Excel
+          </button>
+          <button onClick={() => window.print()} className="btn btn-secondary">
+            <Printer size={16} /> Imprimir PDF
+          </button>
+        </div>
       </div>
 
       {isLoading ? (

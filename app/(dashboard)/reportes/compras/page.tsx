@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Printer } from "lucide-react";
 import { useReporteCompras } from "@/hooks/useReportes";
 
 export default function ReporteComprasPage() {
@@ -19,10 +20,20 @@ export default function ReporteComprasPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Reporte de Compras</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Reporte de Compras</h1>
+        <button onClick={() => window.print()} className="no-print btn btn-secondary">
+          <Printer size={16} /> Imprimir PDF
+        </button>
+      </div>
+
+      {/* Print header (only visible when printing) */}
+      <div className="print-title hidden border-b pb-3 mb-2">
+        <p className="text-xs text-gray-500">Período: {aplicados.desde} — {aplicados.hasta || "hoy"}</p>
+      </div>
 
       {/* Filtros */}
-      <div className="card flex flex-wrap gap-4 items-end">
+      <div className="no-print card flex flex-wrap gap-4 items-end">
         <div>
           <label htmlFor="compras-desde" className="label">
             Desde

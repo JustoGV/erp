@@ -35,11 +35,11 @@ export default function DashboardLayout({
 
   return (
     <LocalProvider>
-        <div suppressHydrationWarning className="flex h-screen bg-slate-50">
+        <div suppressHydrationWarning className="flex h-screen bg-slate-50 print:block print:h-auto print:overflow-visible">
         <Sidebar />
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden print:overflow-visible print:block">
           <Header />
-          <main className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+          <main className="flex-1 overflow-y-scroll p-6 custom-scrollbar print:overflow-visible print:h-auto">
             <div className="max-w-[1600px] mx-auto fade-in">
               <ErrorBoundary section="dashboard">{children}</ErrorBoundary>
             </div>

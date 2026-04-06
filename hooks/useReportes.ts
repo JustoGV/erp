@@ -3,7 +3,7 @@ import { reportesService } from "@/lib/services/reportes.service";
 import type { ReporteFiltros } from "@/lib/types/reportes";
 
 export const reportesKeys = {
-  dashboard: ["reportes", "dashboard"] as const,
+  dashboard: (localId?: string) => ["reportes", "dashboard", localId] as const,
   ventas: (f?: Partial<ReporteFiltros>) => ["reportes", "ventas", f] as const,
   compras: (f?: Partial<ReporteFiltros>) => ["reportes", "compras", f] as const,
   inventario: (f?: Partial<ReporteFiltros>) =>
@@ -13,10 +13,10 @@ export const reportesKeys = {
     ["reportes", "resultados", f] as const,
 };
 
-export function useDashboardKPIs() {
+export function useDashboardKPIs(localId?: string) {
   return useQuery({
-    queryKey: reportesKeys.dashboard,
-    queryFn: () => reportesService.getDashboard().then((r) => r.data),
+    queryKey: reportesKeys.dashboard(localId),
+    queryFn: () => reportesService.getDashboard({ localId }).then((r) => r.data),
     staleTime: 1000 * 60 * 5,
     retry: 1,
   });

@@ -8,6 +8,8 @@ import {
   BarChart3,
   AlertTriangle,
   Boxes,
+  Tags,
+  Settings2,
 } from "lucide-react";
 import {
   useProductos,
@@ -84,6 +86,22 @@ export default function InventarioResumenPage() {
       description: "Valorización de existencias",
       color: "bg-purple-500",
       stats: "Costo y precio",
+    },
+    {
+      href: "/inventario/ajustes",
+      icon: Settings2,
+      title: "Ajustes",
+      description: "Ajustes manuales y transferencias",
+      color: "bg-teal-500",
+      stats: "Corregir stock",
+    },
+    {
+      href: "/inventario/categorias",
+      icon: Tags,
+      title: "Categorías",
+      description: "Gestión de categorías de productos",
+      color: "bg-pink-500",
+      stats: "Organizar catálogo",
     },
   ];
 

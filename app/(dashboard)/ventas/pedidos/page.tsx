@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { ClipboardList, CheckCircle } from "lucide-react";
+import { ClipboardList, CheckCircle, Plus } from "lucide-react";
 import EntitySearchBar from "@/components/EntitySearchBar";
+import Link from "next/link";
 import { useLocal } from "@/contexts/LocalContext";
 import { usePedidos, useAprobarPedido } from "@/hooks/useVentas";
 import { useApiToast } from "@/hooks/useApiToast";
@@ -57,11 +58,18 @@ export default function PedidosPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-          <ClipboardList size={24} /> Pedidos de Venta
-        </h1>
-        <p className="text-slate-500">{total} pedidos registrados</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+            <ClipboardList size={24} /> Pedidos de Venta
+          </h1>
+          <p className="text-slate-500">{total} pedidos registrados</p>
+        </div>
+        {!isAllLocales && (
+          <Link href="/ventas/pedidos/nuevo" className="btn btn-primary">
+            <Plus size={18} /> Nuevo Pedido
+          </Link>
+        )}
       </div>
 
       <div className="card">
@@ -121,7 +129,14 @@ export default function PedidosPage() {
                   };
                   return (
                     <tr key={p.id} className="table-row-hover">
-                      <td className="font-mono text-xs">{p.numero}</td>
+                      <td>
+                        <Link
+                          href={`/ventas/pedidos/${p.id}`}
+                          className="font-mono text-xs text-blue-600 hover:underline"
+                        >
+                          {p.numero}
+                        </Link>
+                      </td>
                       <td className="font-medium">{p.cliente?.name ?? "—"}</td>
                       <td>{new Date(p.fecha).toLocaleDateString()}</td>
                       <td className="text-right font-semibold">

@@ -3,40 +3,56 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Save, Building2, Mail, Phone, MapPin, User } from 'lucide-react';
+import { ArrowLeft, Save, Building2 } from 'lucide-react';
+import { useCrearProveedor } from '@/hooks/useCompras';
+import { useLocal } from '@/contexts/LocalContext';
+import { useApiToast } from '@/hooks/useApiToast';
 
 export default function NuevoProveedorPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
+  const { selectedLocal } = useLocal();
+  const { handleError, handleSuccess } = useApiToast();
+  const crear = useCrearProveedor();
+
+  const [form, setForm] = useState({
     code: '',
     name: '',
     taxId: '',
-    contactName: '',
     email: '',
     phone: '',
     address: '',
     city: '',
+    state: '',
+    paymentTerms: '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const set = (field: string, value: string) =>
+    setForm(prev => ({ ...prev, [field]: value }));
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-
-    setTimeout(() => {
-      console.log('Proveedor guardado:', formData);
-      alert('✅ Proveedor creado exitosamente');
-      setLoading(false);
+    if (!selectedLocal?.id) {
+      handleError(new Error('Selecciona un local antes de crear un proveedor.'));
+      return;
+    }
+    try {
+      await crear.mutateAsync({
+        code: form.code,
+        name: form.name,
+        localId: selectedLocal.id,
+        taxId: form.taxId || undefined,
+        email: form.email || undefined,
+        phone: form.phone || undefined,
+        address: form.address || undefined,
+        city: form.city || undefined,
+        state: form.state || undefined,
+        paymentTerms: form.paymentTerms ? Number(form.paymentTerms) : undefined,
+      });
+      handleSuccess('Proveedor creado', 'El proveedor fue registrado correctamente.');
       router.push('/compras/proveedores');
-    }, 500);
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
-    }));
+    } catch (err) {
+      handleError(err);
+    }
   };
 
   return (
@@ -48,9 +64,9 @@ export default function NuevoProveedorPage() {
         >
           <ArrowLeft size={24} />
         </Link>
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold text-slate-900">Nuevo Proveedor</h1>
-          <p className="text-slate-600 mt-1">Completa los datos del nuevo proveedor</p>
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Nuevo Proveedor</h1>
+          <p className="text-slate-500">Completa los datos del nuevo proveedor</p>
         </div>
       </div>
 
@@ -68,126 +84,61 @@ export default function NuevoProveedorPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="label">Código *</label>
-              <input
-                type="text"
-                name="code"
-                value={formData.code}
-                onChange={handleChange}
-                required
-                className="input"
-                placeholder="PROV-001"
-              />
+              <input type="text" className="input" required placeholder="PROV-001"
+                value={form.code} onChange={e => set('code', e.target.value)} />
             </div>
-
             <div>
               <label className="label">Nombre / Razón Social *</label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                required
-                className="input"
-                placeholder="Proveedor S.A."
-              />
+              <input type="text" className="input" required placeholder="Distribuidora S.A."
+                value={form.name} onChange={e => set('name', e.target.value)} />
             </div>
-
             <div>
               <label className="label">CUIT</label>
-              <input
-                type="text"
-                name="taxId"
-                value={formData.taxId}
-                onChange={handleChange}
-                className="input"
-                placeholder="30-12345678-9"
-              />
+              <input type="text" className="input" placeholder="30-12345678-9"
+                value={form.taxId} onChange={e => set('taxId', e.target.value)} />
             </div>
-
             <div>
-              <label className="label">
-                <User size={16} className="inline mr-1" />
-                Contacto
-              </label>
-              <input
-                type="text"
-                name="contactName"
-                value={formData.contactName}
-                onChange={handleChange}
-                className="input"
-                placeholder="Nombre del contacto"
-              />
+              <label className="label">Email</label>
+              <input type="email" className="input" placeholder="compras@proveedor.com"
+                value={form.email} onChange={e => set('email', e.target.value)} />
             </div>
-
             <div>
-              <label className="label">
-                <Mail size={16} className="inline mr-1" />
-                Email
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className="input"
-                placeholder="contacto@proveedor.com"
-              />
+              <label className="label">Teléfono</label>
+              <input type="text" className="input" placeholder="011-4444-5555"
+                value={form.phone} onChange={e => set('phone', e.target.value)} />
             </div>
-
             <div>
-              <label className="label">
-                <Phone size={16} className="inline mr-1" />
-                Teléfono
-              </label>
-              <input
-                type="text"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                className="input"
-                placeholder="11-5555-6666"
-              />
+              <label className="label">Días de Plazo de Pago</label>
+              <input type="number" className="input" placeholder="30" min="0"
+                value={form.paymentTerms} onChange={e => set('paymentTerms', e.target.value)} />
             </div>
-
             <div className="md:col-span-2">
-              <label className="label">
-                <MapPin size={16} className="inline mr-1" />
-                Dirección
-              </label>
-              <input
-                type="text"
-                name="address"
-                value={formData.address}
-                onChange={handleChange}
-                className="input"
-                placeholder="Av. Siempre Viva 123"
-              />
+              <label className="label">Dirección</label>
+              <input type="text" className="input" placeholder="Av. Industrial 1234"
+                value={form.address} onChange={e => set('address', e.target.value)} />
             </div>
-
             <div>
               <label className="label">Ciudad</label>
-              <input
-                type="text"
-                name="city"
-                value={formData.city}
-                onChange={handleChange}
-                className="input"
-                placeholder="Córdoba"
-              />
+              <input type="text" className="input" placeholder="Buenos Aires"
+                value={form.city} onChange={e => set('city', e.target.value)} />
+            </div>
+            <div>
+              <label className="label">Provincia</label>
+              <input type="text" className="input" placeholder="CABA"
+                value={form.state} onChange={e => set('state', e.target.value)} />
             </div>
           </div>
         </div>
 
         <div className="flex items-center gap-4">
-          <button type="submit" disabled={loading} className="btn btn-primary">
+          <button type="submit" disabled={crear.isPending} className="btn btn-primary">
             <Save size={18} />
-            {loading ? 'Guardando...' : 'Guardar Proveedor'}
+            {crear.isPending ? 'Guardando...' : 'Guardar Proveedor'}
           </button>
-          <Link href="/compras/proveedores" className="btn btn-secondary">
-            Cancelar
-          </Link>
+          <Link href="/compras/proveedores" className="btn btn-secondary">Cancelar</Link>
         </div>
       </form>
     </div>
   );
 }
+

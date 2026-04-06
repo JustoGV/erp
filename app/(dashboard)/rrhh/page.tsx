@@ -93,6 +93,12 @@ export default function RRHHPage() {
           href="/rrhh/reportes"
           buttonText="Ver reportes"
         />
+        <ModuleCard
+          title="Usuarios"
+          description="Crear y gestionar usuarios del sistema"
+          href="/rrhh/usuarios"
+          buttonText="Ver usuarios"
+        />
       </div>
     </div>
   );

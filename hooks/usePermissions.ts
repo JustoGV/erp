@@ -40,7 +40,7 @@ const ROLE_PERMISSIONS: Record<UserRole, Record<string, Permission>> = {
     inventario: READ,
     reportes: READ,
   },
-  Comprador: {
+  Inventario: {
     default: NONE,
     dashboard: READ,
     compras: FULL,
@@ -67,7 +67,7 @@ const ROLE_PERMISSIONS: Record<UserRole, Record<string, Permission>> = {
     inventario: READ,
     reportes: READ,
   },
-  Viewer: {
+  SoloLectura: {
     default: READ,
   },
 };

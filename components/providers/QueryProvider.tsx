@@ -7,11 +7,17 @@ import {
   MutationCache,
 } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AxiosError } from "axios";
 import { logger } from "@/lib/logger";
 import { parseApiError } from "@/lib/types/api";
 import { addToastGlobal } from "@/contexts/ToastContext";
+
+/** Permite limpiar el caché de React Query desde fuera del árbol (ej: logout) */
+let _clearCache: (() => void) | null = null;
+export function clearQueryCache() {
+  _clearCache?.();
+}
 
 /** No reintentar errores 4xx (son errores del cliente, no transitorios). */
 function shouldRetry(failureCount: number, error: unknown): boolean {
@@ -83,6 +89,12 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
         },
       }),
   );
+
+  // Registrar la función de limpieza en el bridge global
+  useEffect(() => {
+    _clearCache = () => queryClient.clear();
+    return () => { _clearCache = null; };
+  }, [queryClient]);
 
   return (
     <QueryClientProvider client={queryClient}>

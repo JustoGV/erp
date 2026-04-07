@@ -60,7 +60,6 @@ const allMenuItems: MenuItem[] = [
     subItems: [
       { href: '/ventas', label: 'Resumen' },
       { href: '/ventas/clientes', label: 'Clientes' },
-      { href: '/ventas/seguimiento', label: 'Seguimiento' },
       { href: '/ventas/presupuestos', label: 'Presupuestos' },
       { href: '/ventas/pedidos', label: 'Pedidos' },
       { href: '/ventas/facturas', label: 'Facturas' },

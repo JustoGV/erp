@@ -32,6 +32,13 @@ export default function CuentasCobrarPage() {
   const fmt = (v: unknown) =>
     new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(parseFloat(String(v ?? 0)) || 0)
 
+  // El backend puede devolver estado=PENDIENTE aunque la fecha ya venció.
+  // Calculamos el estado real en el frontend para mostrarlo correctamente.
+  const estadoEfectivo = (estado: string, fechaVencimiento: string) => {
+    if (estado === 'PENDIENTE' && new Date(fechaVencimiento) < new Date()) return 'VENCIDA'
+    return estado
+  }
+
   const estadoColor = (estado: string) => {
     switch (estado) {
       case 'PAGADA':    return 'bg-green-100 text-green-700'
@@ -214,9 +221,14 @@ export default function CuentasCobrarPage() {
                     <td className="text-right font-semibold">{fmt(cuenta.montoOriginal)}</td>
                     <td className="text-right font-bold text-blue-600">{fmt(cuenta.montoSaldo)}</td>
                     <td>
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${estadoColor(cuenta.estado)}`}>
-                        {cuenta.estado}
-                      </span>
+                      {(() => {
+                        const est = estadoEfectivo(cuenta.estado, cuenta.fechaVencimiento)
+                        return (
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${estadoColor(est)}`}>
+                            {est}
+                          </span>
+                        )
+                      })()}
                     </td>
                   </tr>
                 ))

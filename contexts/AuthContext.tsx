@@ -8,6 +8,7 @@ import React, {
   useCallback,
 } from "react";
 import { apiClient, tokenStore } from "@/lib/api-client";
+import { clearQueryCache } from "@/components/providers/QueryProvider";
 import type { AuthUser, AuthTokens } from "@/lib/api-types";
 
 export type { UserRole } from "@/lib/api-types";
@@ -64,6 +65,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     tokenStore.set(accessToken);
     localStorage.setItem("erp_access_token", accessToken);
     localStorage.setItem("erp_user", JSON.stringify(authUser));
+    localStorage.removeItem("selectedLocalId");
+    localStorage.removeItem("selectedLocal");
+    clearQueryCache(); // limpiar datos del usuario anterior
     setUser(authUser);
   }, []);
 
@@ -76,7 +80,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       tokenStore.clear();
       localStorage.removeItem("erp_access_token");
       localStorage.removeItem("erp_user");
-      setUser(null);
+      localStorage.removeItem("selectedLocalId");
+      localStorage.removeItem("selectedLocal");
+      // Hard redirect: limpia todo el estado de React Query y de memoria
+      window.location.href = "/login";
     }
   }, []);
 

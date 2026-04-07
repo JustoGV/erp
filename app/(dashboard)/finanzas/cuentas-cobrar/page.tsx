@@ -2,25 +2,35 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { DollarSign, ArrowLeft, AlertCircle, CheckCircle, Clock } from 'lucide-react'
+import { DollarSign, ArrowLeft, AlertCircle, Clock, Info, FileText, ExternalLink } from 'lucide-react'
 import { useLocal } from '@/contexts/LocalContext'
 import { useCuentasCobrar, useResumenCxC } from '@/hooks/useFinanzas'
 import Pagination from '@/components/Pagination'
+
+const ESTADOS_CXC = ['TODOS', 'PENDIENTE', 'PARCIAL', 'VENCIDA', 'COBRADA', 'INCOBRABLE'] as const
+type EstadoCxC = typeof ESTADOS_CXC[number]
 
 export default function CuentasCobrarPage() {
   const { selectedLocal, isAllLocales } = useLocal()
   const localId = isAllLocales ? undefined : selectedLocal?.id
   const [page, setPage] = useState(1)
+  const [estadoFiltro, setEstadoFiltro] = useState<EstadoCxC>('TODOS')
+  const [showInfo, setShowInfo] = useState(false)
 
-  const { data, isLoading } = useCuentasCobrar({ localId, page, limit: 20 })
+  const { data, isLoading } = useCuentasCobrar({
+    localId,
+    page,
+    limit: 20,
+    estado: estadoFiltro === 'TODOS' ? undefined : estadoFiltro,
+  })
   const { data: resumenData } = useResumenCxC(localId)
 
   const cuentas = data?.data ?? []
   const totalPages = data?.meta?.totalPages ?? 1
   const resumen = resumenData?.data
 
-  const fmt = (v: number) =>
-    new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(v)
+  const fmt = (v: unknown) =>
+    new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(parseFloat(String(v ?? 0)) || 0)
 
   const estadoColor = (estado: string) => {
     switch (estado) {
@@ -47,10 +57,51 @@ export default function CuentasCobrarPage() {
               </div>
               Cuentas por Cobrar
             </h1>
-            <p className="text-slate-600 mt-1">Gestión de cobros a clientes</p>
+            <p className="text-slate-600 mt-1">Saldos pendientes de clientes · generadas automáticamente</p>
           </div>
         </div>
+        <button
+          onClick={() => setShowInfo(i => !i)}
+          className={`p-2 rounded-lg transition-colors ${
+            showInfo ? 'bg-green-100 text-green-700' : 'hover:bg-green-50 text-green-600'
+          }`}
+          title="¿Cómo se generan las cuentas por cobrar?"
+        >
+          <Info size={20} />
+        </button>
       </div>
+
+      {/* Info panel */}
+      {showInfo && (
+        <div className="bg-green-50 border border-green-200 rounded-xl p-5 text-sm">
+          <p className="font-bold text-green-900 mb-3 flex items-center gap-2">
+            <Info size={15} /> ¿Cómo se generan las Cuentas por Cobrar?
+          </p>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="bg-white rounded-lg p-3 border border-green-200">
+              <p className="font-semibold text-green-800 mb-1">1. Emitís una factura de venta</p>
+              <p className="text-xs text-green-700">Cuando confirmás una factura en el módulo de Ventas, el sistema registra automáticamente la deuda del cliente.</p>
+            </div>
+            <div className="bg-white rounded-lg p-3 border border-green-200">
+              <p className="font-semibold text-green-800 mb-1">2. Aparece aquí como PENDIENTE</p>
+              <p className="text-xs text-green-700">La cuenta queda en estado PENDIENTE hasta la fecha de vencimiento configurada en la factura.</p>
+            </div>
+            <div className="bg-white rounded-lg p-3 border border-green-200">
+              <p className="font-semibold text-green-800 mb-1">3. Registrás el cobro</p>
+              <p className="text-xs text-green-700">Al registrar el pago del cliente (en Caja o Bancos), el sistema actualiza el saldo y cambia el estado a COBRADA.</p>
+            </div>
+          </div>
+          <div className="mt-3 flex items-center gap-3">
+            <Link
+              href="/ventas"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-green-700 bg-white border border-green-300 px-3 py-1.5 rounded-lg hover:bg-green-50 transition-colors"
+            >
+              <FileText size={13} /> Ir a Ventas <ExternalLink size={11} />
+            </Link>
+            <p className="text-xs text-green-700">Creá una factura de venta para que aparezca aquí automáticamente</p>
+          </div>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -92,6 +143,28 @@ export default function CuentasCobrarPage() {
         </div>
       </div>
 
+      {/* Estado filter */}
+      <div className="flex flex-wrap gap-2">
+        {ESTADOS_CXC.map(e => (
+          <button
+            key={e}
+            onClick={() => { setEstadoFiltro(e); setPage(1) }}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+              estadoFiltro === e
+                ? e === 'TODOS'        ? 'bg-slate-700 text-white'
+                : e === 'VENCIDA'      ? 'bg-red-600 text-white'
+                : e === 'PENDIENTE'    ? 'bg-yellow-500 text-white'
+                : e === 'PARCIAL'      ? 'bg-blue-600 text-white'
+                : e === 'COBRADA'      ? 'bg-green-600 text-white'
+                :                       'bg-slate-600 text-white'
+                : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+            }`}
+          >
+            {e}
+          </button>
+        ))}
+      </div>
+
       {/* Tabla */}
       <div className="card">
         <div className="table-container">
@@ -110,7 +183,15 @@ export default function CuentasCobrarPage() {
               {isLoading ? (
                 <tr><td colSpan={6} className="text-center py-10">Cargando...</td></tr>
               ) : cuentas.length === 0 ? (
-                <tr><td colSpan={6} className="text-center py-10 text-slate-400">No hay cuentas por cobrar</td></tr>
+                <tr>
+                  <td colSpan={6} className="text-center py-12 text-slate-400">
+                    <DollarSign size={32} className="mx-auto mb-2 text-slate-300" />
+                    <p>{estadoFiltro === 'TODOS' ? 'No hay cuentas por cobrar' : `No hay cuentas en estado ${estadoFiltro}`}</p>
+                    <Link href="/ventas" className="inline-flex items-center gap-1 mt-3 text-xs text-green-600 hover:text-green-700 font-medium">
+                      <FileText size={13} /> Ir a Ventas para crear facturas <ExternalLink size={11} />
+                    </Link>
+                  </td>
+                </tr>
               ) : (
                 cuentas.map(cuenta => (
                   <tr key={cuenta.id} className="table-row-hover">

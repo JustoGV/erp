@@ -963,6 +963,13 @@ export interface CreateAsientoDto {
   detalles: DetalleAsientoDto[];
 }
 
+export interface UpdateAsientoDto {
+  fecha?: string;
+  descripcion?: string;
+  referencia?: string;
+  detalles?: DetalleAsientoDto[];
+}
+
 // ---------- Cuentas por Cobrar ----------
 
 export interface CuentaPorCobrar {
@@ -1037,6 +1044,14 @@ export interface MovimientoBancario {
   saldoNuevo: number;
   creadoPor: string;
   createdAt: string;
+}
+
+export interface CreateCuentaBancariaDto {
+  numero: string;
+  alias?: string;
+  tipoCuenta: "CORRIENTE" | "CAJA_AHORRO" | "PLAZO_FIJO" | "OTRA";
+  bancoNombre: string;
+  saldoInicial?: number;
 }
 
 export interface CreateMovimientoBancarioDto {

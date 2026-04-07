@@ -56,6 +56,7 @@ export default function PresupuestosPage() {
 
   const convertir = useConvertirPresupuesto();
   const cambiarEstado = useCambiarEstadoPresupuesto();
+  const [convertidos, setConvertidos] = useState<Set<string>>(new Set());
 
   const { data, isLoading } = usePresupuestos({ localId, limit: 100 });
   const allPresupuestos = data?.data ?? [];
@@ -81,6 +82,7 @@ export default function PresupuestosPage() {
   const handleConvertir = async (id: string) => {
     try {
       await convertir.mutateAsync(id);
+      setConvertidos(prev => new Set(prev).add(id));
       handleSuccess("Pedido creado", "El presupuesto fue convertido a pedido.");
     } catch (err) {
       handleError(err);
@@ -187,7 +189,7 @@ export default function PresupuestosPage() {
                       </td>
                       <td>
                         <div className="flex items-center justify-end gap-1">
-                          {p.estado === "APROBADO" && (
+                          {(p.estado === "APROBADO" || p.estado === "ENVIADO") && !convertidos.has(p.id) && (
                             <button
                               onClick={() => handleConvertir(p.id)}
                               disabled={isPending}
@@ -198,7 +200,7 @@ export default function PresupuestosPage() {
                               Convertir
                             </button>
                           )}
-                          {(p.estado === "BORRADOR" || p.estado === "ENVIADO") && (
+                          {p.estado === "BORRADOR" && (
                             <div className="relative">
                               <button
                                 onClick={(e) => handleToggleDropdown(p.id, e.currentTarget)}

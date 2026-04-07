@@ -2,25 +2,35 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { CreditCard, ArrowLeft, AlertCircle, CheckCircle, Clock } from 'lucide-react'
+import { CreditCard, ArrowLeft, AlertCircle, Clock, Info, ShoppingCart, ExternalLink } from 'lucide-react'
 import { useLocal } from '@/contexts/LocalContext'
 import { useCuentasPagar, useResumenCxP } from '@/hooks/useFinanzas'
 import Pagination from '@/components/Pagination'
+
+const ESTADOS_CXP = ['TODOS', 'PENDIENTE', 'PARCIAL', 'VENCIDA', 'PAGADA'] as const
+type EstadoCxP = typeof ESTADOS_CXP[number]
 
 export default function CuentasPagarPage() {
   const { selectedLocal, isAllLocales } = useLocal()
   const localId = isAllLocales ? undefined : selectedLocal?.id
   const [page, setPage] = useState(1)
+  const [estadoFiltro, setEstadoFiltro] = useState<EstadoCxP>('TODOS')
+  const [showInfo, setShowInfo] = useState(false)
 
-  const { data, isLoading } = useCuentasPagar({ localId, page, limit: 20 })
+  const { data, isLoading } = useCuentasPagar({
+    localId,
+    page,
+    limit: 20,
+    estado: estadoFiltro === 'TODOS' ? undefined : estadoFiltro,
+  })
   const { data: resumenData } = useResumenCxP(localId)
 
   const cuentas = data?.data ?? []
   const totalPages = data?.meta?.totalPages ?? 1
   const resumen = resumenData?.data
 
-  const fmt = (v: number) =>
-    new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(v)
+  const fmt = (v: unknown) =>
+    new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(parseFloat(String(v ?? 0)) || 0)
 
   const estadoColor = (estado: string) => {
     switch (estado) {
@@ -47,10 +57,51 @@ export default function CuentasPagarPage() {
               </div>
               Cuentas por Pagar
             </h1>
-            <p className="text-slate-600 mt-1">Gestión de pagos a proveedores</p>
+            <p className="text-slate-600 mt-1">Saldos pendientes a proveedores · generadas automáticamente</p>
           </div>
         </div>
+        <button
+          onClick={() => setShowInfo(i => !i)}
+          className={`p-2 rounded-lg transition-colors ${
+            showInfo ? 'bg-red-100 text-red-700' : 'hover:bg-red-50 text-red-500'
+          }`}
+          title="¿Cómo se generan las cuentas por pagar?"
+        >
+          <Info size={20} />
+        </button>
       </div>
+
+      {/* Info panel */}
+      {showInfo && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-5 text-sm">
+          <p className="font-bold text-red-900 mb-3 flex items-center gap-2">
+            <Info size={15} /> ¿Cómo se generan las Cuentas por Pagar?
+          </p>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="bg-white rounded-lg p-3 border border-red-200">
+              <p className="font-semibold text-red-800 mb-1">1. Confirmás una orden de compra</p>
+              <p className="text-xs text-red-700">Cuando confirmás una orden de compra en el módulo de Compras, el sistema registra automáticamente la deuda al proveedor.</p>
+            </div>
+            <div className="bg-white rounded-lg p-3 border border-red-200">
+              <p className="font-semibold text-red-800 mb-1">2. Aparece aquí como PENDIENTE</p>
+              <p className="text-xs text-red-700">La cuenta queda en estado PENDIENTE hasta el vencimiento establecido en la orden de compra.</p>
+            </div>
+            <div className="bg-white rounded-lg p-3 border border-red-200">
+              <p className="font-semibold text-red-800 mb-1">3. Registrás el pago</p>
+              <p className="text-xs text-red-700">Al registrar el pago al proveedor (en Caja o Bancos), el sistema actualiza el saldo y cambia el estado a PAGADA.</p>
+            </div>
+          </div>
+          <div className="mt-3 flex items-center gap-3">
+            <Link
+              href="/compras"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-red-700 bg-white border border-red-300 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors"
+            >
+              <ShoppingCart size={13} /> Ir a Compras <ExternalLink size={11} />
+            </Link>
+            <p className="text-xs text-red-700">Confirmá una orden de compra para que aparezca aquí automáticamente</p>
+          </div>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -92,6 +143,27 @@ export default function CuentasPagarPage() {
         </div>
       </div>
 
+      {/* Estado filter */}
+      <div className="flex flex-wrap gap-2">
+        {ESTADOS_CXP.map(e => (
+          <button
+            key={e}
+            onClick={() => { setEstadoFiltro(e); setPage(1) }}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+              estadoFiltro === e
+                ? e === 'TODOS'     ? 'bg-slate-700 text-white'
+                : e === 'VENCIDA'   ? 'bg-red-700 text-white'
+                : e === 'PENDIENTE' ? 'bg-yellow-500 text-white'
+                : e === 'PARCIAL'   ? 'bg-blue-600 text-white'
+                :                    'bg-green-600 text-white'
+                : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+            }`}
+          >
+            {e}
+          </button>
+        ))}
+      </div>
+
       {/* Tabla */}
       <div className="card">
         <div className="table-container">
@@ -110,7 +182,15 @@ export default function CuentasPagarPage() {
               {isLoading ? (
                 <tr><td colSpan={6} className="text-center py-10">Cargando...</td></tr>
               ) : cuentas.length === 0 ? (
-                <tr><td colSpan={6} className="text-center py-10 text-slate-400">No hay cuentas por pagar</td></tr>
+                <tr>
+                  <td colSpan={6} className="text-center py-12 text-slate-400">
+                    <CreditCard size={32} className="mx-auto mb-2 text-slate-300" />
+                    <p>{estadoFiltro === 'TODOS' ? 'No hay cuentas por pagar' : `No hay cuentas en estado ${estadoFiltro}`}</p>
+                    <Link href="/compras" className="inline-flex items-center gap-1 mt-3 text-xs text-red-500 hover:text-red-600 font-medium">
+                      <ShoppingCart size={13} /> Ir a Compras para crear órdenes <ExternalLink size={11} />
+                    </Link>
+                  </td>
+                </tr>
               ) : (
                 cuentas.map(cuenta => (
                   <tr key={cuenta.id} className="table-row-hover">

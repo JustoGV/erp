@@ -31,23 +31,26 @@ export function useApiToast() {
       switch (parsed.code) {
         case "VALIDATION_ERROR":
         case "UNPROCESSABLE_ENTITY":
-          addToast({
-            type: "warning",
-            title: "Datos inválidos",
-            message:
-              parsed.details.length > 0
-                ? parsed.details.join(". ")
-                : parsed.message,
-          });
+          if (parsed.details.length > 0) {
+            addToast({
+              type: "warning",
+              title: "Datos inválidos",
+              message: parsed.details.join(". "),
+            });
+          } else {
+            addToast({
+              type: "error",
+              title: "No se pudo completar",
+              message: parsed.message,
+            });
+          }
           break;
 
         case "CONFLICT":
           addToast({
             type: "warning",
             title: "Conflicto",
-            message: parsed.field
-              ? `El campo "${parsed.field}" ya existe o genera conflicto.`
-              : parsed.message,
+            message: parsed.message,
           });
           break;
 
@@ -55,7 +58,7 @@ export function useApiToast() {
           addToast({
             type: "warning",
             title: "No encontrado",
-            message: "El recurso ya no existe o fue eliminado.",
+            message: parsed.message,
           });
           break;
 

@@ -3,20 +3,25 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Save, FileText } from "lucide-react";
+import { ArrowLeft, Save, FileText, AlertCircle } from "lucide-react";
 import { useCrearFacturaDesdePedido, usePedidos } from "@/hooks/useVentas";
 import { useApiToast } from "@/hooks/useApiToast";
 import { useLocal } from "@/contexts/LocalContext";
+import { parseApiError } from "@/lib/types/api";
 
 export default function NuevaFacturaPage() {
   const router = useRouter();
   const { selectedLocal, isAllLocales } = useLocal();
-  const { handleError, handleSuccess } = useApiToast();
+  const { handleSuccess } = useApiToast();
   const crearFactura = useCrearFacturaDesdePedido();
 
   const [pedidoId, setPedidoId] = useState("");
   const [fechaVencimiento, setFechaVencimiento] = useState("");
   const [notas, setNotas] = useState("");
+
+  const errorMessage = crearFactura.isError
+    ? parseApiError(crearFactura.error).message
+    : null;
 
   const localId = isAllLocales ? undefined : selectedLocal?.id;
 
@@ -30,21 +35,22 @@ export default function NuevaFacturaPage() {
     e.preventDefault();
 
     if (!pedidoId) {
-      handleError(new Error("Selecciona un pedido."));
       return;
     }
 
-    try {
-      await crearFactura.mutateAsync({
+    crearFactura.mutate(
+      {
         pedidoId,
         fechaVencimiento: fechaVencimiento || undefined,
         notas: notas || undefined,
-      });
-      handleSuccess("Factura generada", "La factura fue creada desde el pedido.");
-      router.push("/ventas/facturas");
-    } catch (err) {
-      handleError(err);
-    }
+      },
+      {
+        onSuccess: () => {
+          handleSuccess("Factura generada", "La factura fue creada desde el pedido.");
+          router.push("/ventas/facturas");
+        },
+      },
+    );
   };
 
   return (
@@ -121,6 +127,12 @@ export default function NuevaFacturaPage() {
         </div>
 
         <div className="flex items-center gap-4">
+          {errorMessage && (
+            <div className="flex items-center gap-2 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-red-700 text-sm flex-1">
+              <AlertCircle size={18} className="shrink-0" />
+              <span>{errorMessage}</span>
+            </div>
+          )}
           <button
             type="submit"
             disabled={crearFactura.isPending}

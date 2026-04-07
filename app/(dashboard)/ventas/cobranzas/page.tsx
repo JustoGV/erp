@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { DollarSign, Plus } from "lucide-react";
 import Modal from "@/components/Modal";
 import Pagination from "@/components/Pagination";
-import { useCobranzas, useCrearCobranza, useFacturas } from "@/hooks/useVentas";
+import { useCobranzas, useCrearCobranza, useFactura, useFacturas } from "@/hooks/useVentas";
 import { useLocal } from "@/contexts/LocalContext";
 import { useApiToast } from "@/hooks/useApiToast";
 
@@ -48,10 +48,31 @@ export default function CobranzasPage() {
   const totalPages = cobranzasQuery.data?.meta?.totalPages ?? 1;
 
   const facturas = facturasQuery.data?.data ?? [];
+  // Solo facturas que aún tienen saldo (excluir PAGADA y ANULADA)
+  const facturasCobrar = facturas.filter(
+    (f) => f.estado !== "PAGADA" && f.estado !== "ANULADA"
+  );
   const facturasById = useMemo(
     () => new Map(facturas.map((factura) => [factura.id, factura])),
     [facturas],
   );
+
+  // Factura actualmente seleccionada en el form
+  const facturaSeleccionada = formState.facturaId
+    ? facturasById.get(formState.facturaId)
+    : null;
+  // Detalle de la factura seleccionada (para obtener saldoPendiente y totalCobrado reales)
+  const facturaDetalleQuery = useFactura(formState.facturaId);
+  const facturaDetalle = facturaDetalleQuery.data?.data ?? facturaSeleccionada;
+  const saldoPendiente = facturaDetalle
+    ? parseFloat(String(facturaDetalle.saldoPendiente ?? facturaDetalle.total ?? 0))
+    : null;
+  const totalFactura = facturaDetalle
+    ? parseFloat(String(facturaDetalle.total ?? 0))
+    : null;
+  const totalCobrado = facturaDetalle
+    ? parseFloat(String(facturaDetalle.totalCobrado ?? 0))
+    : null;
 
   const openCreate = () => {
     setFormState({
@@ -179,6 +200,7 @@ export default function CobranzasPage() {
                 setFormState((prev) => ({
                   ...prev,
                   facturaId: event.target.value,
+                  monto: 0,
                 }))
               }
               className="input"
@@ -190,13 +212,54 @@ export default function CobranzasPage() {
                   ? "Cargando facturas..."
                   : "Seleccionar factura"}
               </option>
-              {facturas.map((factura) => (
-                <option key={factura.id} value={factura.id}>
-                  {factura.numero} — {factura.cliente?.name ?? factura.id}
-                </option>
-              ))}
+              {facturasCobrar.map((factura) => {
+                const saldo = parseFloat(String(factura.saldoPendiente ?? factura.total ?? 0));
+                return (
+                  <option key={factura.id} value={factura.id}>
+                    {factura.numero} — {factura.cliente?.name ?? factura.id} — Saldo: ${saldo.toLocaleString("es-AR")} ({factura.estado})
+                  </option>
+                );
+              })}
             </select>
+            {facturasCobrar.length === 0 && !facturasQuery.isLoading && (
+              <p className="text-xs text-slate-400 mt-1">No hay facturas pendientes de cobro.</p>
+            )}
           </div>
+
+          {/* Panel de saldo al seleccionar una factura */}
+          {facturaSeleccionada && (
+            <div className="md:col-span-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm">
+              {facturaDetalleQuery.isLoading ? (
+                <p className="text-blue-600 text-sm">Cargando saldo...</p>
+              ) : (
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex gap-6">
+                  <div>
+                    <span className="text-blue-600 font-medium">Total factura</span>
+                    <p className="text-lg font-bold text-slate-800">${totalFactura?.toLocaleString("es-AR", { minimumFractionDigits: 2 })}</p>
+                  </div>
+                  <div>
+                    <span className="text-blue-600 font-medium">Ya cobrado</span>
+                    <p className="text-lg font-bold text-green-700">
+                      ${totalCobrado?.toLocaleString("es-AR", { minimumFractionDigits: 2 })}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-orange-600 font-medium">Falta cobrar</span>
+                    <p className="text-lg font-bold text-orange-700">${saldoPendiente?.toLocaleString("es-AR", { minimumFractionDigits: 2 })}</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setFormState((prev) => ({ ...prev, monto: saldoPendiente ?? 0 }))}
+                  className="text-xs font-semibold text-blue-700 bg-blue-100 hover:bg-blue-200 border border-blue-300 px-3 py-1.5 rounded-lg transition-colors"
+                >
+                  Cobrar total pendiente
+                </button>
+              </div>
+              )}
+            </div>
+          )}
           <div>
             <label className="label">Fecha</label>
             <input

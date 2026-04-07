@@ -210,6 +210,7 @@ export function useRegistrarPagoProveedor() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["pagosProveedor"] });
       qc.invalidateQueries({ queryKey: ["proveedores"] });
+      qc.invalidateQueries({ queryKey: ["cuentasPagar"] });
     },
   });
 }

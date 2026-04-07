@@ -853,6 +853,7 @@ export interface PagoProveedor {
 
 export interface CreatePagoProveedorDto {
   proveedorId: string;
+  cuentaPagarId?: string;
   monto: number;
   metodoPago: string;
   fecha?: string;

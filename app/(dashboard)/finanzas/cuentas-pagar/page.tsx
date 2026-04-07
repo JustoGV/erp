@@ -2,10 +2,13 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { CreditCard, ArrowLeft, AlertCircle, Clock, Info, ShoppingCart, ExternalLink } from 'lucide-react'
+import { CreditCard, ArrowLeft, AlertCircle, Clock, Info, ShoppingCart, ExternalLink, Banknote } from 'lucide-react'
 import { useLocal } from '@/contexts/LocalContext'
 import { useCuentasPagar, useResumenCxP } from '@/hooks/useFinanzas'
+import { useRegistrarPagoProveedor } from '@/hooks/useCompras'
 import Pagination from '@/components/Pagination'
+import Modal from '@/components/Modal'
+import type { CuentaPorPagar } from '@/lib/api-types'
 
 const ESTADOS_CXP = ['TODOS', 'PENDIENTE', 'PARCIAL', 'VENCIDA', 'PAGADA'] as const
 type EstadoCxP = typeof ESTADOS_CXP[number]
@@ -16,6 +19,10 @@ export default function CuentasPagarPage() {
   const [page, setPage] = useState(1)
   const [estadoFiltro, setEstadoFiltro] = useState<EstadoCxP>('TODOS')
   const [showInfo, setShowInfo] = useState(false)
+  const [pagarCuenta, setPagarCuenta] = useState<CuentaPorPagar | null>(null)
+  const [pagarForm, setPagarForm] = useState({ monto: '', metodoPago: 'TRANSFERENCIA', fecha: '', referencia: '' })
+
+  const registrarPago = useRegistrarPagoProveedor()
 
   const { data, isLoading } = useCuentasPagar({
     localId,
@@ -31,6 +38,27 @@ export default function CuentasPagarPage() {
 
   const fmt = (v: unknown) =>
     new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(parseFloat(String(v ?? 0)) || 0)
+
+  const METODOS = ['TRANSFERENCIA', 'CHEQUE', 'EFECTIVO', 'DEPOSITO', 'OTRO']
+
+  const abrirPagar = (cuenta: CuentaPorPagar) => {
+    setPagarCuenta(cuenta)
+    setPagarForm({ monto: String(parseFloat(String(cuenta.montoSaldo ?? 0)) || 0), metodoPago: 'TRANSFERENCIA', fecha: '', referencia: '' })
+  }
+
+  const handlePagar = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!pagarCuenta) return
+    await registrarPago.mutateAsync({
+      proveedorId: pagarCuenta.proveedorId,
+      cuentaPagarId: pagarCuenta.id,
+      monto: Number(pagarForm.monto),
+      metodoPago: pagarForm.metodoPago,
+      fecha: pagarForm.fecha || undefined,
+      referencia: pagarForm.referencia || undefined,
+    })
+    setPagarCuenta(null)
+  }
 
   const estadoEfectivo = (estado: string, fechaVencimiento: string) => {
     if (estado === 'PENDIENTE' && new Date(fechaVencimiento) < new Date()) return 'VENCIDA'
@@ -181,6 +209,7 @@ export default function CuentasPagarPage() {
                 <th className="text-right">Original</th>
                 <th className="text-right">Saldo</th>
                 <th>Estado</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -227,6 +256,16 @@ export default function CuentasPagarPage() {
                         )
                       })()}
                     </td>
+                    <td>
+                      {cuenta.estado !== 'PAGADA' && (
+                        <button
+                          onClick={() => abrirPagar(cuenta)}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100 transition-colors"
+                        >
+                          <Banknote size={13} /> Pagar
+                        </button>
+                      )}
+                    </td>
                   </tr>
                 ))
               )}
@@ -239,6 +278,58 @@ export default function CuentasPagarPage() {
           </div>
         )}
       </div>
+
+      {/* Modal Pagar */}
+      <Modal open={!!pagarCuenta} title="Registrar Pago a Proveedor" onClose={() => setPagarCuenta(null)}>
+        {pagarCuenta && (
+          <form onSubmit={handlePagar} className="space-y-4">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-sm">
+              <p className="font-semibold text-red-900">{pagarCuenta.proveedor?.name}</p>
+              <div className="flex gap-6 mt-1 text-red-700">
+                <span>Total: {fmt(pagarCuenta.montoOriginal)}</span>
+                <span>Saldo pendiente: <strong>{fmt(pagarCuenta.montoSaldo)}</strong></span>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="label">Monto a pagar *</label>
+                <input
+                  type="number" className="input" required min="0.01" step="0.01"
+                  value={pagarForm.monto}
+                  onChange={e => setPagarForm(f => ({ ...f, monto: e.target.value }))}
+                />
+                <button
+                  type="button"
+                  className="text-xs text-red-600 hover:underline mt-1"
+                  onClick={() => setPagarForm(f => ({ ...f, monto: String(parseFloat(String(pagarCuenta.montoSaldo ?? 0)) || 0) }))}
+                >
+                  Pagar total pendiente
+                </button>
+              </div>
+              <div>
+                <label className="label">Método de Pago *</label>
+                <select className="input" required value={pagarForm.metodoPago} onChange={e => setPagarForm(f => ({ ...f, metodoPago: e.target.value }))}>
+                  {METODOS.map(m => <option key={m} value={m}>{m}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="label">Fecha</label>
+                <input type="date" className="input" value={pagarForm.fecha} onChange={e => setPagarForm(f => ({ ...f, fecha: e.target.value }))} />
+              </div>
+              <div>
+                <label className="label">Referencia</label>
+                <input type="text" className="input" placeholder="CBU, Nº cheque..." value={pagarForm.referencia} onChange={e => setPagarForm(f => ({ ...f, referencia: e.target.value }))} />
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 pt-2">
+              <button type="button" className="btn btn-secondary" onClick={() => setPagarCuenta(null)}>Cancelar</button>
+              <button type="submit" className="btn btn-primary" disabled={registrarPago.isPending}>
+                {registrarPago.isPending ? 'Guardando...' : 'Confirmar Pago'}
+              </button>
+            </div>
+          </form>
+        )}
+      </Modal>
     </div>
   )
 }

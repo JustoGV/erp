@@ -138,7 +138,7 @@ export default function CajaPage() {
 
   const totalIngresos = movimientos.filter((m) => m.tipo === 'INGRESO').reduce((s, m) => s + m.monto, 0);
   const totalEgresos = movimientos.filter((m) => m.tipo === 'EGRESO').reduce((s, m) => s + m.monto, 0);
-  const saldoActual = saldoCaja?.saldo ?? 0;
+  const saldoActual = saldoCaja?.data?.saldo ?? 0;
 
   if (isAllLocales) {
     return (

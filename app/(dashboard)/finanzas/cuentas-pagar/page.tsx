@@ -65,7 +65,7 @@ export default function CuentasPagarPage() {
             <div>
               <p className="text-sm text-slate-600">Total a Pagar</p>
               <p className="text-2xl font-bold text-red-600 mt-1">
-                {resumen ? formatCurrency(resumen.totalPendiente) : '—'}
+                {resumen ? formatCurrency(resumen.data.totalPendiente) : '—'}
               </p>
             </div>
             <div className="p-3 bg-red-100 rounded-lg">
@@ -79,7 +79,7 @@ export default function CuentasPagarPage() {
             <div>
               <p className="text-sm text-slate-600">Vencido</p>
               <p className="text-2xl font-bold text-red-700 mt-1">
-                {resumen ? formatCurrency(resumen.totalVencido) : '—'}
+                {resumen ? formatCurrency(resumen.data.totalVencido) : '—'}
               </p>
             </div>
             <div className="p-3 bg-red-100 rounded-lg">
@@ -93,7 +93,7 @@ export default function CuentasPagarPage() {
             <div>
               <p className="text-sm text-slate-600">Pendientes</p>
               <p className="text-2xl font-bold text-amber-600 mt-1">
-                {resumen?.cantidadPendiente ?? '—'}
+                {resumen?.data?.cantidadPendiente ?? '—'}
               </p>
             </div>
             <div className="p-3 bg-amber-100 rounded-lg">
@@ -107,7 +107,7 @@ export default function CuentasPagarPage() {
             <div>
               <p className="text-sm text-slate-600">Vencidas</p>
               <p className="text-2xl font-bold text-red-600 mt-1">
-                {resumen?.cantidadVencida ?? '—'}
+                {resumen?.data?.cantidadVencida ?? '—'}
               </p>
             </div>
             <div className="p-3 bg-red-100 rounded-lg">

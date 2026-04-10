@@ -152,8 +152,9 @@ const allMenuItems: MenuItem[] = [
     module: 'configuracion',
     subItems: [
       { href: '/configuracion', label: 'General' },
-      { href: '/configuracion/usuarios', label: 'Usuarios' },
       { href: '/configuracion/empresa', label: 'Empresa' },
+      { href: '/configuracion/locales', label: 'Locales / Sucursales' },
+      { href: '/configuracion/usuarios', label: 'Usuarios' },
     ]
   },
   {

@@ -348,7 +348,7 @@ export default function AsientosPage() {
                   <td colSpan={9} className="text-center py-12 text-slate-400">
                     <Scale size={32} className="mx-auto mb-2 text-slate-300" />
                     <p>No hay asientos registrados</p>
-                    {localId && <p className="text-xs mt-1">Hacé clic en "Nuevo Asiento" para comenzar</p>}
+                    {localId && <p className="text-xs mt-1">Hacé clic en &quot;Nuevo Asiento&quot; para comenzar</p>}
                   </td>
                 </tr>
               ) : (

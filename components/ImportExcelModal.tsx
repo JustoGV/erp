@@ -196,7 +196,7 @@ export default function ImportExcelModal({
               <MapPin size={16} className="text-amber-600" />
               <p className="text-sm font-semibold text-amber-800">Seleccioná un local para importar</p>
             </div>
-            <p className="text-xs text-amber-600 mb-2">Tenés "Todos los locales" activo. La importación necesita un local específico.</p>
+            <p className="text-xs text-amber-600 mb-2">Tenés &quot;Todos los locales&quot; activo. La importación necesita un local específico.</p>
             <select
               className="input w-full"
               value={localOverride?.id ?? ""}

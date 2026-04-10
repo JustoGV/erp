@@ -1,79 +1,75 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import {
-  ArrowLeft,
-  Save,
-  User,
-  Mail,
-  Phone,
-  MapPin,
-  CreditCard,
-  Building2,
-} from "lucide-react";
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useState } from 'react';
+import { ArrowLeft, Save, User, Mail, Phone, MapPin } from 'lucide-react';
+import { useCrearCliente } from '@/hooks/useVentas';
+import { useLocal } from '@/contexts/LocalContext';
+import { useApiToast } from '@/hooks/useApiToast';
+import type { CreateClienteDto } from '@/lib/api-types';
 
 export default function NuevoClientePage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    code: "",
-    name: "",
-    taxId: "",
-    email: "",
-    phone: "",
-    address: "",
-    city: "",
-    state: "",
-    postalCode: "",
-    country: "Argentina",
+  const { handleError, handleSuccess } = useApiToast();
+  const { selectedLocal } = useLocal();
+  const crear = useCrearCliente();
+
+  const [form, setForm] = useState<Omit<CreateClienteDto, 'localId'>>({
+    code: '',
+    name: '',
+    taxId: '',
+    email: '',
+    phone: '',
+    address: '',
+    city: '',
+    state: '',
     creditLimit: 0,
-    active: true,
   });
+
+  const set = (field: keyof typeof form, value: string | number) =>
+    setForm((prev) => ({ ...prev, [field]: value }));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-
-    // Simulación de guardado (hardcoded)
-    setTimeout(() => {
-      console.log("Cliente guardado:", formData);
-      alert("✅ Cliente creado exitosamente");
-      setLoading(false);
-      router.push("/ventas/clientes");
-    }, 500);
-  };
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  ) => {
-    const { name, value, type } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "number" ? parseFloat(value) : value,
-    }));
+    if (!selectedLocal) {
+      handleError(new Error('Seleccioná un local antes de crear un cliente'));
+      return;
+    }
+    const dto: CreateClienteDto = {
+      ...form,
+      localId: selectedLocal.id,
+      creditLimit: Number(form.creditLimit),
+      taxId: form.taxId || undefined,
+      email: form.email || undefined,
+      phone: form.phone || undefined,
+      address: form.address || undefined,
+      city: form.city || undefined,
+      state: form.state || undefined,
+    };
+    crear.mutate(dto, {
+      onSuccess: () => {
+        handleSuccess('Cliente creado', form.name);
+        router.push('/ventas/clientes');
+      },
+      onError: (err) => handleError(err),
+    });
   };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center gap-4">
-        <Link
-          href="/ventas/clientes"
-          className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all"
-        >
+        <Link href="/ventas/clientes" className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all">
           <ArrowLeft size={24} />
         </Link>
-        <div className="flex-1">
+        <div>
           <h1 className="text-3xl font-bold text-slate-900">Nuevo Cliente</h1>
           <p className="text-slate-600 mt-1">
-            Completa los datos del nuevo cliente
+            {selectedLocal ? `Local: ${selectedLocal.name}` : 'Seleccioná un local en el selector superior'}
           </p>
         </div>
       </div>
 
-      {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Información Básica */}
         <div className="card">
@@ -85,57 +81,51 @@ export default function NuevoClientePage() {
               <h3 className="card-title">Información Básica</h3>
             </div>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="label">Código *</label>
+              <label htmlFor="code" className="label">Código *</label>
               <input
+                id="code"
                 type="text"
-                name="code"
-                value={formData.code}
-                onChange={handleChange}
+                value={form.code}
+                onChange={(e) => set('code', e.target.value)}
                 required
                 className="input"
                 placeholder="CLI-001"
               />
             </div>
-
             <div>
-              <label className="label">Nombre / Razón Social *</label>
+              <label htmlFor="name" className="label">Nombre / Razón Social *</label>
               <input
+                id="name"
                 type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
+                value={form.name}
+                onChange={(e) => set('name', e.target.value)}
                 required
                 className="input"
                 placeholder="Empresa ABC S.A."
               />
             </div>
-
             <div>
-              <label className="label">CUIT / DNI</label>
+              <label htmlFor="taxId" className="label">CUIT / DNI</label>
               <input
+                id="taxId"
                 type="text"
-                name="taxId"
-                value={formData.taxId}
-                onChange={handleChange}
+                value={form.taxId}
+                onChange={(e) => set('taxId', e.target.value)}
                 className="input"
                 placeholder="20-12345678-9"
               />
             </div>
-
             <div>
-              <label className="label">Límite de Crédito</label>
+              <label htmlFor="creditLimit" className="label">Límite de Crédito</label>
               <div className="relative">
-                <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-500">
-                  $
-                </div>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                 <input
+                  id="creditLimit"
                   type="number"
-                  name="creditLimit"
-                  value={formData.creditLimit}
-                  onChange={handleChange}
+                  value={form.creditLimit || ''}
+                  onChange={(e) => set('creditLimit', parseFloat(e.target.value) || 0)}
                   className="input pl-8"
                   step="0.01"
                   min="0"
@@ -146,43 +136,38 @@ export default function NuevoClientePage() {
           </div>
         </div>
 
-        {/* Información de Contacto */}
+        {/* Contacto */}
         <div className="card">
           <div className="card-header">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg">
                 <Mail size={20} />
               </div>
-              <h3 className="card-title">Información de Contacto</h3>
+              <h3 className="card-title">Contacto</h3>
             </div>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="label">
-                <Mail size={16} className="inline mr-1" />
-                Email
-              </label>
+              <label htmlFor="email" className="label">Email</label>
               <input
+                id="email"
                 type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
+                value={form.email}
+                onChange={(e) => set('email', e.target.value)}
                 className="input"
                 placeholder="contacto@empresa.com"
               />
             </div>
-
             <div>
-              <label className="label">
+              <label htmlFor="phone" className="label">
                 <Phone size={16} className="inline mr-1" />
                 Teléfono
               </label>
               <input
+                id="phone"
                 type="text"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
+                value={form.phone}
+                onChange={(e) => set('phone', e.target.value)}
                 className="input"
                 placeholder="11-4444-5555"
               />
@@ -200,78 +185,51 @@ export default function NuevoClientePage() {
               <h3 className="card-title">Dirección</h3>
             </div>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
-              <label className="label">Dirección</label>
+              <label htmlFor="address" className="label">Dirección</label>
               <input
+                id="address"
                 type="text"
-                name="address"
-                value={formData.address}
-                onChange={handleChange}
+                value={form.address}
+                onChange={(e) => set('address', e.target.value)}
                 className="input"
                 placeholder="Av. Corrientes 1234"
               />
             </div>
-
             <div>
-              <label className="label">Ciudad</label>
+              <label htmlFor="city" className="label">Ciudad</label>
               <input
+                id="city"
                 type="text"
-                name="city"
-                value={formData.city}
-                onChange={handleChange}
+                value={form.city}
+                onChange={(e) => set('city', e.target.value)}
                 className="input"
                 placeholder="Buenos Aires"
               />
             </div>
-
             <div>
-              <label className="label">Provincia</label>
+              <label htmlFor="state" className="label">Provincia</label>
               <input
+                id="state"
                 type="text"
-                name="state"
-                value={formData.state}
-                onChange={handleChange}
+                value={form.state}
+                onChange={(e) => set('state', e.target.value)}
                 className="input"
                 placeholder="Buenos Aires"
-              />
-            </div>
-
-            <div>
-              <label className="label">Código Postal</label>
-              <input
-                type="text"
-                name="postalCode"
-                value={formData.postalCode}
-                onChange={handleChange}
-                className="input"
-                placeholder="1000"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="country" className="label">
-                País
-              </label>
-              <input
-                id="country"
-                type="text"
-                name="country"
-                value={formData.country}
-                onChange={handleChange}
-                className="input"
-                placeholder="Argentina"
               />
             </div>
           </div>
         </div>
 
-        {/* Actions */}
         <div className="flex items-center gap-4">
-          <button type="submit" disabled={loading} className="btn btn-primary">
+          <button
+            type="submit"
+            disabled={crear.isPending || !selectedLocal}
+            className="btn btn-primary"
+          >
             <Save size={18} />
-            {loading ? "Guardando..." : "Guardar Cliente"}
+            {crear.isPending ? 'Guardando...' : 'Guardar Cliente'}
           </button>
           <Link href="/ventas/clientes" className="btn btn-secondary">
             Cancelar

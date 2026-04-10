@@ -1,67 +1,72 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { CreditCard, ArrowLeft, AlertCircle, CheckCircle, Clock } from 'lucide-react'
-import { useLocal } from '@/contexts/LocalContext'
-import { mockCuentasPorPagar, type CuentaPorPagar } from '@/lib/mock-data'
+import { useState } from 'react';
+import Link from 'next/link';
+import { CreditCard, ArrowLeft, AlertCircle, Clock, Search } from 'lucide-react';
+import { useLocal } from '@/contexts/LocalContext';
+import { useCuentasPagar, useResumenCxP } from '@/hooks/useFinanzas';
+import type { CuentaPorPagar } from '@/lib/api-types';
+
+const formatCurrency = (value: number) =>
+  new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(value);
+
+const estadoBadge: Record<string, string> = {
+  PAGADA: 'badge-success',
+  PENDIENTE: 'badge-warning',
+  PARCIAL: 'badge-info',
+  VENCIDA: 'badge-danger',
+};
 
 export default function CuentasPagarPage() {
-  const { selectedLocal } = useLocal()
-  const [cuentas, setCuentas] = useState<CuentaPorPagar[]>(mockCuentasPorPagar)
+  const { selectedLocal, isAllLocales } = useLocal();
+  const [estadoFilter, setEstadoFilter] = useState('');
+  const [search, setSearch] = useState('');
 
-  useEffect(() => {
-    if (!selectedLocal) {
-      setCuentas(mockCuentasPorPagar)
-    } else {
-      setCuentas(mockCuentasPorPagar.filter(c => c.localId === selectedLocal.id))
-    }
-  }, [selectedLocal])
+  const localId = isAllLocales ? undefined : selectedLocal?.id;
 
-  const totalPendiente = cuentas.reduce((sum, c) => sum + c.montoSaldo, 0)
-  const totalPagado = cuentas.reduce((sum, c) => sum + c.montoPagado, 0)
+  const { data: resumen } = useResumenCxP(localId);
+  const { data: cuentasData, isLoading } = useCuentasPagar({
+    localId,
+    limit: 200,
+    estado: estadoFilter || undefined,
+  });
 
-  const getEstadoColor = (estado: string) => {
-    switch (estado) {
-      case 'PAGADA': return 'bg-green-100 text-green-700'
-      case 'PENDIENTE': return 'bg-yellow-100 text-yellow-700'
-      case 'PARCIAL': return 'bg-blue-100 text-blue-700'
-      case 'VENCIDA': return 'bg-red-100 text-red-700'
-      default: return 'bg-gray-100 text-gray-700'
-    }
-  }
+  const cuentas: CuentaPorPagar[] = (cuentasData as any)?.data ?? cuentasData ?? [];
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(value)
-  }
+  const filtered = search
+    ? cuentas.filter((c) =>
+        c.proveedor?.name?.toLowerCase().includes(search.toLowerCase()) ||
+        c.ordenCompra?.numero?.toLowerCase().includes(search.toLowerCase())
+      )
+    : cuentas;
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link href="/finanzas" className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
-            <ArrowLeft size={24} className="text-slate-600" />
-          </Link>
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-br from-red-500 to-red-600 rounded-xl">
-                <CreditCard className="text-white" size={28} />
-              </div>
-              Cuentas por Pagar
-            </h1>
-            <p className="text-slate-600 mt-1">Gestión de pagos a proveedores</p>
-          </div>
+      <div className="flex items-center gap-4">
+        <Link href="/finanzas" className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+          <ArrowLeft size={24} className="text-slate-600" />
+        </Link>
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-br from-red-500 to-red-600 rounded-xl">
+              <CreditCard className="text-white" size={28} />
+            </div>
+            Cuentas por Pagar
+          </h1>
+          <p className="text-slate-600 mt-1">Gestión de pagos a proveedores</p>
         </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="card">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-600">Total a Pagar</p>
-              <p className="text-2xl font-bold text-red-600 mt-1">{formatCurrency(totalPendiente)}</p>
+              <p className="text-2xl font-bold text-red-600 mt-1">
+                {resumen ? formatCurrency(resumen.totalPendiente) : '—'}
+              </p>
             </div>
             <div className="p-3 bg-red-100 rounded-lg">
               <CreditCard size={24} className="text-red-600" />
@@ -69,70 +74,147 @@ export default function CuentasPagarPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+        <div className="card">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-slate-600">Pagado</p>
-              <p className="text-2xl font-bold text-green-600 mt-1">{formatCurrency(totalPagado)}</p>
+              <p className="text-sm text-slate-600">Vencido</p>
+              <p className="text-2xl font-bold text-red-700 mt-1">
+                {resumen ? formatCurrency(resumen.totalVencido) : '—'}
+              </p>
             </div>
-            <div className="p-3 bg-green-100 rounded-lg">
-              <CheckCircle size={24} className="text-green-600" />
+            <div className="p-3 bg-red-100 rounded-lg">
+              <AlertCircle size={24} className="text-red-600" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+        <div className="card">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-slate-600">Cuentas</p>
-              <p className="text-2xl font-bold text-slate-900 mt-1">{cuentas.length}</p>
+              <p className="text-sm text-slate-600">Pendientes</p>
+              <p className="text-2xl font-bold text-amber-600 mt-1">
+                {resumen?.cantidadPendiente ?? '—'}
+              </p>
             </div>
-            <div className="p-3 bg-slate-100 rounded-lg">
-              <Clock size={24} className="text-slate-600" />
+            <div className="p-3 bg-amber-100 rounded-lg">
+              <Clock size={24} className="text-amber-600" />
+            </div>
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-slate-600">Vencidas</p>
+              <p className="text-2xl font-bold text-red-600 mt-1">
+                {resumen?.cantidadVencida ?? '—'}
+              </p>
+            </div>
+            <div className="p-3 bg-red-100 rounded-lg">
+              <AlertCircle size={24} className="text-red-600" />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Tabla */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-slate-50 border-b border-slate-200">
+      {/* Filters */}
+      <div className="card">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1 relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <input
+              type="text"
+              placeholder="Buscar por proveedor u orden..."
+              className="input pl-11"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <select
+            className="input min-w-[180px]"
+            value={estadoFilter}
+            onChange={(e) => setEstadoFilter(e.target.value)}
+          >
+            <option value="">Todos los estados</option>
+            <option value="PENDIENTE">Pendiente</option>
+            <option value="PARCIAL">Parcial</option>
+            <option value="VENCIDA">Vencida</option>
+            <option value="PAGADA">Pagada</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="table-container">
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Proveedor</th>
+              <th>Orden de Compra</th>
+              <th>Vencimiento</th>
+              <th>Original</th>
+              <th>Saldo</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {isLoading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <tr key={i}>
+                  {Array.from({ length: 6 }).map((_, j) => (
+                    <td key={j}><div className="h-4 bg-slate-200 animate-pulse rounded" /></td>
+                  ))}
+                </tr>
+              ))
+            ) : filtered.length === 0 ? (
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Proveedor</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Orden Compra</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Vencimiento</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Total</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Saldo</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Estado</th>
+                <td colSpan={6} className="text-center py-12 text-slate-500">
+                  No hay cuentas por pagar con ese criterio
+                </td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200">
-              {cuentas.map(cuenta => (
-                <tr key={cuenta.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-6 py-4 font-medium text-slate-900">{cuenta.proveedorNombre}</td>
-                  <td className="px-6 py-4">
-                    <Link href={`/compras/ordenes`} className="text-blue-600 hover:text-blue-800 font-medium">
-                      {cuenta.ordenCompraNumero}
-                    </Link>
+            ) : (
+              filtered.map((cuenta) => (
+                <tr key={cuenta.id} className="table-row-hover">
+                  <td className="font-medium text-slate-900">
+                    {cuenta.proveedor?.name ?? cuenta.proveedorId}
                   </td>
-                  <td className="px-6 py-4 text-slate-600">
-                    {new Date(cuenta.fechaVencimiento).toLocaleDateString('es-AR')}
+                  <td>
+                    {cuenta.ordenCompra ? (
+                      <Link
+                        href="/compras/ordenes"
+                        className="text-blue-600 hover:text-blue-800 font-medium"
+                      >
+                        {cuenta.ordenCompra.numero}
+                      </Link>
+                    ) : (
+                      <span className="text-slate-400">—</span>
+                    )}
                   </td>
-                  <td className="px-6 py-4 font-semibold text-slate-900">{formatCurrency(cuenta.montoTotal)}</td>
-                  <td className="px-6 py-4 font-bold text-red-600">{formatCurrency(cuenta.montoSaldo)}</td>
-                  <td className="px-6 py-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getEstadoColor(cuenta.estado)}`}>
+                  <td>
+                    <div className={cuenta.diasVencido > 0 ? 'text-red-600 font-medium' : 'text-slate-600'}>
+                      {new Date(cuenta.fechaVencimiento).toLocaleDateString('es-AR')}
+                      {cuenta.diasVencido > 0 && (
+                        <div className="text-xs text-red-500">{cuenta.diasVencido} días vencida</div>
+                      )}
+                    </div>
+                  </td>
+                  <td className="font-semibold text-slate-900">
+                    {formatCurrency(cuenta.montoOriginal)}
+                  </td>
+                  <td className="font-bold text-red-600">
+                    {formatCurrency(cuenta.montoSaldo)}
+                  </td>
+                  <td>
+                    <span className={`badge ${estadoBadge[cuenta.estado] ?? 'badge-neutral'}`}>
                       {cuenta.estado}
                     </span>
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
-  )
+  );
 }

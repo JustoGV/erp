@@ -11,6 +11,8 @@ import type {
   CancelarOrdenDto,
   CalendarioOrden,
   AlertaMaterial,
+  VerificarMaterialesResponse,
+  CalendarioProduccionResponse,
 } from "@/lib/types/produccion";
 
 // ─── Materiales de Producción ────────────────────────────────────────────────
@@ -82,10 +84,10 @@ export const ordenesProduccionService = {
 
 export const planificacionService = {
   getCalendario: (desde: string, hasta: string) =>
-    apiClient.get<{ data: CalendarioOrden[] }>("/planificacion", {
+    apiClient.get<CalendarioProduccionResponse>("/planificacion", {
       params: { desde, hasta },
     }),
 
   verificarMateriales: () =>
-    apiClient.get<{ data: AlertaMaterial[] }>("/planificacion/materiales"),
+    apiClient.get<VerificarMaterialesResponse>("/planificacion/materiales"),
 };

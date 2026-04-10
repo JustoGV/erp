@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Printer } from "lucide-react";
 import { useReporteVentas } from "@/hooks/useReportes";
 import { downloadReporteXLSX } from "@/lib/services/reportes.service";
 
@@ -25,13 +26,18 @@ export default function ReporteVentasPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Reporte de Ventas</h1>
-        <button onClick={handleDescargar} className="btn btn-secondary">
-          Exportar Excel
-        </button>
+        <div className="no-print flex items-center gap-2">
+          <button onClick={handleDescargar} className="btn btn-secondary">
+            Exportar Excel
+          </button>
+          <button onClick={() => window.print()} className="btn btn-secondary">
+            <Printer size={16} /> Imprimir PDF
+          </button>
+        </div>
       </div>
 
       {/* Filtros */}
-      <div className="card flex flex-wrap gap-4 items-end">
+      <div className="no-print card flex flex-wrap gap-4 items-end">
         <div>
           <label htmlFor="ventas-desde" className="label">
             Desde
@@ -66,6 +72,11 @@ export default function ReporteVentasPage() {
         >
           Aplicar filtros
         </button>
+      </div>
+
+      {/* Print header (only visible when printing) */}
+      <div className="print-title hidden border-b pb-3 mb-2">
+        <p className="text-xs text-gray-500">Período: {aplicados.desde} — {aplicados.hasta || "hoy"}</p>
       </div>
 
       {isLoading ? (

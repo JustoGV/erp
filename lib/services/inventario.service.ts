@@ -20,13 +20,20 @@ import type {
   MovimientoStock,
 } from "@/lib/api-types";
 
+export interface FilterCategoriaDto {
+  page?: number;
+  limit?: number;
+  search?: string;
+  active?: boolean;
+}
+
 // ── Categorías ────────────────────────────────────────────────
 
 export const categoriasService = {
-  getAll: () =>
+  getAll: (params?: FilterCategoriaDto) =>
     apiClient
-      .get<ApiResponse<Categoria[]>>("/categorias")
-      .then((r) => r.data.data),
+      .get<PaginatedResponse<Categoria>>("/categorias", { params })
+      .then((r) => r.data),
 
   getOne: (id: string) =>
     apiClient
@@ -124,7 +131,7 @@ export const stockService = {
   transferir: (dto: TransferenciaStockDto, localOrigenId: string) =>
     apiClient
       .post<ApiResponse<MovimientoStock>>("/inventario/transferencia", dto, {
-        params: { localId: localOrigenId },
+        params: { localOrigenId },
       })
       .then((r) => r.data.data),
 };

@@ -1,220 +1,337 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { CreditCard, ArrowLeft, AlertCircle, Clock, Search } from 'lucide-react';
-import { useLocal } from '@/contexts/LocalContext';
-import { useCuentasPagar, useResumenCxP } from '@/hooks/useFinanzas';
-import type { CuentaPorPagar } from '@/lib/api-types';
+import { useState } from 'react'
+import Link from 'next/link'
+import { CreditCard, ArrowLeft, AlertCircle, Clock, Info, ShoppingCart, ExternalLink, Banknote } from 'lucide-react'
+import { useLocal } from '@/contexts/LocalContext'
+import { useCuentasPagar, useResumenCxP } from '@/hooks/useFinanzas'
+import { useRegistrarPagoProveedor } from '@/hooks/useCompras'
+import Pagination from '@/components/Pagination'
+import Modal from '@/components/Modal'
+import type { CuentaPorPagar } from '@/lib/api-types'
 
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(value);
-
-const estadoBadge: Record<string, string> = {
-  PAGADA: 'badge-success',
-  PENDIENTE: 'badge-warning',
-  PARCIAL: 'badge-info',
-  VENCIDA: 'badge-danger',
-};
+const ESTADOS_CXP = ['TODOS', 'PENDIENTE', 'PARCIAL', 'VENCIDA', 'PAGADA'] as const
+type EstadoCxP = typeof ESTADOS_CXP[number]
 
 export default function CuentasPagarPage() {
-  const { selectedLocal, isAllLocales } = useLocal();
-  const [estadoFilter, setEstadoFilter] = useState('');
-  const [search, setSearch] = useState('');
+  const { selectedLocal, isAllLocales } = useLocal()
+  const localId = isAllLocales ? undefined : selectedLocal?.id
+  const [page, setPage] = useState(1)
+  const [estadoFiltro, setEstadoFiltro] = useState<EstadoCxP>('TODOS')
+  const [showInfo, setShowInfo] = useState(false)
+  const [pagarCuenta, setPagarCuenta] = useState<CuentaPorPagar | null>(null)
+  const [pagarForm, setPagarForm] = useState({ monto: '', metodoPago: 'TRANSFERENCIA', fecha: '', referencia: '' })
 
-  const localId = isAllLocales ? undefined : selectedLocal?.id;
+  const registrarPago = useRegistrarPagoProveedor()
 
-  const { data: resumen } = useResumenCxP(localId);
-  const { data: cuentasData, isLoading } = useCuentasPagar({
+  const { data, isLoading } = useCuentasPagar({
     localId,
-    limit: 200,
-    estado: estadoFilter || undefined,
-  });
+    page,
+    limit: 20,
+    estado: estadoFiltro === 'TODOS' ? undefined : estadoFiltro,
+  })
+  const { data: resumenData } = useResumenCxP(localId)
 
-  const cuentas: CuentaPorPagar[] = (cuentasData as any)?.data ?? cuentasData ?? [];
+  const cuentas = data?.data ?? []
+  const totalPages = data?.meta?.totalPages ?? 1
+  const resumen = resumenData?.data
 
-  const filtered = search
-    ? cuentas.filter((c) =>
-        c.proveedor?.name?.toLowerCase().includes(search.toLowerCase()) ||
-        c.ordenCompra?.numero?.toLowerCase().includes(search.toLowerCase())
-      )
-    : cuentas;
+  const fmt = (v: unknown) =>
+    new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(parseFloat(String(v ?? 0)) || 0)
+
+  const METODOS = ['TRANSFERENCIA', 'CHEQUE', 'EFECTIVO', 'DEPOSITO', 'OTRO']
+
+  const abrirPagar = (cuenta: CuentaPorPagar) => {
+    setPagarCuenta(cuenta)
+    setPagarForm({ monto: String(parseFloat(String(cuenta.montoSaldo ?? 0)) || 0), metodoPago: 'TRANSFERENCIA', fecha: '', referencia: '' })
+  }
+
+  const handlePagar = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!pagarCuenta) return
+    await registrarPago.mutateAsync({
+      proveedorId: pagarCuenta.proveedorId,
+      cuentaPagarId: pagarCuenta.id,
+      monto: Number(pagarForm.monto),
+      metodoPago: pagarForm.metodoPago,
+      fecha: pagarForm.fecha || undefined,
+      referencia: pagarForm.referencia || undefined,
+    })
+    setPagarCuenta(null)
+  }
+
+  const estadoEfectivo = (estado: string, fechaVencimiento: string) => {
+    if (estado === 'PENDIENTE' && new Date(fechaVencimiento) < new Date()) return 'VENCIDA'
+    return estado
+  }
+
+  const estadoColor = (estado: string) => {
+    switch (estado) {
+      case 'PAGADA':    return 'bg-green-100 text-green-700'
+      case 'PENDIENTE': return 'bg-yellow-100 text-yellow-700'
+      case 'PARCIAL':   return 'bg-blue-100 text-blue-700'
+      case 'VENCIDA':   return 'bg-red-100 text-red-700'
+      default:          return 'bg-gray-100 text-gray-700'
+    }
+  }
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Link href="/finanzas" className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
-          <ArrowLeft size={24} className="text-slate-600" />
-        </Link>
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-br from-red-500 to-red-600 rounded-xl">
-              <CreditCard className="text-white" size={28} />
-            </div>
-            Cuentas por Pagar
-          </h1>
-          <p className="text-slate-600 mt-1">Gestión de pagos a proveedores</p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Link href="/finanzas" className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+            <ArrowLeft size={24} className="text-slate-600" />
+          </Link>
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-br from-red-500 to-red-600 rounded-xl">
+                <CreditCard className="text-white" size={28} />
+              </div>
+              Cuentas por Pagar
+            </h1>
+            <p className="text-slate-600 mt-1">Saldos pendientes a proveedores · generadas automáticamente</p>
+          </div>
         </div>
+        <button
+          onClick={() => setShowInfo(i => !i)}
+          className={`p-2 rounded-lg transition-colors ${
+            showInfo ? 'bg-red-100 text-red-700' : 'hover:bg-red-50 text-red-500'
+          }`}
+          title="¿Cómo se generan las cuentas por pagar?"
+        >
+          <Info size={20} />
+        </button>
       </div>
+
+      {/* Info panel */}
+      {showInfo && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-5 text-sm">
+          <p className="font-bold text-red-900 mb-3 flex items-center gap-2">
+            <Info size={15} /> ¿Cómo se generan las Cuentas por Pagar?
+          </p>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="bg-white rounded-lg p-3 border border-red-200">
+              <p className="font-semibold text-red-800 mb-1">1. Confirmás una orden de compra</p>
+              <p className="text-xs text-red-700">Cuando confirmás una orden de compra en el módulo de Compras, el sistema registra automáticamente la deuda al proveedor.</p>
+            </div>
+            <div className="bg-white rounded-lg p-3 border border-red-200">
+              <p className="font-semibold text-red-800 mb-1">2. Aparece aquí como PENDIENTE</p>
+              <p className="text-xs text-red-700">La cuenta queda en estado PENDIENTE hasta el vencimiento establecido en la orden de compra.</p>
+            </div>
+            <div className="bg-white rounded-lg p-3 border border-red-200">
+              <p className="font-semibold text-red-800 mb-1">3. Registrás el pago</p>
+              <p className="text-xs text-red-700">Al registrar el pago al proveedor (en Caja o Bancos), el sistema actualiza el saldo y cambia el estado a PAGADA.</p>
+            </div>
+          </div>
+          <div className="mt-3 flex items-center gap-3">
+            <Link
+              href="/compras"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-red-700 bg-white border border-red-300 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors"
+            >
+              <ShoppingCart size={13} /> Ir a Compras <ExternalLink size={11} />
+            </Link>
+            <p className="text-xs text-red-700">Confirmá una orden de compra para que aparezca aquí automáticamente</p>
+          </div>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="card">
+        <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-600">Total a Pagar</p>
-              <p className="text-2xl font-bold text-red-600 mt-1">
-                {resumen ? formatCurrency(resumen.data.totalPendiente) : '—'}
-              </p>
+              <p className="text-2xl font-bold text-red-600 mt-1">{resumen ? fmt(resumen.totalPendiente) : '—'}</p>
             </div>
-            <div className="p-3 bg-red-100 rounded-lg">
-              <CreditCard size={24} className="text-red-600" />
-            </div>
+            <div className="p-3 bg-red-100 rounded-lg"><CreditCard size={24} className="text-red-600" /></div>
           </div>
         </div>
-
-        <div className="card">
+        <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-600">Vencido</p>
-              <p className="text-2xl font-bold text-red-700 mt-1">
-                {resumen ? formatCurrency(resumen.data.totalVencido) : '—'}
-              </p>
+              <p className="text-2xl font-bold text-red-700 mt-1">{resumen ? fmt(resumen.totalVencido) : '—'}</p>
             </div>
-            <div className="p-3 bg-red-100 rounded-lg">
-              <AlertCircle size={24} className="text-red-600" />
-            </div>
+            <div className="p-3 bg-red-100 rounded-lg"><AlertCircle size={24} className="text-red-700" /></div>
           </div>
         </div>
-
-        <div className="card">
+        <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-slate-600">Pendientes</p>
-              <p className="text-2xl font-bold text-amber-600 mt-1">
-                {resumen?.data?.cantidadPendiente ?? '—'}
-              </p>
+              <p className="text-sm text-slate-600">Ctas. Pendientes</p>
+              <p className="text-2xl font-bold text-slate-900 mt-1">{resumen?.cantidadPendiente ?? '—'}</p>
             </div>
-            <div className="p-3 bg-amber-100 rounded-lg">
-              <Clock size={24} className="text-amber-600" />
-            </div>
+            <div className="p-3 bg-slate-100 rounded-lg"><Clock size={24} className="text-slate-600" /></div>
           </div>
         </div>
-
-        <div className="card">
+        <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-slate-600">Vencidas</p>
-              <p className="text-2xl font-bold text-red-600 mt-1">
-                {resumen?.data?.cantidadVencida ?? '—'}
-              </p>
+              <p className="text-sm text-slate-600">Ctas. Vencidas</p>
+              <p className="text-2xl font-bold text-red-600 mt-1">{resumen?.cantidadVencida ?? '—'}</p>
             </div>
-            <div className="p-3 bg-red-100 rounded-lg">
-              <AlertCircle size={24} className="text-red-600" />
-            </div>
+            <div className="p-3 bg-red-100 rounded-lg"><AlertCircle size={24} className="text-red-600" /></div>
           </div>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="card">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-            <input
-              type="text"
-              placeholder="Buscar por proveedor u orden..."
-              className="input pl-11"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          <select
-            className="input min-w-[180px]"
-            value={estadoFilter}
-            onChange={(e) => setEstadoFilter(e.target.value)}
+      {/* Estado filter */}
+      <div className="flex flex-wrap gap-2">
+        {ESTADOS_CXP.map(e => (
+          <button
+            key={e}
+            onClick={() => { setEstadoFiltro(e); setPage(1) }}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+              estadoFiltro === e
+                ? e === 'TODOS'     ? 'bg-slate-700 text-white'
+                : e === 'VENCIDA'   ? 'bg-red-700 text-white'
+                : e === 'PENDIENTE' ? 'bg-yellow-500 text-white'
+                : e === 'PARCIAL'   ? 'bg-blue-600 text-white'
+                :                    'bg-green-600 text-white'
+                : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+            }`}
           >
-            <option value="">Todos los estados</option>
-            <option value="PENDIENTE">Pendiente</option>
-            <option value="PARCIAL">Parcial</option>
-            <option value="VENCIDA">Vencida</option>
-            <option value="PAGADA">Pagada</option>
-          </select>
-        </div>
+            {e}
+          </button>
+        ))}
       </div>
 
-      {/* Table */}
-      <div className="table-container">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Proveedor</th>
-              <th>Orden de Compra</th>
-              <th>Vencimiento</th>
-              <th>Original</th>
-              <th>Saldo</th>
-              <th>Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i}>
-                  {Array.from({ length: 6 }).map((_, j) => (
-                    <td key={j}><div className="h-4 bg-slate-200 animate-pulse rounded" /></td>
-                  ))}
-                </tr>
-              ))
-            ) : filtered.length === 0 ? (
+      {/* Tabla */}
+      <div className="card">
+        <div className="table-container">
+          <table className="table">
+            <thead>
               <tr>
-                <td colSpan={6} className="text-center py-12 text-slate-500">
-                  No hay cuentas por pagar con ese criterio
-                </td>
+                <th>Proveedor</th>
+                <th>Orden Compra</th>
+                <th>Vencimiento</th>
+                <th className="text-right">Original</th>
+                <th className="text-right">Saldo</th>
+                <th>Estado</th>
+                <th></th>
               </tr>
-            ) : (
-              filtered.map((cuenta) => (
-                <tr key={cuenta.id} className="table-row-hover">
-                  <td className="font-medium text-slate-900">
-                    {cuenta.proveedor?.name ?? cuenta.proveedorId}
-                  </td>
-                  <td>
-                    {cuenta.ordenCompra ? (
-                      <Link
-                        href="/compras/ordenes"
-                        className="text-blue-600 hover:text-blue-800 font-medium"
-                      >
-                        {cuenta.ordenCompra.numero}
-                      </Link>
-                    ) : (
-                      <span className="text-slate-400">—</span>
-                    )}
-                  </td>
-                  <td>
-                    <div className={cuenta.diasVencido > 0 ? 'text-red-600 font-medium' : 'text-slate-600'}>
-                      {new Date(cuenta.fechaVencimiento).toLocaleDateString('es-AR')}
-                      {cuenta.diasVencido > 0 && (
-                        <div className="text-xs text-red-500">{cuenta.diasVencido} días vencida</div>
-                      )}
-                    </div>
-                  </td>
-                  <td className="font-semibold text-slate-900">
-                    {formatCurrency(cuenta.montoOriginal)}
-                  </td>
-                  <td className="font-bold text-red-600">
-                    {formatCurrency(cuenta.montoSaldo)}
-                  </td>
-                  <td>
-                    <span className={`badge ${estadoBadge[cuenta.estado] ?? 'badge-neutral'}`}>
-                      {cuenta.estado}
-                    </span>
+            </thead>
+            <tbody>
+              {isLoading ? (
+                <tr><td colSpan={6} className="text-center py-10">Cargando...</td></tr>
+              ) : cuentas.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="text-center py-12 text-slate-400">
+                    <CreditCard size={32} className="mx-auto mb-2 text-slate-300" />
+                    <p>{estadoFiltro === 'TODOS' ? 'No hay cuentas por pagar' : `No hay cuentas en estado ${estadoFiltro}`}</p>
+                    <Link href="/compras" className="inline-flex items-center gap-1 mt-3 text-xs text-red-500 hover:text-red-600 font-medium">
+                      <ShoppingCart size={13} /> Ir a Compras para crear órdenes <ExternalLink size={11} />
+                    </Link>
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                cuentas.map(cuenta => (
+                  <tr key={cuenta.id} className="table-row-hover">
+                    <td className="font-medium">{cuenta.proveedor?.name ?? '—'}</td>
+                    <td>
+                      {cuenta.ordenCompra ? (
+                        <Link href="/compras/ordenes" className="text-blue-600 hover:text-blue-800 font-medium">
+                          {cuenta.ordenCompra.numero}
+                        </Link>
+                      ) : '—'}
+                    </td>
+                    <td>
+                      <div className={cuenta.diasVencido > 0 ? 'text-red-600 font-medium' : 'text-slate-600'}>
+                        {new Date(cuenta.fechaVencimiento).toLocaleDateString('es-AR')}
+                        {cuenta.diasVencido > 0 && (
+                          <div className="text-xs text-red-500">Vencida {cuenta.diasVencido} días</div>
+                        )}
+                      </div>
+                    </td>
+                    <td className="text-right font-semibold">{fmt(cuenta.montoOriginal)}</td>
+                    <td className="text-right font-bold text-red-600">{fmt(cuenta.montoSaldo)}</td>
+                    <td>
+                      {(() => {
+                        const est = estadoEfectivo(cuenta.estado, cuenta.fechaVencimiento)
+                        return (
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${estadoColor(est)}`}>
+                            {est}
+                          </span>
+                        )
+                      })()}
+                    </td>
+                    <td>
+                      {cuenta.estado !== 'PAGADA' && (
+                        <button
+                          onClick={() => abrirPagar(cuenta)}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100 transition-colors"
+                        >
+                          <Banknote size={13} /> Pagar
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+        {totalPages > 1 && (
+          <div className="p-4 border-t border-slate-200">
+            <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+          </div>
+        )}
       </div>
+
+      {/* Modal Pagar */}
+      <Modal open={!!pagarCuenta} title="Registrar Pago a Proveedor" onClose={() => setPagarCuenta(null)}>
+        {pagarCuenta && (
+          <form onSubmit={handlePagar} className="space-y-4">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-sm">
+              <p className="font-semibold text-red-900">{pagarCuenta.proveedor?.name}</p>
+              <div className="flex gap-6 mt-1 text-red-700">
+                <span>Total: {fmt(pagarCuenta.montoOriginal)}</span>
+                <span>Saldo pendiente: <strong>{fmt(pagarCuenta.montoSaldo)}</strong></span>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="label">Monto a pagar *</label>
+                <input
+                  type="number" className="input" required min="0.01" step="0.01"
+                  value={pagarForm.monto}
+                  onChange={e => setPagarForm(f => ({ ...f, monto: e.target.value }))}
+                />
+                <button
+                  type="button"
+                  className="text-xs text-red-600 hover:underline mt-1"
+                  onClick={() => setPagarForm(f => ({ ...f, monto: String(parseFloat(String(pagarCuenta.montoSaldo ?? 0)) || 0) }))}
+                >
+                  Pagar total pendiente
+                </button>
+              </div>
+              <div>
+                <label className="label">Método de Pago *</label>
+                <select className="input" required value={pagarForm.metodoPago} onChange={e => setPagarForm(f => ({ ...f, metodoPago: e.target.value }))}>
+                  {METODOS.map(m => <option key={m} value={m}>{m}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="label">Fecha</label>
+                <input type="date" className="input" value={pagarForm.fecha} onChange={e => setPagarForm(f => ({ ...f, fecha: e.target.value }))} />
+              </div>
+              <div>
+                <label className="label">Referencia</label>
+                <input type="text" className="input" placeholder="CBU, Nº cheque..." value={pagarForm.referencia} onChange={e => setPagarForm(f => ({ ...f, referencia: e.target.value }))} />
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 pt-2">
+              <button type="button" className="btn btn-secondary" onClick={() => setPagarCuenta(null)}>Cancelar</button>
+              <button type="submit" className="btn btn-primary" disabled={registrarPago.isPending}>
+                {registrarPago.isPending ? 'Guardando...' : 'Confirmar Pago'}
+              </button>
+            </div>
+          </form>
+        )}
+      </Modal>
     </div>
-  );
+  )
 }
+
+

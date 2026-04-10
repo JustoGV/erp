@@ -39,7 +39,7 @@ export const empresasService = {
 // ── Locales ───────────────────────────────────────────────────
 
 export const localesService = {
-  getAll: (params?: { page?: number; limit?: number; search?: string }) =>
+  getAll: (params?: { page?: number; limit?: number; search?: string; empresaId?: string }) =>
     apiClient
       .get<PaginatedResponse<Local>>("/locales", { params })
       .then((r) => r.data),

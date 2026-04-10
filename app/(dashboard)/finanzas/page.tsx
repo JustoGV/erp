@@ -8,12 +8,17 @@ import {
   TrendingUp,
   Receipt,
   CreditCard,
+  Landmark,
+  Wallet,
+  Stamp,
 } from "lucide-react";
 import {
   usePlanCuentas,
   useAsientos,
   useResumenCxC,
   useResumenCxP,
+  useCuentasBancarias,
+  useRetenciones,
 } from "@/hooks/useFinanzas";
 
 export default function FinanzasResumenPage() {
@@ -21,6 +26,8 @@ export default function FinanzasResumenPage() {
   const { data: asientosData } = useAsientos({ limit: 1 });
   const { data: resumenCxC } = useResumenCxC();
   const { data: resumenCxP } = useResumenCxP();
+  const { data: bancosData } = useCuentasBancarias();
+  const { data: retencionesData } = useRetenciones({ limit: 1 });
 
   const totalCuentas = planData?.data?.length ?? "—";
   const totalAsientos = asientosData?.meta?.total ?? "—";
@@ -32,6 +39,8 @@ export default function FinanzasResumenPage() {
     resumenCxP?.data?.totalPendiente != null
       ? `$${resumenCxP.data.totalPendiente.toLocaleString()}`
       : "—";
+  const totalCuentasBancarias = bancosData?.data?.length ?? "—";
+  const totalRetenciones = retencionesData?.meta?.total ?? "—";
 
   const menuItems = [
     {
@@ -81,6 +90,30 @@ export default function FinanzasResumenPage() {
       description: "Gestión de deudas con proveedores",
       color: "bg-red-500",
       stats: totalPagar,
+    },
+    {
+      href: "/finanzas/bancos",
+      icon: Landmark,
+      title: "Bancos",
+      description: "Cuentas bancarias y movimientos",
+      color: "bg-indigo-500",
+      stats: `${totalCuentasBancarias} cuentas`,
+    },
+    {
+      href: "/finanzas/caja",
+      icon: Wallet,
+      title: "Caja",
+      description: "Gestión de efectivo por local",
+      color: "bg-teal-500",
+      stats: "Ver caja",
+    },
+    {
+      href: "/finanzas/retenciones",
+      icon: Stamp,
+      title: "Retenciones",
+      description: "Impositivas: IVA, Ganancias, IIBB",
+      color: "bg-amber-500",
+      stats: `${totalRetenciones} registradas`,
     },
   ];
 

@@ -22,8 +22,10 @@ function cleanParams<T extends Record<string, unknown>>(
 }
 
 export const reportesService = {
-  getDashboard: () =>
-    apiClient.get<{ data: DashboardKPIs }>("/reportes/dashboard"),
+  getDashboard: (params?: { localId?: string }) =>
+    apiClient.get<{ data: DashboardKPIs }>("/reportes/dashboard", {
+      params: cleanParams(params as Record<string, unknown>),
+    }),
 
   getVentas: (filtros?: Omit<ReporteFiltros, "proveedorId" | "empleadoId">) =>
     apiClient.get<{ data: ReporteVentas }>("/reportes/ventas", {

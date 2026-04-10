@@ -3,50 +3,66 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  Save,
-  User,
-  Mail,
-  Phone,
-  Briefcase,
-  Calendar,
-} from "lucide-react";
+import { ArrowLeft, Save, User } from "lucide-react";
+import { useLocal } from "@/contexts/LocalContext";
+import { useCrearEmpleado } from "@/hooks/useRRHH";
+import { useApiToast } from "@/hooks/useApiToast";
 
 export default function NuevoEmpleadoPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    legajo: "",
-    firstName: "",
-    lastName: "",
+  const { selectedLocal, isAllLocales } = useLocal();
+  const localId = isAllLocales ? undefined : selectedLocal?.id;
+  const { handleError, handleSuccess } = useApiToast();
+  const crear = useCrearEmpleado();
+
+  const [form, setForm] = useState({
+    code: "",
+    name: "",
     email: "",
     phone: "",
-    role: "",
-    startDate: "",
-    status: "Activo",
+    position: "",
+    department: "",
+    salary: "",
+    hireDate: "",
+    active: true,
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  const set = (key: string, value: string | boolean) =>
+    setForm((p) => ({ ...p, [key]: value }));
 
-    setTimeout(() => {
-      console.log("Empleado guardado:", formData);
-      alert("✅ Empleado creado exitosamente");
-      setLoading(false);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!localId) {
+      handleError(new Error("Seleccioná un local antes de crear un empleado."));
+      return;
+    }
+    try {
+      await crear.mutateAsync({
+        dto: {
+          code: form.code,
+          name: form.name,
+          email: form.email || undefined,
+          phone: form.phone || undefined,
+          position: form.position,
+          department: form.department,
+          salary: parseFloat(form.salary),
+          hireDate: form.hireDate,
+          active: form.active,
+        },
+        localId,
+      });
+      handleSuccess("Empleado creado correctamente.");
       router.push("/rrhh/empleados");
-    }, 500);
+    } catch (err) {
+      handleError(err);
+    }
   };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   return (
@@ -59,8 +75,8 @@ export default function NuevoEmpleadoPage() {
           <ArrowLeft size={24} />
         </Link>
         <div className="flex-1">
-          <h1 className="text-3xl font-bold text-slate-900">Nuevo Empleado</h1>
-          <p className="text-slate-600 mt-1">Registra un nuevo integrante</p>
+          <h1 className="text-2xl font-bold text-slate-900">Nuevo Empleado</h1>
+          <p className="text-slate-500">Registrá un nuevo integrante del equipo</p>
         </div>
       </div>
 
@@ -77,53 +93,39 @@ export default function NuevoEmpleadoPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="label">Legajo *</label>
+              <label className="label">Código *</label>
               <input
                 type="text"
-                name="legajo"
-                value={formData.legajo}
+                name="code"
+                value={form.code}
                 onChange={handleChange}
                 required
                 className="input"
-                placeholder="EMP-100"
+                placeholder="EMP-001"
+                maxLength={20}
               />
             </div>
 
             <div>
-              <label className="label">Nombre *</label>
+              <label className="label">Nombre completo *</label>
               <input
                 type="text"
-                name="firstName"
-                value={formData.firstName}
+                name="name"
+                value={form.name}
                 onChange={handleChange}
                 required
                 className="input"
-                placeholder="María"
+                placeholder="González María Fernanda"
+                maxLength={200}
               />
             </div>
 
             <div>
-              <label className="label">Apellido *</label>
-              <input
-                type="text"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleChange}
-                required
-                className="input"
-                placeholder="González"
-              />
-            </div>
-
-            <div>
-              <label className="label">
-                <Mail size={16} className="inline mr-1" />
-                Email
-              </label>
+              <label className="label">Email</label>
               <input
                 type="email"
                 name="email"
-                value={formData.email}
+                value={form.email}
                 onChange={handleChange}
                 className="input"
                 placeholder="maria@empresa.com"
@@ -131,73 +133,92 @@ export default function NuevoEmpleadoPage() {
             </div>
 
             <div>
-              <label className="label">
-                <Phone size={16} className="inline mr-1" />
-                Teléfono
-              </label>
+              <label className="label">Teléfono</label>
               <input
                 type="text"
                 name="phone"
-                value={formData.phone}
+                value={form.phone}
                 onChange={handleChange}
                 className="input"
-                placeholder="11-4444-2222"
+                placeholder="+54 11 1234-5678"
+                maxLength={30}
               />
             </div>
 
             <div>
-              <label className="label">
-                <Briefcase size={16} className="inline mr-1" />
-                Puesto
-              </label>
+              <label className="label">Cargo *</label>
               <input
                 type="text"
-                name="role"
-                value={formData.role}
+                name="position"
+                value={form.position}
                 onChange={handleChange}
+                required
                 className="input"
-                placeholder="Analista de RRHH"
+                placeholder="Asistente Administrativa"
+                maxLength={100}
               />
             </div>
 
             <div>
-              <label htmlFor="startDate" className="label">
-                <Calendar size={16} className="inline mr-1" />
-                Fecha de Ingreso
-              </label>
+              <label className="label">Departamento *</label>
               <input
-                id="startDate"
-                type="date"
-                name="startDate"
-                value={formData.startDate}
+                type="text"
+                name="department"
+                value={form.department}
                 onChange={handleChange}
+                required
                 className="input"
+                placeholder="Administración"
+                maxLength={100}
               />
             </div>
 
             <div>
-              <label htmlFor="status" className="label">
-                Estado
-              </label>
-              <select
-                id="status"
-                name="status"
-                value={formData.status}
+              <label className="label">Salario bruto *</label>
+              <input
+                type="number"
+                name="salary"
+                min={0}
+                step={0.01}
+                value={form.salary}
                 onChange={handleChange}
+                required
                 className="input"
-              >
-                <option>Activo</option>
-                <option>En licencia</option>
-                <option>Inactivo</option>
-              </select>
+                placeholder="280000"
+              />
+            </div>
+
+            <div>
+              <label className="label">Fecha de ingreso *</label>
+              <input
+                type="date"
+                name="hireDate"
+                value={form.hireDate}
+                onChange={handleChange}
+                required
+                className="input"
+              />
+            </div>
+
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                id="active"
+                checked={form.active}
+                onChange={(e) => set("active", e.target.checked)}
+                className="w-4 h-4 rounded"
+              />
+              <label htmlFor="active" className="label mb-0 cursor-pointer">
+                Empleado activo
+              </label>
             </div>
           </div>
         </div>
 
         <div className="flex items-center gap-4">
-          <button type="submit" disabled={loading} className="btn btn-primary">
+          <button type="submit" disabled={crear.isPending} className="btn btn-primary">
             <Save size={18} />
-            {loading ? "Guardando..." : "Guardar Empleado"}
+            {crear.isPending ? "Guardando..." : "Guardar Empleado"}
           </button>
           <Link href="/rrhh/empleados" className="btn btn-secondary">
             Cancelar

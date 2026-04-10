@@ -5,6 +5,7 @@ import {
   depositosService,
   stockService,
   movimientosService,
+  type FilterCategoriaDto,
 } from "@/lib/services/inventario.service";
 import type {
   CreateCategoriaDto,
@@ -27,10 +28,18 @@ export const MOVIMIENTOS_KEY = ["movimientos-stock"] as const;
 
 // ── Categorías ────────────────────────────────────────────────
 
-export function useCategorias() {
+export function useCategorias(params?: FilterCategoriaDto) {
   return useQuery({
-    queryKey: CATEGORIAS_KEY,
-    queryFn: () => categoriasService.getAll(),
+    queryKey: [...CATEGORIAS_KEY, params],
+    queryFn: () => categoriasService.getAll(params),
+  });
+}
+
+export function useCategoria(id: string) {
+  return useQuery({
+    queryKey: [...CATEGORIAS_KEY, id],
+    queryFn: () => categoriasService.getOne(id),
+    enabled: !!id,
   });
 }
 
@@ -90,10 +99,18 @@ export function useUpdateProducto() {
 
 // ── Depósitos ─────────────────────────────────────────────────
 
-export function useDepositos(params?: { localId?: string; search?: string }) {
+export function useDepositos(params?: { localId?: string; search?: string; page?: number; limit?: number }) {
   return useQuery({
     queryKey: [...DEPOSITOS_KEY, params],
     queryFn: () => depositosService.getAll(params),
+  });
+}
+
+export function useDeposito(id: string) {
+  return useQuery({
+    queryKey: [...DEPOSITOS_KEY, id],
+    queryFn: () => depositosService.getOne(id),
+    enabled: !!id,
   });
 }
 
@@ -137,6 +154,10 @@ export function useAlertasStock(localId?: string) {
     queryKey: [...STOCK_KEY, "alertas", localId],
     queryFn: () => stockService.getAlertas(localId),
     refetchInterval: 1000 * 60 * 5,
+    select: (data) => {
+      console.log("[useAlertasStock] alertas:", data);
+      return data;
+    },
   });
 }
 
@@ -148,6 +169,7 @@ export function useAjustarStock() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: STOCK_KEY });
       qc.invalidateQueries({ queryKey: MOVIMIENTOS_KEY });
+      qc.invalidateQueries({ queryKey: PRODUCTOS_KEY });
     },
   });
 }
@@ -165,6 +187,7 @@ export function useTransferirStock() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: STOCK_KEY });
       qc.invalidateQueries({ queryKey: MOVIMIENTOS_KEY });
+      qc.invalidateQueries({ queryKey: PRODUCTOS_KEY });
     },
   });
 }

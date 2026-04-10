@@ -4,7 +4,7 @@ import Link from "next/link";
 import {
   ShoppingBag,
   Users,
-  UserCheck,
+  UserCheck as _UserCheck,
   FileText,
   ClipboardList,
   Receipt,
@@ -47,14 +47,6 @@ export default function VentasResumenPage() {
       description: "Gestión de clientes y cuentas",
       color: "bg-blue-500",
       stats: `${totalClientes} clientes activos`,
-    },
-    {
-      href: "/ventas/seguimiento",
-      icon: UserCheck,
-      title: "Seguimiento",
-      description: "Seguimiento de clientes e interacciones",
-      color: "bg-cyan-500",
-      stats: "—",
     },
     {
       href: "/ventas/presupuestos",
@@ -142,8 +134,6 @@ export default function VentasResumenPage() {
             </p>
             <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-blue-800">
               <span className="font-medium">Flujo:</span>
-              <span className="px-2 py-1 bg-blue-100 rounded">Seguimiento</span>
-              <span>→</span>
               <span className="px-2 py-1 bg-blue-100 rounded">Presupuesto</span>
               <span>→</span>
               <span className="px-2 py-1 bg-blue-100 rounded">Pedido</span>

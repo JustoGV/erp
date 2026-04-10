@@ -18,14 +18,15 @@ export interface PaginatedResponse<T> {
 
 // Roles del backend (deben coincidir exactamente con el enum del backend)
 export type UserRole =
+  | "Super"
   | "Administrador"
   | "Gerente"
   | "Vendedor"
-  | "Comprador"
+  | "Inventario"
   | "Contador"
   | "RRHH"
   | "Produccion"
-  | "Viewer";
+  | "SoloLectura";
 
 export interface AuthUser {
   id: string;
@@ -107,6 +108,7 @@ export interface CreateLocalDto {
   phone?: string;
   email?: string;
   manager?: string;
+  empresaId?: string;
 }
 
 export interface UpdateLocalDto extends Partial<CreateLocalDto> {
@@ -132,6 +134,7 @@ export interface CreateUsuarioDto {
   password: string;
   rol: UserRole;
   localId?: string;
+  empresaId?: string;
 }
 
 export interface UpdateUsuarioDto {
@@ -171,6 +174,7 @@ export interface Categoria {
   active: boolean;
   empresaId: string;
   createdAt: string;
+  _count?: { productos: number };
 }
 
 export interface CreateCategoriaDto {
@@ -196,6 +200,7 @@ export interface Producto {
   empresaId: string;
   categoriaId?: string | null;
   categoria?: Pick<Categoria, "id" | "name"> | null;
+  stock?: Array<{ cantidad: number; localId: string; depositoId?: string }>;
   stockTotal?: number;
   alertaStockBajo?: boolean;
   createdAt: string;
@@ -238,6 +243,8 @@ export interface Deposito {
   localId: string;
   empresaId: string;
   createdAt: string;
+  local?: { id: string; name: string };
+  _count?: { stock: number };
 }
 
 export interface CreateDepositoDto {
@@ -279,15 +286,28 @@ export interface StockPorProducto {
 }
 
 export interface AlertaStock {
+  id?: string;
   productoId: string;
-  productoCodigo: string;
   productoNombre: string;
+  productoCodigo: string;
   localId: string;
   localNombre: string;
   stockActual: number;
   stockMinimo: number;
-  unidad: string;
   diferencia: number;
+  unidad: string;
+  criticidad: "ADVERTENCIA" | "CRITICO";
+  // legacy fields (por compatibilidad)
+  cantidad?: number;
+  deficit?: number;
+  producto?: {
+    id: string;
+    code: string;
+    name: string;
+    minStock: number;
+    unit: string;
+  };
+  local?: { id: string; name: string };
 }
 
 export interface AjusteStockDto {
@@ -307,13 +327,14 @@ export interface TransferenciaStockDto {
 
 export interface MovimientoStock {
   id: string;
+  fecha?: string;
   tipo: TipoMovimientoStock;
   cantidad: number;
   productoId: string;
   localId: string;
   depositoId?: string | null;
   empresaId: string;
-  usuarioId: string;
+  usuarioId?: string;
   observaciones?: string | null;
   referencia?: string | null;
   createdAt: string;
@@ -367,7 +388,6 @@ export interface Cliente {
 }
 
 export interface CreateClienteDto {
-  code: string;
   name: string;
   localId: string;
   taxId?: string;
@@ -377,11 +397,18 @@ export interface CreateClienteDto {
   email?: string;
   phone?: string;
   creditLimit?: number;
+  active?: boolean;
 }
 
-export interface UpdateClienteDto extends Partial<
-  Omit<CreateClienteDto, "code">
-> {
+export interface UpdateClienteDto {
+  name?: string;
+  taxId?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  email?: string;
+  phone?: string;
+  creditLimit?: number;
   active?: boolean;
 }
 
@@ -759,7 +786,10 @@ export interface ItemRecepcion {
   id: string;
   recepcionId: string;
   itemOrdenCompraId: string;
+  descripcion: string;
+  cantidadOrdenada: number;
   cantidadRecibida: number;
+  cantidadAceptada: number;
   cantidadRechazada: number;
   motivoRechazo?: string;
   observaciones?: string;
@@ -769,17 +799,19 @@ export interface RecepcionCompra {
   id: string;
   empresaId: string;
   localId: string;
+  numero: string;
   ordenCompraId: string;
-  nroRemito?: string;
-  fecha: string;
+  fechaRecepcion: string;
   observaciones?: string;
-  creadoPor: string;
+  recibidoPor: string;
+  conformidad: boolean;
   createdAt: string;
   items?: ItemRecepcion[];
   ordenCompra?: {
     id: string;
     numero: string;
     proveedor?: { id: string; name: string };
+    items?: { id: string; descripcion: string; cantidad: number; cantidadRecibida: number; unidad: string }[];
   };
 }
 
@@ -821,6 +853,7 @@ export interface PagoProveedor {
 
 export interface CreatePagoProveedorDto {
   proveedorId: string;
+  cuentaPagarId?: string;
   monto: number;
   metodoPago: string;
   fecha?: string;
@@ -931,6 +964,13 @@ export interface CreateAsientoDto {
   detalles: DetalleAsientoDto[];
 }
 
+export interface UpdateAsientoDto {
+  fecha?: string;
+  descripcion?: string;
+  referencia?: string;
+  detalles?: DetalleAsientoDto[];
+}
+
 // ---------- Cuentas por Cobrar ----------
 
 export interface CuentaPorCobrar {
@@ -1005,6 +1045,14 @@ export interface MovimientoBancario {
   saldoNuevo: number;
   creadoPor: string;
   createdAt: string;
+}
+
+export interface CreateCuentaBancariaDto {
+  numero: string;
+  alias?: string;
+  tipoCuenta: "CORRIENTE" | "CAJA_AHORRO" | "PLAZO_FIJO" | "OTRA";
+  bancoNombre: string;
+  saldoInicial?: number;
 }
 
 export interface CreateMovimientoBancarioDto {

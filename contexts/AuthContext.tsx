@@ -8,6 +8,7 @@ import React, {
   useCallback,
 } from "react";
 import { apiClient, tokenStore } from "@/lib/api-client";
+import { clearQueryCache } from "@/components/providers/QueryProvider";
 import type { AuthUser, AuthTokens } from "@/lib/api-types";
 
 export type { UserRole } from "@/lib/api-types";
@@ -29,50 +30,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Al montar: restaurar usuario desde localStorage y el access token
   useEffect(() => {
     const storedUser = localStorage.getItem("erp_user");
-    const storedRefresh = localStorage.getItem("erp_refresh_token");
+    const storedAccess = localStorage.getItem("erp_access_token");
 
-    if (
-      storedUser &&
-      storedRefresh &&
-      storedRefresh !== "null" &&
-      storedRefresh !== "undefined"
-    ) {
-      const savedUser: AuthUser = JSON.parse(storedUser);
-      setUser(savedUser);
-
-      apiClient
-        .post<{ success: boolean; data: { accessToken: string } }>(
-          "/auth/refresh",
-          null,
-          { headers: { Authorization: `Bearer ${storedRefresh}` } },
-        )
-        .then(({ data }) => {
-          tokenStore.set(data.data.accessToken);
-        })
-        .catch(() => {
-          // Refresh expirado, limpiar sesión
-          setUser(null);
-          tokenStore.clear();
-          localStorage.removeItem("erp_user");
-          localStorage.removeItem("erp_refresh_token");
-        })
-        .finally(() => setIsLoading(false));
-    } else {
-      setIsLoading(false);
+    if (storedUser) {
+      try {
+        const savedUser: AuthUser = JSON.parse(storedUser);
+        setUser(savedUser);
+      } catch {
+        localStorage.removeItem("erp_user");
+      }
     }
+
+    if (storedAccess && storedAccess !== "null" && storedAccess !== "undefined") {
+      tokenStore.set(storedAccess);
+    }
+
+    setIsLoading(false);
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const { data } = await apiClient.post<{
-      success: boolean;
-      data: AuthTokens;
-    }>("/auth/login", { email, password });
+    const { data } = await apiClient.post("/auth/login", { email, password });
 
-    const { accessToken, refreshToken, user: authUser } = data.data;
+    const accessToken =
+      (data as { accessToken?: string }).accessToken ??
+      (data as { data?: { accessToken?: string } }).data?.accessToken;
+    const authUser =
+      (data as { user?: AuthTokens["user"] }).user ??
+      (data as { data?: { user?: AuthTokens["user"] } }).data?.user;
+
+    if (!accessToken || !authUser) {
+      throw new Error("Login response missing token or user");
+    }
 
     tokenStore.set(accessToken);
-    localStorage.setItem("erp_refresh_token", refreshToken);
+    localStorage.setItem("erp_access_token", accessToken);
     localStorage.setItem("erp_user", JSON.stringify(authUser));
+    localStorage.removeItem("selectedLocalId");
+    localStorage.removeItem("selectedLocal");
+    clearQueryCache(); // limpiar datos del usuario anterior
     setUser(authUser);
   }, []);
 
@@ -83,9 +78,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Ignorar errores de logout en el backend
     } finally {
       tokenStore.clear();
-      localStorage.removeItem("erp_refresh_token");
+      localStorage.removeItem("erp_access_token");
       localStorage.removeItem("erp_user");
-      setUser(null);
+      localStorage.removeItem("selectedLocalId");
+      localStorage.removeItem("selectedLocal");
+      // Hard redirect: limpia todo el estado de React Query y de memoria
+      window.location.href = "/login";
     }
   }, []);
 

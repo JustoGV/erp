@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useCallback, useContext, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 
 /* ── Tipos ─────────────────────────────────────────────── */
 
@@ -36,6 +36,15 @@ const ToastContext = createContext<ToastContextValue | null>(null);
 
 let nextId = 1;
 
+/* ── Global bridge via CustomEvent (funciona fuera del árbol React) ── */
+
+const TOAST_EVENT = "__erp_toast__";
+
+export function addToastGlobal(opts: AddToastOptions) {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent(TOAST_EVENT, { detail: opts }));
+}
+
 /* ── Provider ──────────────────────────────────────────── */
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
@@ -50,10 +59,19 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       const id = nextId++;
       setToasts((prev) => [...prev, { id, type, title, message, action }]);
       // Auto-dismiss
-      setTimeout(() => removeToast(id), type === "error" ? 8000 : 4000);
+      setTimeout(() => removeToast(id), type === 'error' ? 8000 : type === 'warning' ? 6000 : 4000);
     },
     [removeToast],
   );
+
+  // Escuchar eventos globales de toast (disparados desde fuera de React, ej: QueryClient)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      addToast((e as CustomEvent<AddToastOptions>).detail);
+    };
+    window.addEventListener(TOAST_EVENT, handler);
+    return () => window.removeEventListener(TOAST_EVENT, handler);
+  }, [addToast]);
 
   return (
     <ToastContext.Provider value={{ toasts, addToast, removeToast }}>

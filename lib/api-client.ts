@@ -26,27 +26,24 @@ export const apiClient = axios.create({
 
 // ── Request interceptor: agrega el Bearer token a cada petición ──
 apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  const token = tokenStore.get();
+  let token = tokenStore.get();
+
+  // Fallback: si el módulo fue reseteado por HMR/Fast Refresh, recuperar de localStorage
+  if (!token && typeof window !== "undefined") {
+    const stored = localStorage.getItem("erp_access_token");
+    if (stored && stored !== "null" && stored !== "undefined") {
+      tokenStore.set(stored);
+      token = stored;
+    }
+  }
+
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
 
-// ── Response interceptor: si el token expiró (401), intenta refresh ──
-let isRefreshing = false;
-let failedQueue: Array<{
-  resolve: (value: unknown) => void;
-  reject: (reason?: unknown) => void;
-}> = [];
-
-const processQueue = (error: unknown, token: string | null = null) => {
-  failedQueue.forEach(({ resolve, reject }) => {
-    if (error) reject(error);
-    else resolve(token);
-  });
-  failedQueue = [];
-};
+// ── Response interceptor: maneja errores y expiracion de token ──
 
 apiClient.interceptors.response.use(
   (response) => {
@@ -107,57 +104,15 @@ apiClient.interceptors.response.use(
         code: error.code,
       });
     }
-    // Si el error es 401 y no hemos reintentado ya
-    if (status === 401 && !originalRequest._retry) {
-      // Si ya hay un refresh en curso, encolar la petición
-      if (isRefreshing) {
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        })
-          .then((token) => {
-            originalRequest.headers.Authorization = `Bearer ${token}`;
-            return apiClient(originalRequest);
-          })
-          .catch((err) => Promise.reject(err));
-      }
-
-      originalRequest._retry = true;
-      isRefreshing = true;
-
-      const refreshToken = localStorage.getItem("erp_refresh_token");
-
-      if (
-        !refreshToken ||
-        refreshToken === "null" ||
-        refreshToken === "undefined"
-      ) {
-        isRefreshing = false;
-        localStorage.removeItem("erp_refresh_token");
-        // No hay refresh token válido → redirigir a login
-        window.location.href = "/login";
-        return Promise.reject(error);
-      }
-
-      try {
-        const { data } = await axios.post(`${BASE_URL}/auth/refresh`, null, {
-          headers: { Authorization: `Bearer ${refreshToken}` },
-        });
-
-        const newAccessToken: string = data.data.accessToken;
-        tokenStore.set(newAccessToken);
-        processQueue(null, newAccessToken);
-
-        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-        return apiClient(originalRequest);
-      } catch (refreshError) {
-        processQueue(refreshError, null);
-        tokenStore.clear();
-        localStorage.removeItem("erp_refresh_token");
+    // Si el error es 401, el backend no soporta refresh → forzar login
+    if (status === 401) {
+      tokenStore.clear();
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("erp_access_token");
         localStorage.removeItem("erp_user");
-        window.location.href = "/login";
-        return Promise.reject(refreshError);
-      } finally {
-        isRefreshing = false;
+        // Usar history.pushState para navegación sin hard reload
+        window.history.pushState(null, "", "/login");
+        window.dispatchEvent(new PopStateEvent("popstate"));
       }
     }
 

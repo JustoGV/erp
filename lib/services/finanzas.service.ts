@@ -7,11 +7,13 @@ import type {
   MayorContable,
   AsientoContable,
   CreateAsientoDto,
+  UpdateAsientoDto,
   CuentaPorCobrar,
   ResumenCxC,
   CuentaPorPagar,
   ResumenCxP,
   CuentaBancaria,
+  CreateCuentaBancariaDto,
   MovimientoBancario,
   CreateMovimientoBancarioDto,
   CajaLocal,
@@ -63,6 +65,9 @@ export const asientosService = {
       params: { localId },
     }),
 
+  update: (id: string, dto: UpdateAsientoDto) =>
+    apiClient.patch<ApiResponse<AsientoContable>>(`/asientos/${id}`, dto),
+
   confirmar: (id: string) =>
     apiClient.patch<ApiResponse<AsientoContable>>(`/asientos/${id}/confirmar`),
 
@@ -113,6 +118,9 @@ export const cuentasPagarService = {
 export const bancosService = {
   getCuentas: () =>
     apiClient.get<ApiResponse<CuentaBancaria[]>>("/bancos/cuentas"),
+
+  crearCuenta: (dto: CreateCuentaBancariaDto) =>
+    apiClient.post<ApiResponse<CuentaBancaria>>("/bancos/cuentas", dto),
 
   getMovimientos: (
     cuentaBancariaId: string,

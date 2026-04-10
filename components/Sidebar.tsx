@@ -40,6 +40,7 @@ interface MenuItem {
   label: string;
   color: string;
   module: string;
+  superOnly?: boolean;
   subItems?: SubMenuItem[];
 }
 
@@ -59,7 +60,6 @@ const allMenuItems: MenuItem[] = [
     subItems: [
       { href: '/ventas', label: 'Resumen' },
       { href: '/ventas/clientes', label: 'Clientes' },
-      { href: '/ventas/seguimiento', label: 'Seguimiento' },
       { href: '/ventas/presupuestos', label: 'Presupuestos' },
       { href: '/ventas/pedidos', label: 'Pedidos' },
       { href: '/ventas/facturas', label: 'Facturas' },
@@ -87,10 +87,13 @@ const allMenuItems: MenuItem[] = [
     module: 'inventario',
     subItems: [
       { href: '/inventario', label: 'Resumen' },
-      { href: '/inventario/productos', label: 'Productos' },
+      { href: '/inventario/categorias', label: 'Categorías' },
       { href: '/inventario/depositos', label: 'Depósitos' },
+      { href: '/inventario/productos', label: 'Productos' },
+      { href: '/inventario/ajustes', label: 'Ajustes de Stock' },
       { href: '/inventario/stock', label: 'Control de Stock' },
-      { href: '/inventario/ajustes', label: 'Ajustes' },
+      { href: '/inventario/movimientos', label: 'Movimientos' },
+      { href: '/inventario/alertas', label: 'Alertas de Stock' },
     ]
   },
   { 
@@ -131,9 +134,8 @@ const allMenuItems: MenuItem[] = [
       { href: '/rrhh', label: 'Resumen' },
       { href: '/rrhh/empleados', label: 'Empleados' },
       { href: '/rrhh/liquidaciones', label: 'Liquidaciones' },
-      { href: '/rrhh/asistencias', label: 'Asistencias' },
-      { href: '/rrhh/horas', label: 'Registro de Horas' },
       { href: '/rrhh/vacaciones', label: 'Vacaciones' },
+      { href: '/rrhh/usuarios', label: 'Usuarios' },
     ]
   },
   { 
@@ -155,16 +157,29 @@ const allMenuItems: MenuItem[] = [
       { href: '/configuracion/usuarios', label: 'Usuarios' },
     ]
   },
+  {
+    icon: Building2,
+    label: 'Empresas',
+    color: 'text-violet-500',
+    module: 'empresas',
+    superOnly: true,
+    subItems: [
+      { href: '/empresas', label: 'Lista de empresas' },
+    ]
+  },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set());
-  const { hasAccess } = usePermissions();
+  const { hasAccess, isSuper } = usePermissions();
 
   // Filtrar menú según permisos del usuario
-  const menuItems = allMenuItems.filter(item => hasAccess(item.module));
+  const menuItems = allMenuItems.filter(item => {
+    if (item.superOnly) return isSuper;
+    return hasAccess(item.module);
+  });
 
   const toggleMenu = (label: string) => {
     const newExpanded = new Set(expandedMenus);

@@ -11,6 +11,7 @@ import {
 import type {
   CreateCuentaDto,
   CreateAsientoDto,
+  UpdateAsientoDto,
   CreateMovimientoBancarioDto,
   MovimientoCajaDto,
   CreateRetencionDto,
@@ -106,6 +107,37 @@ export function useCrearAsiento() {
   });
 }
 
+export function useConfirmarAsiento() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      asientosService.confirmar(id).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["asientos"] });
+    },
+  });
+}
+export function useActualizarAsiento() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, dto }: { id: string; dto: UpdateAsientoDto }) =>
+      asientosService.update(id, dto).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["asientos"] })
+    },
+  })
+}
+export function useAnularAsiento() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      asientosService.anular(id).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["asientos"] });
+    },
+  });
+}
+
 // ── Cuentas por Cobrar ────────────────────────────────────────────────────────
 
 export function useCuentasCobrar(params?: {
@@ -180,6 +212,17 @@ export function useMovimientosBancarios(
     enabled: !!cuentaBancariaId,
     staleTime: 1000 * 60 * 5,
     retry: 1,
+  });
+}
+
+export function useCrearCuentaBancaria() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (dto: import("@/lib/api-types").CreateCuentaBancariaDto) =>
+      bancosService.crearCuenta(dto).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["bancos-cuentas"] });
+    },
   });
 }
 

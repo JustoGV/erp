@@ -16,7 +16,6 @@ export default function NuevoClientePage() {
   const crear = useCrearCliente();
 
   const [form, setForm] = useState<Omit<CreateClienteDto, 'localId'>>({
-    code: '',
     name: '',
     taxId: '',
     email: '',
@@ -82,18 +81,6 @@ export default function NuevoClientePage() {
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="code" className="label">Código *</label>
-              <input
-                id="code"
-                type="text"
-                value={form.code}
-                onChange={(e) => set('code', e.target.value)}
-                required
-                className="input"
-                placeholder="CLI-001"
-              />
-            </div>
             <div>
               <label htmlFor="name" className="label">Nombre / Razón Social *</label>
               <input

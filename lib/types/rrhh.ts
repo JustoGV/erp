@@ -17,6 +17,8 @@ export interface Empleado {
   updatedAt: string;
   _count?: {
     asistencias: number;
+    liquidaciones: number;
+    vacaciones: number;
     horas: number;
   };
 }
@@ -48,6 +50,7 @@ export interface Asistencia {
   justificado: boolean;
   notas?: string;
   createdAt: string;
+  empleado?: { id: string; code: string; name: string };
 }
 
 export interface CreateAsistenciaDto {
@@ -71,6 +74,7 @@ export interface RegistroHoras {
   horasExtra: number;
   descripcion?: string;
   createdAt: string;
+  empleado?: { id: string; code: string; name: string };
 }
 
 export interface CreateRegistroHorasDto {
